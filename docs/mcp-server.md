@@ -52,6 +52,17 @@ Every tool returns its result as pretty-printed JSON text. Errors are returned a
 
 Search semantics are described in [Search and querying](search.md).
 
+### Reconciliation links
+
+Registered by [reconciliation/mcp-tools.ts](../apps/server/src/reconciliation/mcp-tools.ts). They wrap the same handlers as the mini-app SDK's reconciliation methods. A link says that money moved from a source entity (for example a bank-statement transaction) to a target (for example the invoice it paid). Either side can be a header or a line item.
+
+| Tool | Arguments | What it does | Implementation |
+|---|---|---|---|
+| `list_reconciliation_links` | `entityId?`, `schemaType?`, `limit?` | Links touching one entity (either side), links where either side has the given schema type, or all links. | [listReconciliationLinks.ts](../packages/srv/src/ui-tx/handlers/listReconciliationLinks.ts) |
+| `trace_reconciliation` | `startEntityId?` and/or `endEntityId?`, `maxDepth?` (default 10), `limit?` (default 50) | Follows links from an entity in both directions and returns the entities (`nodes`) and links (`edges`). With `endEntityId`, `summary.matchingPaths` counts the chains that reach it. | [traceReconciliation.ts](../packages/srv/src/ui-tx/handlers/traceReconciliation.ts) |
+| `create_reconciliation_link` | `sourceEntityId`, `targetEntityId`, `amount`, `currency`, `date?` (default: the source's date), `sourceField?`, `targetField?`, `note?` | Creates a manual link. The tool looks up both entities and builds the full references, so the caller passes only IDs. `sourceField`/`targetField` name the amount fields that were matched and must exist on the entity. `note` is saved in the link's metadata. Linking an entity to itself is rejected. | [createReconciliationLink.ts](../packages/srv/src/ui-tx/handlers/createReconciliationLink.ts) |
+| `delete_reconciliation_link` | `linkId` | Soft-deletes a link. | [deleteReconciliationLink.ts](../packages/srv/src/ui-tx/handlers/deleteReconciliationLink.ts) |
+
 ### Import from folder
 
 Registered by [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.ts). See [Import from folder](import-from-folder.md) for the full flow.
@@ -104,6 +115,8 @@ There's no delete tool; apps can be deleted through the HTTP API.
 - "Total spend per vendor in 2025" → `aggregate` with `schemaType` `INVOICE_header`, a sum of `total`, `groupBy` `vendorName` and `currency`, and a date range
 - "The total on invoice X should be 1,240.50" → `get_document`, then `update_entity_fields`
 - "Add a document type for utility bills" → `get_document_type` on `INVOICE`, then `create_document_type`
+- "Which bank transaction paid invoice X?" → `list_reconciliation_links` with the invoice's `entityId`, or `trace_reconciliation` for longer chains
+- "Match March's card payments to the open invoices" → `search_entities` on both sides, then `create_reconciliation_link` for each pair the user approves
 - "Put all 2025 receipts in a Receipts/2025 folder" → `list_folders`, `create_folder` (twice, for each level), `search_entities` or `list_documents` for the IDs, then `move_documents`
 - "Find the receipts in ~/Pictures/2025 and import them" → `find_documents_in_folder`, then the picker or `import_photos`
 - "Make me an app that shows monthly spend per category" → `get_mini_app_guide`, `list_searchable_entities` and `search_entities` to learn the data, then `create_mini_app`

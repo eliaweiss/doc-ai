@@ -64,19 +64,21 @@ export async function handleTraceReconciliation(
     limit,
   };
 
+  // doc-ai: resolveSchemaType only checks the entity exists. Passing its
+  // schemaType as startSchemaTypes limited the starting links to those where
+  // the entity is the source, so tracing from an invoice (usually a target)
+  // or by endEntityId alone found nothing.
   if (startEntityId) {
-    const schemaType = await resolveSchemaType(orgId, startEntityId);
+    await resolveSchemaType(orgId, startEntityId);
     traceRequest.startEntityIds = [startEntityId];
-    traceRequest.startSchemaTypes = [schemaType];
   }
 
   if (endEntityId) {
     traceRequest.endEntityIds = [endEntityId];
 
     if (!startEntityId) {
-      const schemaType = await resolveSchemaType(orgId, endEntityId);
+      await resolveSchemaType(orgId, endEntityId);
       traceRequest.startEntityIds = [endEntityId];
-      traceRequest.startSchemaTypes = [schemaType];
     }
   }
 

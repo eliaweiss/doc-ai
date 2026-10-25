@@ -1,6 +1,6 @@
 ---
 name: doc-ai
-description: How to use the doc-ai MCP server (tools get_status, list_searchable_entities, search_entities, aggregate, list_documents, get_document, update_entity_fields, find_documents_in_folder, import_photos, create_mini_app and the rest). Use when the user asks about their documents, invoices, receipts, bank statements, transactions, vendors or spending; wants totals, lists or corrections of extracted values; wants to import receipt photos from a folder; wants a new document type; or wants a mini app built over their doc-ai data.
+description: How to use the doc-ai MCP server (tools get_status, list_searchable_entities, search_entities, aggregate, list_documents, get_document, update_entity_fields, find_documents_in_folder, import_photos, create_mini_app and the rest). Use when the user asks about their documents, invoices, receipts, bank statements, transactions, vendors or spending; wants totals, lists or corrections of extracted values; wants to match payments to invoices (reconciliation links); wants to import receipt photos from a folder; wants a new document type; or wants a mini app built over their doc-ai data.
 ---
 
 # Using the doc-ai MCP server
@@ -40,6 +40,7 @@ Search and aggregation work on **entities**, not documents. Each document yields
 | Fix an extracted value | `get_document` or `get_entity`, then `update_entity_fields` |
 | Re-run extraction (after a schema change or a bad extraction) | `reprocess_document` |
 | See or add document types | `list_document_types`, `get_document_type`, `create_document_type` |
+| Which payment settled which invoice; link or unlink them | `list_reconciliation_links`, `trace_reconciliation`, `create_reconciliation_link`, `delete_reconciliation_link` |
 | See folders, or organize documents into folders | `list_folders`, then `create_folder`, `rename_folder`, `move_folder`, `move_documents`, `delete_folder` |
 | Import receipt photos from a folder | `find_documents_in_folder` → `import_photos` |
 | Build a small app over the data | `get_mini_app_guide` first, then `create_mini_app` / `update_mini_app` |
@@ -139,6 +140,15 @@ Field names above are from a real install; confirm them with `list_searchable_en
 3. `update_entity_fields` with `entityId` and only the fields that change. Field names are validated against the schema; the document is re-indexed, so later searches see the new value.
 
 Use `reprocess_document` only when extraction should be redone from the file; extraction runs again and replaces the extracted values, so manual corrections can be lost.
+
+## Reconciliation
+
+A reconciliation link records that money moved from a source entity to a target. Usually the source is a bank or card transaction (a line item such as `BANK_STATEMENT_transactions`) and the target is the invoice or receipt it paid. Both sides are identified by `entityId`: the document ID for a header, `documentId_collectionKey_index` for a line item.
+
+- To see what is already linked, call `list_reconciliation_links` with an `entityId`. For chains (a payment that covers a statement that covers invoices), use `trace_reconciliation`; it follows links in both directions from `startEntityId`.
+- To match records, find candidates on both sides with `search_entities` or `aggregate`, compare amounts, dates and descriptions, and judge which pairs are real. Then show the user the proposed pairs before creating them; links are data the user relies on.
+- `create_reconciliation_link` takes the two entityIds, the `amount` the link covers, its `currency`, and optionally `sourceField`/`targetField` (the amount fields you matched, e.g. `transactionAmount` and `totalAmount`) and a short `note` explaining the match. A payment split across several invoices gets one link per invoice, each with its part of the amount. Check `list_reconciliation_links` first so you don't duplicate an existing link.
+- `delete_reconciliation_link` takes a `linkId` from the list.
 
 ## Document types
 

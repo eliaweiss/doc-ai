@@ -1,7 +1,8 @@
 /**
  * MCP server (Streamable HTTP, stateless) exposed at /mcp.
  *
- * Tools wrap zdocs' uiTx handlers (search / get / aggregate / update), which
+ * Tools wrap zdocs' uiTx handlers (search / get / aggregate / update /
+ * reconciliation links), which
  * were the closest thing zdocs had to an agent tool surface, plus local
  * status / document / schema tools and mini-app tools (replacing the AI builder).
  */
@@ -32,6 +33,7 @@ import {
 import { registerPhotoSortTools } from "./photo-sort/mcp-tools";
 import { registerMiniAppTools } from "./mini-apps/mcp-tools";
 import { registerFolderTools, type ApiPost } from "./folders/mcp-tools";
+import { registerReconciliationTools } from "./reconciliation/mcp-tools";
 
 const ctx: UiTxContext = { orgId: LOCAL_ORG_ID, authMethod: "api_key" };
 
@@ -262,6 +264,7 @@ export function createMcpServer(opts: McpOptions) {
   registerPhotoSortTools(server, opts);
   registerMiniAppTools(server, wrap);
   registerFolderTools(server, wrap, opts.api);
+  registerReconciliationTools(server, wrap);
 
   return server;
 }

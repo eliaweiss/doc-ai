@@ -56,7 +56,7 @@ This repository is also a Claude Code plugin marketplace. The `doc-ai` plugin ([
 
 From a local checkout, use `/plugin marketplace add ./path/to/doc-ai` instead. Set `DOC_AI_MCP_URL` if the server isn't at `http://localhost:4310/mcp`. If you already added doc-ai as an MCP server by hand, remove that entry (`claude mcp remove doc-ai`) so the tools aren't listed twice.
 
-Tools: `get_status`, `list_document_types`, `get_document_type`, `create_document_type`, `list_documents`, `get_document`, `list_searchable_entities`, `search_entities`, `get_entity`, `aggregate`, `update_entity_fields`, `reprocess_document`, `find_documents_in_folder`, `get_folder_scan`, `import_photos` (plus `get_photo_thumbnails`, which only the picker UI calls).
+Tools: `get_status`, `list_document_types`, `get_document_type`, `create_document_type`, `list_documents`, `get_document`, `list_searchable_entities`, `search_entities`, `get_entity`, `aggregate`, `update_entity_fields`, `reprocess_document`, `list_reconciliation_links`, `trace_reconciliation`, `create_reconciliation_link`, `delete_reconciliation_link`, `find_documents_in_folder`, `get_folder_scan`, `import_photos` (plus `get_photo_thumbnails`, which only the picker UI calls).
 
 ## Scan a photo folder + import (Eye, experimental)
 
@@ -154,6 +154,6 @@ Tested end to end on the Gateway with a synthetic one-page invoice PDF:
 - **Schema review**: not implemented. Code formulas are off unless you set `DOC_AI_ALLOW_CODE_FORMULAS=true`, and MCP rejects schemas that contain them.
 - **UI**: the app switcher shows Files & Folders and Settings; Extraction Templates opens from the Settings sidebar. API/Webhook, Home, billing, sharing and analytics are hidden or disabled (`doc-ai:` comments mark each edit to the copied client). The document viewer calls the QuickBooks/Xero status endpoints, which return 404; the client treats that as "not connected". The bundle is large (about 4.4 MB) because the chat/markdown components pull in shiki and mermaid. `upload-sample` (schema from sample) needs a local replacement for its S3 upload.
 - **Schema registry**: the format for public or downloadable schemas is not designed yet.
-- **Reconciliation**: the workbench (`/reconciliation/workbench`) is ported; the ledger trace and the uiTx reconciliation methods aren't.
+- **Reconciliation**: the workbench (`/reconciliation/workbench`), the uiTx reconciliation methods and their MCP tools are ported; the ledger trace view isn't.
 - **Migrations**: when you change `packages/db-schema/src/schemas`, run `npm run db:generate`.
 - The pipeline logs are verbose (zdocs' `console.log`s are kept as-is).
