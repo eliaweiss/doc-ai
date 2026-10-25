@@ -84,6 +84,42 @@ async function rootId(): Promise<string> {
   return root.id;
 }
 
+/** Renames through the rename route, so the directory follows (MCP rename_folder, uiTx renameFolder) */
+export async function renameFolder(api: ApiPost, folderId: string, name: string) {
+  const { folder } = await requireFolder(folderId);
+  if (folder.isRoot) throw new Error("The root folder can't be renamed");
+  await api(`${ORG}/folders/${folderId}/rename`, { name });
+  const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
+  return summary(folders, folders.find((f) => f.id === folderId)!);
+}
+
+/** Moves a folder under parentId (default the root) through the move route (MCP move_folder, uiTx moveFolder) */
+export async function moveFolder(api: ApiPost, folderId: string, parentId?: string) {
+  const { folder } = await requireFolder(folderId);
+  if (folder.isRoot) throw new Error("The root folder can't be moved");
+  const parent = parentId ?? (await rootId());
+  await requireFolder(parent);
+  await api(`${ORG}/folders/${folderId}/move`, { parentId: parent });
+  const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
+  return summary(folders, folders.find((f) => f.id === folderId)!);
+}
+
+/** Deletes a folder only if it has no documents and no subfolders (MCP delete_folder, uiTx deleteFolder) */
+export async function deleteEmptyFolder(api: ApiPost, folderId: string) {
+  const { folders, folder } = await requireFolder(folderId);
+  if (folder.isRoot || folder.isSystem) throw new Error(`"${folder.name}" is a system folder and can't be deleted`);
+  const subfolders = folders.filter((f) => f.parentId === folderId);
+  const docs = await listDocumentsInFoldersForOrg(LOCAL_ORG_ID, [folderId]);
+  if (subfolders.length || docs.length) {
+    throw new Error(
+      `Folder "${folderPath(folders, folderId)}" is not empty ` +
+        `(${docs.length} document(s), ${subfolders.length} subfolder(s)); nothing was deleted`
+    );
+  }
+  await api(`${ORG}/folders/${folderId}/delete`, {});
+  return { deleted: summary(folders, folder) };
+}
+
 export function registerFolderTools(
   server: McpServer,
   wrap: <A>(fn: (args: A) => Promise<unknown>) => (args: A) => Promise<any>,
@@ -123,13 +159,7 @@ export function registerFolderTools(
         "The root folder can't be renamed.",
       inputSchema: { folderId: z.string(), name: z.string().min(1) },
     },
-    wrap(async ({ folderId, name }: { folderId: string; name: string }) => {
-      const { folder } = await requireFolder(folderId);
-      if (folder.isRoot) throw new Error("The root folder can't be renamed");
-      await api(`${ORG}/folders/${folderId}/rename`, { name });
-      const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
-      return summary(folders, folders.find((f) => f.id === folderId)!);
-    })
+    wrap(async ({ folderId, name }: { folderId: string; name: string }) => renameFolder(api, folderId, name))
   );
 
   server.registerTool(
@@ -140,15 +170,7 @@ export function registerFolderTools(
         "Its directory moves in the watch folder too.",
       inputSchema: { folderId: z.string(), parentId: z.string().optional() },
     },
-    wrap(async ({ folderId, parentId }: { folderId: string; parentId?: string }) => {
-      const { folder } = await requireFolder(folderId);
-      if (folder.isRoot) throw new Error("The root folder can't be moved");
-      const parent = parentId ?? (await rootId());
-      await requireFolder(parent);
-      await api(`${ORG}/folders/${folderId}/move`, { parentId: parent });
-      const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
-      return summary(folders, folders.find((f) => f.id === folderId)!);
-    })
+    wrap(async ({ folderId, parentId }: { folderId: string; parentId?: string }) => moveFolder(api, folderId, parentId))
   );
 
   server.registerTool(
@@ -159,20 +181,7 @@ export function registerFolderTools(
         "Move or delete the contents first; this tool never deletes documents.",
       inputSchema: { folderId: z.string() },
     },
-    wrap(async ({ folderId }: { folderId: string }) => {
-      const { folders, folder } = await requireFolder(folderId);
-      if (folder.isRoot || folder.isSystem) throw new Error(`"${folder.name}" is a system folder and can't be deleted`);
-      const subfolders = folders.filter((f) => f.parentId === folderId);
-      const docs = await listDocumentsInFoldersForOrg(LOCAL_ORG_ID, [folderId]);
-      if (subfolders.length || docs.length) {
-        throw new Error(
-          `Folder "${folderPath(folders, folderId)}" is not empty ` +
-            `(${docs.length} document(s), ${subfolders.length} subfolder(s)); nothing was deleted`
-        );
-      }
-      await api(`${ORG}/folders/${folderId}/delete`, {});
-      return { deleted: summary(folders, folder) };
-    })
+    wrap(async ({ folderId }: { folderId: string }) => deleteEmptyFolder(api, folderId))
   );
 
   server.registerTool(
