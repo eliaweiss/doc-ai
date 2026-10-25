@@ -5,3 +5,7 @@ node_modules
 .DS_Store
 apps/web/dist
 *.tsbuildinfo
+
+# Local-only data migration scripts (zdocs/1flow export + import)
+apps/server/scripts/export-from-zdocs.cjs
+apps/server/scripts/import-zdocs-export.ts

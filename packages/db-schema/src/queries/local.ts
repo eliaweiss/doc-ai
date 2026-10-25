@@ -101,6 +101,26 @@ export async function findDocumentByContentHashForOrg(
 }
 
 /**
+ * All live documents with this content hash (the same file can sit in several folders).
+ */
+export async function findDocumentsByContentHashForOrg(
+  orgId: string,
+  contentHash: string
+): Promise<Document[]> {
+  const rows = await zdocsDb
+    .select()
+    .from(documentTbl)
+    .where(
+      and(
+        eq(documentTbl.orgId, orgId),
+        eq(documentTbl.contentHash, contentHash),
+        isNull(documentTbl.deletedAt)
+      )
+    );
+  return rows as Document[];
+}
+
+/**
  * Find a live document by its path in the watch folder.
  */
 export async function findDocumentByS3KeyForOrg(

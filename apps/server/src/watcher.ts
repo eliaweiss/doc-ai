@@ -15,7 +15,7 @@ import {
   LOCAL_ORG_ID,
   createDocumentForOrg,
   enqueueDocument,
-  findDocumentByContentHashForOrg,
+  findDocumentsByContentHashForOrg,
   findDocumentByS3KeyForOrg,
   hasActiveJob,
   markDocumentUploadComplete,
@@ -69,21 +69,29 @@ export async function ingestFile(absPath: string, opts: WatcherOptions): Promise
   const contentHash = md5(buffer);
   const fileName = base.slice(0, base.length - ext.length - 1);
 
-  const sameContent = await findDocumentByContentHashForOrg(LOCAL_ORG_ID, contentHash);
-  if (sameContent) {
-    const sourcePath = (sameContent.metadata as { sourcePath?: string } | null)?.sourcePath;
-    if (sourcePath !== rel) {
-      // Same bytes at a new path: follow the file (rename / move inside the folder)
-      await updateDocumentStorageForOrg(LOCAL_ORG_ID, sameContent.id, {
-        // Converted spreadsheets keep pointing at their CSV in the cache dir
-        ...(sameContent.s3Bucket === LOCAL_BUCKET ? { s3Key: rel } : {}),
-        fileName,
-        metadata: { ...(sameContent.metadata ?? {}), sourcePath: rel },
-      });
-      console.log(`[Watcher] ${rel}: same content as document ${sameContent.id}, path updated`);
-    }
+  const sameContent = await findDocumentsByContentHashForOrg(LOCAL_ORG_ID, contentHash);
+  const sourcePathOf = (d: (typeof sameContent)[number]) =>
+    (d.metadata as { sourcePath?: string } | null)?.sourcePath;
+  // Already known at this path (also covers identical copies in several folders)
+  if (sameContent.some((d) => sourcePathOf(d) === rel)) return;
+
+  // Same bytes at a new path, and one of the known copies is gone: it was renamed / moved
+  for (const candidate of sameContent) {
+    const oldPath = sourcePathOf(candidate);
+    const stillThere = oldPath
+      ? await fs.stat(path.join(opts.watchDir, oldPath)).then(() => true, () => false)
+      : false;
+    if (stillThere) continue;
+    await updateDocumentStorageForOrg(LOCAL_ORG_ID, candidate.id, {
+      // Converted spreadsheets keep pointing at their CSV in the cache dir
+      ...(candidate.s3Bucket === LOCAL_BUCKET ? { s3Key: rel } : {}),
+      fileName,
+      metadata: { ...(candidate.metadata ?? {}), sourcePath: rel },
+    });
+    console.log(`[Watcher] ${rel}: same content as document ${candidate.id}, path updated`);
     return;
   }
+  // Otherwise it's an extra copy of a known file: it becomes its own document (as in zdocs)
 
   const atSamePath = await findDocumentByS3KeyForOrg(LOCAL_ORG_ID, rel);
   if (atSamePath) {
