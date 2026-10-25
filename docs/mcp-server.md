@@ -63,6 +63,21 @@ Registered by [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.
 | `import_photos` | `paths` (absolute), `folderId?` or `folderName?` | Copies the photos into the watch folder, puts them in a doc-ai folder (found or created by name, else the root) and queues them. Skips content already in doc-ai. | Model and picker |
 | `get_photo_thumbnails` | `scanId?`, `paths` (max 24) | Base64 JPEG thumbnails, only for paths returned by a scan. | Picker only |
 
+### Folders
+
+Registered by [folders/mcp-tools.ts](../apps/server/src/folders/mcp-tools.ts). Changes go through the same HTTP routes as the UI (called in-process with `app.request`), so the folder ↔ directory sync in [folder-routes.ts](../apps/server/src/folder-routes.ts) applies: directories in the watch folder are created, renamed and moved with their folders, and moved documents' files follow them.
+
+| Tool | Arguments | What it does |
+|---|---|---|
+| `list_folders` | none | Every folder with its ID, full path (`Documents/Receipts/2025`), parent and document count. |
+| `create_folder` | `name`, `parentId?` (default: root) | Creates a folder and its directory. Rejects a duplicate sibling name. |
+| `rename_folder` | `folderId`, `name` | Renames the folder and its directory; documents are repointed. Not the root. |
+| `move_folder` | `folderId`, `parentId?` (default: root) | Moves a folder with its subtree. Rejects moving into itself; not the root. |
+| `delete_folder` | `folderId` | Deletes an empty folder (no documents, no subfolders); its directory goes to the doc-ai trash. Errors with the counts otherwise. |
+| `move_documents` | `documentIds` (max 500), `folderId` | Moves documents and their files; returns `moved` and per-document `failed`. |
+
+Unlike the UI's folder delete, which also deletes the folder's documents and subfolders, `delete_folder` never deletes documents.
+
 ### MCP Apps picker
 
 `find_documents_in_folder` declares a UI resource, `ui://doc-ai/import-picker.html`, using the [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) extension. Hosts that support MCP Apps render it inline next to the tool result: a grid of thumbnails with everything found pre-selected, select/unselect all, a target-folder picker and an Import button. The page is [picker.html](../apps/server/src/photo-sort/picker.html); at serve time the MCP Apps client bundle is inlined into it, because hosts sandbox the page and it can't load scripts from elsewhere. Hosts without MCP Apps get the same information as text, and the model can call `import_photos` itself.
@@ -75,4 +90,5 @@ Registered by [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.
 - "Total spend per vendor in 2025" → `search_entities` on the header schema type for that date range, then group by vendor client-side (`aggregate` can only group by index columns such as `docType`, `currency` or `month`)
 - "The total on invoice X should be 1,240.50" → `get_document`, then `update_entity_fields`
 - "Add a document type for utility bills" → `get_document_type` on `INVOICE`, then `create_document_type`
+- "Put all 2025 receipts in a Receipts/2025 folder" → `list_folders`, `create_folder` (twice, for each level), `search_entities` or `list_documents` for the IDs, then `move_documents`
 - "Find the receipts in ~/Pictures/2025 and import them" → `find_documents_in_folder`, then the picker or `import_photos`

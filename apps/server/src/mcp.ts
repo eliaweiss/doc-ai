@@ -30,6 +30,7 @@ import {
   reprocessDocument,
 } from "./services";
 import { registerPhotoSortTools } from "./photo-sort/mcp-tools";
+import { registerFolderTools, type ApiPost } from "./folders/mcp-tools";
 
 const ctx: UiTxContext = { orgId: LOCAL_ORG_ID, authMethod: "api_key" };
 
@@ -54,7 +55,9 @@ const stringOrArray = z.union([z.string(), z.array(z.string())]);
 const range = <T extends z.ZodTypeAny>(t: T) => z.object({ gte: t.optional(), lte: t.optional() });
 const whereOp = z.enum(["=", "in", ">", ">=", "<", "<=", "contains"]);
 
-export function createMcpServer(opts: { onEnqueued?: () => void }) {
+type McpOptions = { onEnqueued?: () => void; api: ApiPost };
+
+export function createMcpServer(opts: McpOptions) {
   const server = new McpServer({ name: "doc-ai", version: "0.1.0" });
 
   server.registerTool(
@@ -249,12 +252,13 @@ export function createMcpServer(opts: { onEnqueued?: () => void }) {
   );
 
   registerPhotoSortTools(server, opts);
+  registerFolderTools(server, wrap, opts.api);
 
   return server;
 }
 
 /** Stateless Streamable HTTP: one server + transport per request. */
-export async function handleMcpRequest(req: Request, opts: { onEnqueued?: () => void }) {
+export async function handleMcpRequest(req: Request, opts: McpOptions) {
   const server = createMcpServer(opts);
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

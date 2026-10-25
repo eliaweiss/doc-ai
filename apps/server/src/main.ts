@@ -55,7 +55,18 @@ async function main() {
   console.log(`[doc-ai] Mounted ${mounted.length} zdocs API handlers`);
   // zdocs features that don't exist locally (billing, mini-apps, integrations, ...)
   app.all("/api/*", (c) => c.json({ error: `Not available in doc-ai: ${c.req.path}` }, 404));
-  app.all("/mcp", (c) => handleMcpRequest(c.req.raw, { onEnqueued }));
+  // MCP folder tools go through the routes above, so directory sync applies to them too
+  const api = async (route: string, body: unknown) => {
+    const res = await app.request(route, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json: any = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(json?.error ?? `${route} failed (${res.status})`);
+    return json;
+  };
+  app.all("/mcp", (c) => handleMcpRequest(c.req.raw, { onEnqueued, api }));
 
   const webRoot = path.relative(process.cwd(), webDist);
   app.use("/*", serveStatic({ root: webRoot }));

@@ -40,6 +40,7 @@ Search and aggregation work on **entities**, not documents. Each document yields
 | Fix an extracted value | `get_document` or `get_entity`, then `update_entity_fields` |
 | Re-run extraction (after a schema change or a bad extraction) | `reprocess_document` |
 | See or add document types | `list_document_types`, `get_document_type`, `create_document_type` |
+| See folders, or organize documents into folders | `list_folders`, then `create_folder`, `rename_folder`, `move_folder`, `move_documents`, `delete_folder` |
 | Import receipt photos from a folder | `find_documents_in_folder` → `import_photos` |
 | Build a small app over the data | `get_mini_app_guide` first, then `create_mini_app` / `update_mini_app` |
 
@@ -110,6 +111,18 @@ Use `reprocess_document` only when extraction should be redone from the file; ex
 ## Document types
 
 Call `get_document_type` on a system type (e.g. `INVOICE`) to copy the exact field-definition format before `create_document_type`. Type names are upper snake case. `code` formula fields are rejected. A new type only affects documents classified after it exists; reprocess older documents if they should move to it.
+
+## Folders
+
+doc-ai folders mirror the watch folder on disk: the root folder is the watch folder itself and every other folder is a subdirectory. The folder tools keep both sides in step, so creating, renaming or moving a folder changes the directory too, and moved documents' files move with them.
+
+- Start with `list_folders`: it gives each folder's `id`, full `path` (e.g. `"Documents/Receipts/2025"`) and `documentCount`. All other folder tools take ids, never paths or names.
+- `create_folder` takes `name` and an optional `parentId` (default: the root). A sibling with the same name is rejected. For a nested path, create each level in turn.
+- `rename_folder` (`folderId`, `name`) and `move_folder` (`folderId`, optional `parentId`, default the root) carry subfolders and documents along. A folder can't be moved into its own subtree; the root can't be renamed or moved.
+- `move_documents` takes `documentIds` (up to 500) and a target `folderId`. It moves what it can and reports `moved` and `failed` per document; report failures to the user. Find document ids with `list_documents` (filter by `folderId`) or `search_entities`.
+- `delete_folder` only deletes an **empty** folder (no documents, no subfolders); otherwise it errors with the counts and deletes nothing. The directory goes to the doc-ai trash. To remove a folder with contents, move the documents out (and delete or move subfolders) first, after confirming with the user where they should go. There is no tool that deletes documents.
+- Moving many documents or restructuring several folders changes the user's files on disk: confirm the plan with the user before doing it, then show the result with `list_folders`.
+- Right after a change, the watcher may briefly show a stale folder (for example a just-deleted folder for about 5 seconds). If `list_folders` looks off immediately after a change, check again before acting on it.
 
 ## Importing photos from a folder
 
