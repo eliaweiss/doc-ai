@@ -13,7 +13,7 @@ doc-ai exposes its data to AI assistants through the Model Context Protocol at `
 The repository root is a Claude Code plugin marketplace ([.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json)) with one plugin, [plugins/doc-ai](../plugins/doc-ai):
 
 - [.mcp.json](../plugins/doc-ai/.mcp.json) registers the MCP server (`DOC_AI_MCP_URL`, default `http://localhost:4310/mcp`).
-- [skills/doc-ai/SKILL.md](../plugins/doc-ai/skills/doc-ai/SKILL.md) is the usage guide Claude loads when a request is about the user's documents: which tool to pick, search examples, the `aggregate` allowlist and double-counting pitfalls, the correction and import flows, and mini apps.
+- [skills/doc-ai/SKILL.md](../plugins/doc-ai/skills/doc-ai/SKILL.md) is the usage guide Claude loads when a request is about the user's documents: which tool to pick, search examples, `aggregate` with index and schema fields and its defaults, the correction and import flows, and mini apps.
 
 Install with `/plugin marketplace add eliaweiss/doc-ai` then `/plugin install doc-ai@doc-ai`. Keep the skill in step with this page when tools change; `claude plugin validate .` checks the manifests.
 
@@ -47,7 +47,7 @@ Every tool returns its result as pretty-printed JSON text. Errors are returned a
 | `list_searchable_entities` | none | Schema types (for example `INVOICE_header`, `BANK_STATEMENT_transactions`) with their fields. Meant to be called before searching. | [getSearchableEntitiesForOrg.ts](../packages/db-schema/src/queries/search/getSearchableEntitiesForOrg.ts) |
 | `search_entities` | `query`, `limit?`, `offset?`, `filters?` (preview and entity filters), `exactMatch?`, `where?`, `sort?` | Searches headers and line items. The tool description includes the full parameter guide written for LLMs. | [searchEntities.ts](../packages/srv/src/ui-tx/handlers/searchEntities.ts) |
 | `get_entity` | `entityId` | One header (document ID) or line item (`documentId_collectionKey_index`). | [getEntity.ts](../packages/srv/src/ui-tx/handlers/getEntity.ts) |
-| `aggregate` | `from` (`entities`), `metrics` (count/sum/avg with `field` and `as`), `groupBy?`, `where?`, `dateFrom?`, `dateTo?`, `limit?` | Totals, counts and averages, optionally grouped. | [aggregate.ts](../packages/srv/src/ui-tx/handlers/aggregate.ts) |
+| `aggregate` | `from` (`entities`), `metrics` (count/sum/avg with `field` and `as`), `groupBy?`, `where?`, `schemaType?`, `dateFrom?`, `dateTo?`, `limit?` | Totals, counts and averages, optionally grouped. With `schemaType`, fields of that schema (e.g. `vendorName`) can be grouped, filtered and summed. Unknown fields are errors; see [Search and querying](search.md#aggregation) for the defaults. | [aggregate.ts](../packages/srv/src/ui-tx/handlers/aggregate.ts) |
 | `update_entity_fields` | `entityId`, `fields` | Corrects extracted values; field names are checked against the schema. | [updateEntityFields.ts](../packages/srv/src/ui-tx/handlers/updateEntityFields.ts) |
 
 Search semantics are described in [Search and querying](search.md).
@@ -86,8 +86,8 @@ Unlike the UI's folder delete, which also deletes the folder's documents and sub
 
 - "What's the status of doc-ai?" → `get_status`
 - "What did I spend on toner?" → `list_searchable_entities`, then `search_entities` with query "toner"
-- "Invoice spend per month in 2025" → `aggregate` with a sum metric, `groupBy` `month` and `currency`, a `schemaType` filter and a date range
-- "Total spend per vendor in 2025" → `search_entities` on the header schema type for that date range, then group by vendor client-side (`aggregate` can only group by index columns such as `docType`, `currency` or `month`)
+- "Invoice spend per month in 2025" → `aggregate` with `schemaType` `INVOICE_header`, a sum of `amount`, `groupBy` `month` and a date range
+- "Total spend per vendor in 2025" → `aggregate` with `schemaType` `INVOICE_header`, a sum of `total`, `groupBy` `vendorName` and `currency`, and a date range
 - "The total on invoice X should be 1,240.50" → `get_document`, then `update_entity_fields`
 - "Add a document type for utility bills" → `get_document_type` on `INVOICE`, then `create_document_type`
 - "Put all 2025 receipts in a Receipts/2025 folder" → `list_folders`, `create_folder` (twice, for each level), `search_entities` or `list_documents` for the IDs, then `move_documents`

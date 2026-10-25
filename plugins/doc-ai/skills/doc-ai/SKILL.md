@@ -72,33 +72,65 @@ Example, invoices from a vendor in 2025:
 
 (Check the real field name with `list_searchable_entities`; `vendorName` is illustrative.)
 
-## aggregate: know its limits
+## aggregate
 
-`aggregate` runs over the search index columns only, and **silently ignores** anything it doesn't allow:
+Always pass `from: "entities"` (`"documents"` returns no rows). Each metric needs an `as` name.
 
-- `metrics`: `count`, or `sum` / `avg` with `field: "amount"` (the only numeric field). Each needs an `as` name.
-- `groupBy`: `docType`, `entityType`, `schemaType`, `collectionKey`, `currency`, `isDataset`, plus the time buckets `date`, `month`, `year`.
-- `where` (no `schemaType` key here): `entityId`, `documentId`, `entityType`, `docType`, `schemaType`, `collectionKey`, `date`, `amount`, `currency`, `description`, `isDataset`.
-- `dateFrom` / `dateTo` as `YYYY-MM-DD`. Always pass `from: "entities"` (`"documents"` returns no rows).
+**Index fields** work on every entity:
 
-Rules that matter:
+- `groupBy`: `docType`, `entityType`, `schemaType`, `collectionKey`, `currency`, `isDataset`, `isDuplicate`, and the time buckets `date`, `month`, `year` (from the indexed date).
+- `sum` / `avg`: `amount` (the indexed amount of the header or line item).
+- `where`: `entityId`, `documentId`, `entityType`, `docType`, `schemaType`, `collectionKey`, `date`, `amount`, `currency`, `description`, `isDataset`, `isDuplicate`.
+- `dateFrom` / `dateTo` as `YYYY-MM-DD`.
 
-- **Always restrict to one schemaType** (e.g. `where: [{ field: "schemaType", op: "=", value: "INVOICE_header" }]`). Otherwise headers and their line items are both summed and totals are double counted.
-- **Group by currency** (or filter to one) whenever you sum money; never add amounts in different currencies.
-- Grouping by a schema field such as vendor or category is **not** supported. For "spend per vendor", fetch the headers with `search_entities` (paging until done) and group them yourself, and say how many documents the total covers.
+**Schema fields** (vendor, merchant, category, tax, …) work once you set `schemaType` to one kind from `list_searchable_entities`, e.g. `"INVOICE_header"` or `"CREDIT_CARD_STATEMENT_transactions"`. Then any field of that schema can go in `groupBy`, `where` and, if it's a number or currency field, `sum` / `avg`. Index fields still work alongside them.
 
-Example, monthly invoice spend in 2025:
+Unknown fields, non-numeric sums and unknown schema types are errors that list what's allowed; fix the call rather than working around it.
+
+Defaults, reported in the result's `notes` when applied:
+
+- Without `schemaType`, or a `where` / `groupBy` on `entityType`, `schemaType`, `collectionKey` or `entityId`, only **headers** are aggregated, so line items aren't counted on top of their documents.
+- Summing or averaging `amount` without a `currency = X` filter adds `currency` to `groupBy`. Group schema-field money sums by `currency` yourself (on headers it's usually a schema field too).
+
+Grouped results come back largest first by the first metric (in time order when grouping by `date`, `month` or `year`), so `limit` keeps the top groups.
+
+Total invoiced per vendor in 2025:
 
 ```json
 {
   "from": "entities",
-  "metrics": [{ "op": "sum", "field": "amount", "as": "total" }, { "op": "count", "as": "n" }],
-  "groupBy": ["month", "currency"],
-  "where": [{ "field": "schemaType", "op": "=", "value": "INVOICE_header" }],
+  "schemaType": "INVOICE_header",
+  "metrics": [{ "op": "sum", "field": "total", "as": "total" }, { "op": "count", "as": "invoices" }],
+  "groupBy": ["vendorName", "currency"],
   "dateFrom": "2025-01-01",
-  "dateTo": "2025-12-31"
+  "dateTo": "2025-12-31",
+  "limit": 20
 }
 ```
+
+Monthly invoice spend:
+
+```json
+{
+  "from": "entities",
+  "schemaType": "INVOICE_header",
+  "metrics": [{ "op": "sum", "field": "amount", "as": "total" }, { "op": "count", "as": "n" }],
+  "groupBy": ["month"]
+}
+```
+
+Card spend at merchants matching "google":
+
+```json
+{
+  "from": "entities",
+  "schemaType": "CREDIT_CARD_STATEMENT_transactions",
+  "metrics": [{ "op": "sum", "field": "chargeAmount", "as": "spent" }, { "op": "count", "as": "n" }],
+  "where": [{ "field": "merchantName", "op": "contains", "value": "google" }]
+}
+```
+
+Field names above are from a real install; confirm them with `list_searchable_entities`.
 
 ## Correcting data
 

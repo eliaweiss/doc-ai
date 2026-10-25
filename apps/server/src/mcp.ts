@@ -215,7 +215,13 @@ export function createMcpServer(opts: McpOptions) {
     "aggregate",
     {
       description:
-        'Aggregate extracted entities: count/sum/avg with optional groupBy and where filters, e.g. total spend per vendor. Set from: "entities".',
+        'Aggregate extracted entities: count/sum/avg with optional groupBy and where filters. Set from: "entities".\n' +
+        "Index fields: groupBy docType, entityType, schemaType, collectionKey, currency, isDataset, isDuplicate, date, month, year; " +
+        "sum/avg on amount; where on those plus entityId, documentId, date, amount, description.\n" +
+        'Set schemaType (e.g. "INVOICE_header", from list_searchable_entities) to restrict to one entity kind and to use its schema fields ' +
+        'in groupBy, where and sum/avg, e.g. total per vendor: schemaType "INVOICE_header", groupBy ["vendorName", "currency"].\n' +
+        "Unknown fields are errors. Without schemaType or an entityType/schemaType/collectionKey filter, only headers are counted; " +
+        "sums of amount are split by currency unless one currency is filtered. Both defaults are reported in notes.",
       inputSchema: {
         from: z.enum(["entities", "documents"]).default("entities"),
         metrics: z.array(
@@ -223,6 +229,7 @@ export function createMcpServer(opts: McpOptions) {
         ),
         groupBy: z.array(z.string()).optional(),
         where: z.array(z.object({ field: z.string(), op: whereOp, value: z.any() })).optional(),
+        schemaType: z.string().optional().describe('One schema type, e.g. "INVOICE_header"; enables its schema fields'),
         dateFrom: z.string().optional(),
         dateTo: z.string().optional(),
         limit: z.number().int().positive().optional(),
