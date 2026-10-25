@@ -29,6 +29,8 @@ export async function updateMiniAppForOrg(
   if (params.isPublished !== undefined)
     updateData.isPublished = params.isPublished;
   if (params.messages !== undefined) updateData.messages = params.messages;
+  if (params.archived !== undefined)
+    updateData.archivedAt = params.archived ? new Date() : null;
   
   const results = await zdocsDb
     .update(miniAppsTbl)

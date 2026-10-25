@@ -1091,6 +1091,13 @@
         "updated": "עודכן",
         "systemApps": "אפליקציות מערכת",
         "yourApps": "האפליקציות שלך",
+        "archived": "בארכיון",
+        "miniAppArchived": "\"{name}\" הועברה לארכיון",
+        "miniAppRestored": "\"{name}\" שוחזרה",
+        "archiveFailed": "העברת האפליקציה לארכיון נכשלה",
+        "restoreFailed": "שחזור האפליקציה נכשל",
+        "archiveApp": "העבר לארכיון",
+        "restoreApp": "שחזר",
         "docVisionMobileNoticeTitle": "Doc Vision מיועד לשימוש במחשב שולחני.",
         "docVisionMobileNoticeDescription": "הגישה ממובייל מוגבלת כרגע לצפייה בנתונים ולהגדרה בסיסית. כדי להשתמש במרחב התאמות המלא, המשך ממחשב שולחני.",
         "integrations": {

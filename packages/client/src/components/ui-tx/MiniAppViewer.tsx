@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useState, useMemo, type ReactNode } from "react";
 import { Printer } from 'lucide-react';
 import { createPortal } from "react-dom";
 import { useUiTxMessageHandler } from "../../hooks/useUiTxMessageHandler";
@@ -28,6 +28,7 @@ interface MiniAppViewerProps {
   onClose?: () => void;
   onFullscreen?: (isFullscreen: boolean) => void;
   onLog?: (log: ConsoleLog) => void;
+  headerActions?: ReactNode; // Extra buttons shown before refresh
 }
 
 export function MiniAppViewer({
@@ -37,6 +38,7 @@ export function MiniAppViewer({
   onClose,
   onFullscreen,
   onLog,
+  headerActions,
 }: MiniAppViewerProps) {
   const isMobile = isMobileWidth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -274,6 +276,7 @@ export function MiniAppViewer({
           >
             ↗
           </button> */}
+          {headerActions}
           <button
             onClick={handleRefresh}
             title="Refresh"

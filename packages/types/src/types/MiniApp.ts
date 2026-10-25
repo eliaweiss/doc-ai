@@ -19,6 +19,7 @@ export interface MiniApp {
   icon: string | null; // Lucide icon name (e.g., "Settings", "Home")
   code: string; // HTML+JS+CSS code
   isPublished: boolean;
+  archivedAt: Date | null; // Set when archived; archived apps are hidden from app lists
   messages: UIMessage[]; // Chat messages history
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +50,7 @@ export interface UpdateMiniAppParams {
   icon?: string | null;
   code?: string;
   isPublished?: boolean;
+  archived?: boolean; // true archives the app, false restores it
 }
 
 /**

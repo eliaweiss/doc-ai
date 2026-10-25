@@ -78,6 +78,20 @@ Registered by [folders/mcp-tools.ts](../apps/server/src/folders/mcp-tools.ts). C
 
 Unlike the UI's folder delete, which also deletes the folder's documents and subfolders, `delete_folder` never deletes documents.
 
+### Mini apps
+
+Registered by [mini-apps/mcp-tools.ts](../apps/server/src/mini-apps/mcp-tools.ts). They take the place of zdocs' AI builder: the MCP client writes the code. See [Mini apps](mini-apps.md).
+
+| Tool | Arguments | What it does |
+|---|---|---|
+| `get_mini_app_guide` | | Requirements, the uiTx SDK reference (zdocs' builder docs, with doc-ai notes) and the edit format. Clients should read it before writing code. |
+| `list_mini_apps` | `includeArchived?` | Every app with its URL in the web UI; archived apps only with `includeArchived`. |
+| `get_mini_app` | `id` | One app with its full code. |
+| `create_mini_app` | `name`, `code`, `description?`, `icon?` (Lucide name), `color?` (hex) | Validates the HTML, inline JS and CSS, then saves. Warns if the SDK script tag is missing. |
+| `update_mini_app` | `id`, `edits?` or `code?`, `name?`, `description?`, `icon?`, `color?`, `archived?` | Applies zdocs' anchor-based edits (`replace`, `insert_before`, `insert_after`, `delete`) or replaces the whole code. If any edit fails or the result doesn't validate, nothing is saved. `archived: true` archives the app, `false` restores it. |
+
+There's no delete tool; apps can be deleted through the HTTP API.
+
 ### MCP Apps picker
 
 `find_documents_in_folder` declares a UI resource, `ui://doc-ai/import-picker.html`, using the [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) extension. Hosts that support MCP Apps render it inline next to the tool result: a grid of thumbnails with everything found pre-selected, select/unselect all, a target-folder picker and an Import button. The page is [picker.html](../apps/server/src/photo-sort/picker.html); at serve time the MCP Apps client bundle is inlined into it, because hosts sandbox the page and it can't load scripts from elsewhere. Hosts without MCP Apps get the same information as text, and the model can call `import_photos` itself.
@@ -92,3 +106,4 @@ Unlike the UI's folder delete, which also deletes the folder's documents and sub
 - "Add a document type for utility bills" → `get_document_type` on `INVOICE`, then `create_document_type`
 - "Put all 2025 receipts in a Receipts/2025 folder" → `list_folders`, `create_folder` (twice, for each level), `search_entities` or `list_documents` for the IDs, then `move_documents`
 - "Find the receipts in ~/Pictures/2025 and import them" → `find_documents_in_folder`, then the picker or `import_photos`
+- "Make me an app that shows monthly spend per category" → `get_mini_app_guide`, `list_searchable_entities` and `search_entities` to learn the data, then `create_mini_app`

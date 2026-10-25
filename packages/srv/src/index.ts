@@ -25,6 +25,7 @@ export { getModelProviderForOrg, type ModelProviderResult } from "./ai/ai-key-pr
 export { getContentTypeFromExtension } from "./storage/file-utils";
 export * from "./ui-tx";
 export { uiTxSearchEntitiesPrompt } from "./chat/ui-tx-prompt-docs/ui-tx-searchEntities-prompt";
+export { uiTxGeneralPrompt } from "./chat/ui-tx-prompt-docs/ui-tx-general-prompt";
 export {
   getConfig,
   readSettings,

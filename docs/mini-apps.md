@@ -1,6 +1,6 @@
 # Mini apps
 
-Mini apps are small HTML/JS/CSS apps, built in zdocs' AI builder, that read and update your documents through the **uiTx SDK**. doc-ai runs them but doesn't include the builder: there's no chat, code view, console or version history in the UI. Creating and editing apps through the MCP server is planned.
+Mini apps are small HTML/JS/CSS apps, built in zdocs' AI builder, that read and update your documents through the **uiTx SDK**. doc-ai runs them but doesn't include the builder: there's no chat, code view, console or version history in the UI. You create and edit apps from an MCP client instead (see [Creating and editing](#creating-and-editing)).
 
 ## Using them
 
@@ -12,13 +12,17 @@ Mini apps are small HTML/JS/CSS apps, built in zdocs' AI builder, that read and 
 1. The page loads the app's `code` and renders it with zdocs' [MiniAppViewer.tsx](../packages/client/src/components/ui-tx/MiniAppViewer.tsx) in a sandboxed `srcdoc` iframe, with the theme script injected.
 2. The app includes the SDK, `<script src="/sdk/ui-tx/v1.js">`, served from [apps/web/public/sdk/ui-tx](../apps/web/public/sdk/ui-tx) (a built copy of zdocs' `packages/ui-tx`). Apps built in zdocs point at the zdocs host; the page rewrites that URL to the local copy at render time, without changing the stored code.
 3. The SDK (`window.zDocs.uiTx`) posts `UITX_REQUEST` messages to the parent window. [useUiTxMessageHandler.ts](../packages/client/src/hooks/useUiTxMessageHandler.ts) handles `ui.*` helpers (toast, confirm, open document/folder) in the browser and forwards data calls to `POST /api/ui-tx`.
-4. [/api/ui-tx](../apps/server/src/zdocs-api/ui-tx/route.ts) checks the org and calls [handleUiTxRequest.ts](../packages/srv/src/ui-tx/handleUiTxRequest.ts), which dispatches to the same handlers the MCP tools use: `getSession`, `searchEntities`, `getEntity`, `listDocuments`, `aggregate`, `updateEntityFields`. The reconciliation methods are v2 and answer `UNSUPPORTED`.
+4. [/api/ui-tx](../apps/server/src/zdocs-api/ui-tx/route.ts) checks the org and calls [handleUiTxRequest.ts](../packages/srv/src/ui-tx/handleUiTxRequest.ts), which dispatches to the same handlers the MCP tools use: `getSession`, `searchEntities`, `getEntity`, `listDocuments`, `aggregate`, `updateEntityFields`, plus the reconciliation methods `listReconciliationLinks`, `traceReconciliation`, `createReconciliationLink` and `deleteReconciliationLink`.
 
 The iframe runs with `allow-same-origin`, so an app has the same access to the local API as the web UI. Only run apps you trust; see [Security](security.md).
 
+## Creating and editing
+
+The [MCP server](mcp-server.md#mini-apps) has `get_mini_app_guide`, `list_mini_apps`, `get_mini_app`, `create_mini_app` and `update_mini_app` ([mini-apps/mcp-tools.ts](../apps/server/src/mini-apps/mcp-tools.ts)). Ask your MCP client for an app and it reads the guide, explores the data with the search tools, writes the HTML and returns a link to open it. Edits use the same anchor format as zdocs' builder ([applyEdits.ts](../packages/util/src/utils/applyEdits.ts)), and every save is checked with [validateMiniAppCode.ts](../packages/util/src/utils/validateMiniAppCode.ts); invalid code is never saved. Open apps don't reload on their own after an edit: use the viewer's refresh button.
+
 ## Storage and API
 
-Apps live in the `mini_apps` table; every create and update also writes a snapshot to `mini_apps_history` ([data model](data-model.md#supporting)). The copied zdocs routes under `/api/org/:orgId/mini-apps` are `list-miniapps`, `create`, and get (`POST`), update (`PUT`) and delete (`DELETE`) per app. Create and update are there for the coming MCP tools; the UI only reads.
+Apps live in the `mini_apps` table; archiving sets `archived_at`, which hides the app from the Applications page (it moves to the collapsible Archived section) and from the app menu, but it can still be opened at `/app/:id`; every create and update also writes a snapshot to `mini_apps_history` ([data model](data-model.md#supporting)). The copied zdocs routes under `/api/org/:orgId/mini-apps` are `list-miniapps`, `create`, and get (`POST`), update (`PUT`) and delete (`DELETE`) per app. The UI only reads; changes come through the MCP tools or this API.
 
 ## Importing apps from zdocs
 

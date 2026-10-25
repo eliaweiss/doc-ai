@@ -19,6 +19,9 @@ type DraggableAppShortcutProps = {
   isEnabled?: boolean;
   onEnable?: () => void;
   onDisable?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onArchive?: () => void;
 };
 
 export function DraggableAppShortcut({
@@ -34,6 +37,9 @@ export function DraggableAppShortcut({
   isEnabled,
   onEnable,
   onDisable,
+  onEdit,
+  onDelete,
+  onArchive,
 }: DraggableAppShortcutProps) {
   const {
     attributes,
@@ -83,6 +89,9 @@ export function DraggableAppShortcut({
           isEnabled={isEnabled}
           onEnable={onEnable}
           onDisable={onDisable}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onArchive={onArchive}
         />
       </div>
     </div>

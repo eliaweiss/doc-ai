@@ -42,6 +42,9 @@ export const miniAppsTbl = pgTable(
     // Publishing status
     isPublished: boolean("is_published").notNull().default(false),
 
+    // Archived apps are hidden from the app lists (null = not archived)
+    archivedAt: timestamp("archived_at", { mode: "date" }),
+
     // Messages stored as JSONB (array of UIMessage)
     messages: jsonb("messages").$type<UIMessage[]>().notNull().default([]),
 

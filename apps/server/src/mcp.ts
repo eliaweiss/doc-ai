@@ -3,7 +3,7 @@
  *
  * Tools wrap zdocs' uiTx handlers (search / get / aggregate / update), which
  * were the closest thing zdocs had to an agent tool surface, plus local
- * status / document / schema tools.
+ * status / document / schema tools and mini-app tools (replacing the AI builder).
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
@@ -30,6 +30,7 @@ import {
   reprocessDocument,
 } from "./services";
 import { registerPhotoSortTools } from "./photo-sort/mcp-tools";
+import { registerMiniAppTools } from "./mini-apps/mcp-tools";
 import { registerFolderTools, type ApiPost } from "./folders/mcp-tools";
 
 const ctx: UiTxContext = { orgId: LOCAL_ORG_ID, authMethod: "api_key" };
@@ -259,6 +260,7 @@ export function createMcpServer(opts: McpOptions) {
   );
 
   registerPhotoSortTools(server, opts);
+  registerMiniAppTools(server, wrap);
   registerFolderTools(server, wrap, opts.api);
 
   return server;

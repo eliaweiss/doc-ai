@@ -29,6 +29,13 @@
       "when": 1792939088338,
       "tag": "0003_mini_apps",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792942100904,
+      "tag": "0004_mini_apps_archived",
+      "breakpoints": true
     }
   ]
 }

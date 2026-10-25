@@ -70,7 +70,7 @@ export function QuickAccessProvider({
           menuItemsList.push(systemAppToAppItem(systemApp, t(systemApp.translationKey)));
         }
       } else {
-        const miniApp = miniApps.find((app) => app.id === item.appId);
+        const miniApp = miniApps.find((app) => app.id === item.appId && !app.archivedAt);
         if (miniApp) {
           menuItemsList.push(miniAppToAppItem(miniApp));
         }

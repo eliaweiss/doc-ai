@@ -171,6 +171,7 @@ Mini apps are single-file HTML apps that run inside the doc-ai web UI and read d
 3. `create_mini_app` with `name`, `code`, and optionally `description`, `icon` (Lucide name), `color` (hex). Heed warnings such as a missing SDK script tag.
 4. For changes, `get_mini_app` then `update_mini_app` with anchor-based `edits` (`replace`, `insert_before`, `insert_after`, `delete`) rather than resending the whole code. If any edit fails, nothing is saved: re-read the code and retry.
 5. Give the user the app URL from the result (also in `list_mini_apps`).
+6. To archive an app, `update_mini_app` with `archived: true` (`false` restores it). `list_mini_apps` leaves archived apps out unless `includeArchived` is set.
 
 There's no MCP tool to delete a mini app; the user can delete it in the web UI.
 

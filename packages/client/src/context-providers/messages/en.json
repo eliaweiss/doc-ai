@@ -1110,6 +1110,13 @@
         "updated": "Updated",
         "systemApps": "System Applications",
         "yourApps": "Your Applications",
+        "archived": "Archived",
+        "miniAppArchived": "\"{name}\" archived",
+        "miniAppRestored": "\"{name}\" restored",
+        "archiveFailed": "Failed to archive app",
+        "restoreFailed": "Failed to restore app",
+        "archiveApp": "Archive",
+        "restoreApp": "Restore",
         "docVisionMobileNoticeTitle": "Doc Vision is designed for desktop use.",
         "docVisionMobileNoticeDescription": "Mobile access is currently limited to viewing data and basic setup. For the full reconciliation workspace, please continue on desktop.",
         "integrations": {

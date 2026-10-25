@@ -30,6 +30,7 @@ export function MiniAppsSidebar() {
     isLoading: isListLoading,
     refreshMiniAppList,
     orgId,
+    updateMiniApp,
   } = useMiniApp();
   const t = useTranslations("aiBuilder");
   const router = useRouter();
@@ -249,7 +250,12 @@ export function MiniAppsSidebar() {
         open={editMiniApp !== null}
         onOpenChange={(open) => !open && setEditMiniApp(null)}
         miniApp={editMiniApp}
-        onSuccess={refreshMiniAppList}
+        orgId={orgId}
+        onSuccess={(updated) => {
+          // Update local state immediately so UI reflects changes
+          updateMiniApp(updated);
+          refreshMiniAppList();
+        }}
       />
     </div>
   );

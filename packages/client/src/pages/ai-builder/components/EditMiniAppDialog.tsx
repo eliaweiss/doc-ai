@@ -14,7 +14,6 @@ import { Button } from "@zdocs/client-component";
 import { Input } from "@zdocs/client-component";
 import { Label } from "@zdocs/client-component";
 import { Textarea } from "@zdocs/client-component";
-import { useMiniApp } from "../context/MiniAppProvider";
 import { updateMiniAppApi } from "../../../utilities/api/miniAppApi";
 import type { MiniApp } from "@zdocs/types";
 import { toast } from "sonner";
@@ -24,17 +23,18 @@ type EditMiniAppDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   miniApp: MiniApp | null;
-  onSuccess?: () => void;
+  orgId: string;
+  onSuccess?: (updated: MiniApp) => void;
 };
 
 export function EditMiniAppDialog({
   open,
   onOpenChange,
   miniApp,
+  orgId,
   onSuccess,
 }: EditMiniAppDialogProps) {
   const t = useTranslations("aiBuilder");
-  const { orgId, updateMiniApp } = useMiniApp();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("#6366f1");
@@ -64,12 +64,10 @@ export function EditMiniAppDialog({
         color: color || null,
         icon: icon || null,
       };
-      await updateMiniAppApi(orgId, miniApp.id, updates);
-      // Update local state immediately so UI reflects changes
-      updateMiniApp({ ...updates, id: miniApp.id });
+      const updated = await updateMiniAppApi(orgId, miniApp.id, updates);
       toast.success(t("miniAppUpdated"));
       onOpenChange(false);
-      onSuccess?.();
+      onSuccess?.(updated);
     } catch (error) {
       console.error("Failed to update Mini App:", error);
       toast.error(t("updateMiniAppFailed"));

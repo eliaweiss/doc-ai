@@ -2,7 +2,7 @@
 
 import { IconDisplay } from "../../ai-builder/components/IconDisplay";
 import { cn, getTextColorForBackground, Switch } from "@zdocs/client-component";
-import type { LucideIcon } from "lucide-react";
+import { Archive, ArchiveRestore, Pencil, Trash2, type LucideIcon } from "lucide-react";
 
 type AppShortcutProps = {
   name: string;
@@ -16,6 +16,10 @@ type AppShortcutProps = {
   isEnabled?: boolean;
   onEnable?: () => void;
   onDisable?: () => void;
+  onEdit?: () => void; // Shows an edit button on hover
+  onDelete?: () => void; // Shows a delete button on hover
+  onArchive?: () => void; // Shows an archive button on hover
+  onUnarchive?: () => void; // Shows a restore button on hover
   disabled?: boolean;
 };
 
@@ -31,6 +35,10 @@ export function AppShortcut({
   isEnabled = false,
   onEnable,
   onDisable,
+  onEdit,
+  onDelete,
+  onArchive,
+  onUnarchive,
   disabled = false,
 }: AppShortcutProps) {
   const handleClick = () => {
@@ -105,6 +113,56 @@ export function AppShortcut({
           </div>
         )}
       </div>
+
+      {(onEdit || onDelete || onArchive || onUnarchive) && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 flex-shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+        >
+          {onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="p-1.5 hover:bg-accent rounded transition-colors"
+              data-testid={`${testId || `app-shortcut-${name}`}-edit-btn`}
+            >
+              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+          {onArchive && (
+            <button
+              type="button"
+              onClick={onArchive}
+              title="Archive"
+              className="p-1.5 hover:bg-accent rounded transition-colors"
+              data-testid={`${testId || `app-shortcut-${name}`}-archive-btn`}
+            >
+              <Archive className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+          {onUnarchive && (
+            <button
+              type="button"
+              onClick={onUnarchive}
+              title="Restore"
+              className="p-1.5 hover:bg-accent rounded transition-colors"
+              data-testid={`${testId || `app-shortcut-${name}`}-unarchive-btn`}
+            >
+              <ArchiveRestore className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="p-1.5 hover:bg-destructive/10 rounded transition-colors"
+              data-testid={`${testId || `app-shortcut-${name}`}-delete-btn`}
+            >
+              <Trash2 className="w-3.5 h-3.5 text-destructive" />
+            </button>
+          )}
+        </div>
+      )}
 
       {showEnableSwitch && (
         <div

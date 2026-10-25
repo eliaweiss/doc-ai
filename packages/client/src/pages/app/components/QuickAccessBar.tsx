@@ -9,6 +9,7 @@ import { DraggableAppShortcut } from "./DraggableAppShortcut";
 import { Loader2 } from "lucide-react";
 import useAppStore from "../../../context-providers/appStore";
 import { toast } from "sonner";
+import type { MiniApp } from "@zdocs/types";
 import { useLogUserJourneyEvent } from "../../../utilities/api/logUserJourneyEventApi";
 import {
   DndContext,
@@ -36,9 +37,21 @@ type ResolvedApp = {
   icon?: string | null;
   color?: string | null;
   path: string;
+  miniApp?: MiniApp;
 };
 
-export function QuickAccessBar() {
+type QuickAccessBarProps = {
+  // When set, pinned mini apps get edit / delete buttons
+  onEditMiniApp?: (miniApp: MiniApp) => void;
+  onDeleteMiniApp?: (miniApp: MiniApp) => void;
+  onArchiveMiniApp?: (miniApp: MiniApp) => void;
+};
+
+export function QuickAccessBar({
+  onEditMiniApp,
+  onDeleteMiniApp,
+  onArchiveMiniApp,
+}: QuickAccessBarProps = {}) {
   const t = useTranslations("appPage");
   const router = useRouter();
   const { miniApps, miniAppsLoading } = useAppStore();
@@ -77,7 +90,8 @@ export function QuickAccessBar() {
         }
       } else {
         // For mini apps, resolve from the store
-        const miniApp = miniApps.find((app) => app.id === item.appId);
+        // Archived apps stay out of the menu (e.g. archived over MCP while pinned)
+        const miniApp = miniApps.find((app) => app.id === item.appId && !app.archivedAt);
         if (miniApp) {
           return {
             id: item.id,
@@ -88,6 +102,7 @@ export function QuickAccessBar() {
             icon: miniApp.icon,
             color: miniApp.color,
             path: `/app/${miniApp.id}`, // doc-ai: view-only route, no AI builder
+            miniApp,
           };
         }
         // If mini app not found yet, return null (will be filtered out)
@@ -203,6 +218,9 @@ export function QuickAccessBar() {
               showEnableSwitch
               isEnabled={isEnabled(app.appId, app.appType)}
               onDisable={() => handleDisable(app.appId, app.appType)}
+              onEdit={app.miniApp && onEditMiniApp ? () => onEditMiniApp(app.miniApp!) : undefined}
+              onDelete={app.miniApp && onDeleteMiniApp ? () => onDeleteMiniApp(app.miniApp!) : undefined}
+              onArchive={app.miniApp && onArchiveMiniApp ? () => onArchiveMiniApp(app.miniApp!) : undefined}
             />
           ))}
         </div>
