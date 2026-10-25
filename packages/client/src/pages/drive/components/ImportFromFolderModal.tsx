@@ -45,8 +45,19 @@ interface ScanView {
   truncated: boolean;
   error?: string;
   elapsedMs: number;
+  scannedAt: string | null;
+  reused: boolean;
   counts: Record<Category, number>;
   items: ScanItem[];
+}
+
+/** A folder's previous scan, saved by the server */
+interface SavedScanInfo {
+  folder: string;
+  scannedAt: string;
+  total: number;
+  truncated: boolean;
+  counts: Record<Category, number>;
 }
 
 interface TargetFolder {
@@ -106,6 +117,7 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
   const [folder, setFolder] = useState(readLastFolder);
   const [browser, setBrowser] = useState<{ dir: string; parent: string | null; dirs: string[] } | null>(null);
   const [scan, setScan] = useState<ScanView | null>(null);
+  const [savedScan, setSavedScan] = useState<SavedScanInfo | null>(null);
   const [showScreenshots, setShowScreenshots] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targets, setTargets] = useState<TargetFolder[]>([]);
@@ -133,6 +145,7 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
   const reset = () => {
     stopPolling();
     setScan(null);
+    setSavedScan(null);
     setSelected(new Set());
     setBrowser(null);
   };
@@ -175,11 +188,23 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
     []
   );
 
-  const startScan = async () => {
+  /** reuse: undefined asks the server whether a saved scan exists; true/false answers that */
+  const startScan = async (reuse?: boolean) => {
     if (!folder.trim()) return;
     try {
       setBrowser(null);
-      const view = await api<ScanView>(`${API}/scan`, { method: "POST", body: { folder } });
+      setSavedScan(null);
+      const response = await api<ScanView | { savedScan: SavedScanInfo }>(`${API}/scan`, {
+        method: "POST",
+        body: { folder, reuse },
+      });
+      if ("savedScan" in response) {
+        stopPolling();
+        setScan(null);
+        setSavedScan(response.savedScan);
+        return;
+      }
+      const view = response;
       try {
         localStorage.setItem(LAST_FOLDER_KEY, view.folder);
       } catch {
@@ -266,7 +291,7 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
           <Button variant="outline" onClick={() => (browser ? setBrowser(null) : browse())} disabled={running}>
             {t("browse")}
           </Button>
-          <Button onClick={startScan} disabled={running || !folder.trim()} data-testid="import-scan-btn">
+          <Button onClick={() => startScan()} disabled={running || !folder.trim()} data-testid="import-scan-btn">
             {running ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ScanSearch className="w-4 h-4 mr-1" />}
             {t("scan")}
           </Button>
@@ -306,6 +331,27 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
           </div>
         )}
 
+        {savedScan && (
+          <div className="rounded-md border border-border bg-muted/40 p-3 text-sm space-y-2" data-testid="import-saved-scan">
+            <p>
+              {t("savedScanFound", {
+                date: new Date(savedScan.scannedAt).toLocaleString(),
+                total: savedScan.total,
+                receipts: savedScan.counts.receipt,
+                documents: savedScan.counts.document,
+              })}
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => startScan(true)} data-testid="import-reuse-scan-btn">
+                {t("reuseScan")}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => startScan(false)} data-testid="import-new-scan-btn">
+                {t("newScan")}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {running && scan && (
           <div className="space-y-1">
             <Progress value={scan.total ? (scan.done / scan.total) * 100 : 0} />
@@ -331,12 +377,19 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
                 {allSelected ? t("unselectAll") : t("selectAll")}
               </label>
               <span className="text-muted-foreground">
-                {t("summary", {
-                  total: scan.total,
-                  receipts: scan.counts.receipt,
-                  documents: scan.counts.document,
-                  seconds: (scan.elapsedMs / 1000).toFixed(1),
-                })}
+                {scan.reused && scan.scannedAt
+                  ? t("summaryReused", {
+                      total: scan.total,
+                      receipts: scan.counts.receipt,
+                      documents: scan.counts.document,
+                      date: new Date(scan.scannedAt).toLocaleString(),
+                    })
+                  : t("summary", {
+                      total: scan.total,
+                      receipts: scan.counts.receipt,
+                      documents: scan.counts.document,
+                      seconds: (scan.elapsedMs / 1000).toFixed(1),
+                    })}
               </span>
               <label className="flex items-center gap-2 cursor-pointer ml-auto">
                 <Checkbox checked={showScreenshots} onCheckedChange={(v) => toggleScreenshots(Boolean(v))} />

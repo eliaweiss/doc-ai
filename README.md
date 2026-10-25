@@ -55,6 +55,7 @@ From Claude, ask something like "find the receipts in ~/Pictures/2025 and import
 
 - Sorting uses [Eye](https://desertant.com/models/eye/) from Desert Ant Labs (the model behind `eye-photo-sorter`), through its **native Node core** (Core ML on macOS, LiteRT on Linux), in the server process. Photos never leave the machine. Only the "photo" part runs (photo type), at about 40 ms per photo.
 - The model is loaded once per process. The first load downloads it to `<data dir>/cache/eye` (about 35 s); after that it loads in under 100 ms. Results are cached per file (path, size, mtime) in `cache/eye/results.json`, so scanning a folder again is fast.
+- Every finished scan is saved to `<data dir>/scans/<sha1 of folder path>.json` (the latest per folder). Scanning a folder that has a saved scan first asks whether to **use the saved scan** or **scan again**, in the UI, in the MCP picker and through `find_documents_in_folder`'s `reuse` argument. A reused scan drops photos deleted since and re-checks which ones are already in doc-ai.
 - Categories, as in eye-photo-sorter: **receipt**; **document** (`document`, `whiteboard`, `id_card`); **screenshot** (listed only when asked).
 - Photos only for now (JPG, PNG, WebP, GIF, TIFF). PDFs will come later, rasterized to images first. HEIC is not supported yet.
 - Code: `apps/server/src/photo-sort/` (`eye.ts` model + cache, `scan.ts` background scans, `import.ts`, `routes.ts` for `/api/local/photo-sort/*`, `mcp-tools.ts` + `picker.html` for MCP). UI: `packages/client/src/pages/drive/components/ImportFromFolderModal.tsx`.

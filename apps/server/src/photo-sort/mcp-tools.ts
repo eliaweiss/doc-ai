@@ -11,7 +11,7 @@ import { fileURLToPath } from "url";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { makeThumbnail } from "./eye";
-import { getScan, isScannedPath, startScan, viewScan, type Scan } from "./scan";
+import { getSavedScanInfo, getScan, isScannedPath, reuseSavedScan, startScan, viewScan, type Scan } from "./scan";
 import { importPhotos, listTargetFolders } from "./import";
 
 const PICKER_URI = "ui://doc-ai/import-picker.html";
@@ -73,7 +73,10 @@ async function scanResult(scan: Scan, includeScreenshots: boolean) {
     );
     text =
       `Scanned ${view.folder}: ${view.total} photos, ${view.counts.receipt} receipts, ${view.counts.document} documents, ` +
-      `${view.counts.screenshot} screenshots (${(view.elapsedMs / 1000).toFixed(1)} s).` +
+      `${view.counts.screenshot} screenshots ` +
+      (view.reused && view.scannedAt
+        ? `(saved scan from ${view.scannedAt}; call again with reuse: false for a fresh scan).`
+        : `(${(view.elapsedMs / 1000).toFixed(1)} s).`) +
       (view.truncated ? " Only the first photos were scanned (limit reached)." : "") +
       `\nThe user can pick which to import in the picker shown with this result; or call import_photos with absolute paths.` +
       `\nFolder: ${view.folder}\n${lines.join("\n")}`;
@@ -106,15 +109,42 @@ export function registerPhotoSortTools(server: McpServer, opts: { onEnqueued?: (
         "Sorts the photos (subfolders included) with the on-device Eye model and finds the receipts and " +
         "documents (also whiteboards and ID cards; screenshots if asked). Shows the user an inline picker where everything " +
         "found is selected and they choose what to import into doc-ai. Only photos (JPG, PNG, WebP, GIF, TIFF) for now, not PDFs. " +
-        "The folder is never changed; importing copies the files.",
+        "The folder is never changed; importing copies the files. " +
+        "Every scan is saved: when the folder was scanned before and reuse is not given, this returns the saved scan's " +
+        "date and counts instead of scanning; ask the user whether to reuse it (reuse: true) or scan again (reuse: false). " +
+        "The picker shows the same choice.",
       inputSchema: {
         folder: z.string().describe("Absolute path of the folder to scan (~ is expanded), e.g. /Users/me/Pictures/2025"),
         includeScreenshots: z.boolean().optional().describe("Also list screenshots. Default false."),
+        reuse: z
+          .boolean()
+          .optional()
+          .describe("Folder scanned before: true reuses the saved scan, false scans again. Omit to find out (ask the user)."),
       },
       _meta: { ui: { resourceUri: PICKER_URI }, "ui/resourceUri": PICKER_URI },
     },
-    async ({ folder, includeScreenshots }) => {
+    async ({ folder, includeScreenshots, reuse }) => {
       try {
+        if (reuse === undefined) {
+          const savedScan = await getSavedScanInfo(folder);
+          if (savedScan) {
+            const { counts } = savedScan;
+            return {
+              content: [
+                {
+                  type: "text" as const,
+                  text:
+                    `${savedScan.folder} was already scanned on ${savedScan.scannedAt}: ${savedScan.total} photos, ` +
+                    `${counts.receipt} receipts, ${counts.document} documents, ${counts.screenshot} screenshots. ` +
+                    `Ask the user whether to reuse that scan or scan again, then call find_documents_in_folder ` +
+                    `with reuse: true or reuse: false. (The picker shown with this result offers the same choice.)`,
+                },
+              ],
+              structuredContent: { savedScan, includeScreenshots: includeScreenshots ?? false },
+            };
+          }
+        }
+        if (reuse === true) return await scanResult(await reuseSavedScan(folder), includeScreenshots ?? false);
         const scan = await startScan(folder);
         await Promise.race([scan.promise, new Promise((r) => setTimeout(r, WAIT_MS))]);
         return await scanResult(scan, includeScreenshots ?? false);

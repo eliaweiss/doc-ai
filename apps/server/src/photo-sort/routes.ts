@@ -2,7 +2,9 @@
  * HTTP API for "Import from folder" (mounted under /api/local/photo-sort):
  *
  * - GET  /dirs?dir=…        subfolders of a folder, for the folder browser
- * - POST /scan {folder}     start a scan → scan view
+ * - POST /scan {folder, reuse?}  start a scan → scan view. When the folder has a saved scan
+ *                           and `reuse` is not given → { savedScan } so the UI can ask;
+ *                           reuse: true loads the saved scan, false scans again
  * - GET  /scan/:id          poll a scan (?screenshots=1 adds screenshots, ?all=1 every photo)
  * - GET  /thumb?path=…      JPEG preview of a scanned photo
  * - GET  /folders           doc-ai folders to import into
@@ -13,7 +15,16 @@ import { promises as fs } from "fs";
 import os from "os";
 import path from "path";
 import { makeThumbnail } from "./eye";
-import { ScanError, getScan, isScannedPath, resolveFolder, startScan, viewScan } from "./scan";
+import {
+  ScanError,
+  getSavedScanInfo,
+  getScan,
+  isScannedPath,
+  resolveFolder,
+  reuseSavedScan,
+  startScan,
+  viewScan,
+} from "./scan";
 import { ImportError, importPhotos, listTargetFolders } from "./import";
 
 export function createPhotoSortApi(opts: { onEnqueued?: () => void }) {
@@ -32,9 +43,13 @@ export function createPhotoSortApi(opts: { onEnqueued?: () => void }) {
   });
 
   api.post("/scan", async (c) => {
-    const { folder } = await c.req.json();
+    const { folder, reuse } = await c.req.json();
     try {
-      const scan = await startScan(String(folder ?? ""));
+      if (reuse === undefined) {
+        const savedScan = await getSavedScanInfo(String(folder ?? ""));
+        if (savedScan) return c.json({ savedScan });
+      }
+      const scan = reuse === true ? await reuseSavedScan(String(folder ?? "")) : await startScan(String(folder ?? ""));
       return c.json(viewScan(scan));
     } catch (error) {
       if (error instanceof ScanError) return c.json({ error: error.message }, 400);
