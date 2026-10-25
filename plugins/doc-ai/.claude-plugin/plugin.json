@@ -1,0 +1,11 @@
+{
+  "name": "doc-ai",
+  "version": "0.1.0",
+  "description": "Use doc-ai's MCP server: query extracted invoices, receipts and statements, correct values, import photo folders and build mini apps.",
+  "author": {
+    "name": "Elia Weiss"
+  },
+  "repository": "https://github.com/eliaweiss/doc-ai",
+  "license": "MIT",
+  "keywords": ["documents", "invoices", "receipts", "mcp", "search"]
+}

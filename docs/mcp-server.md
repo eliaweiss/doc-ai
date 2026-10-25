@@ -8,6 +8,17 @@ doc-ai exposes its data to AI assistants through the Model Context Protocol at `
 - No authentication: the server only listens on `127.0.0.1`.
 - Claude Desktop connects through the `mcp-remote` bridge; clients with native remote-HTTP support use the URL directly. See [Getting started](getting-started.md#connecting-an-mcp-client).
 
+## Claude Code plugin and skill
+
+The repository root is a Claude Code plugin marketplace ([.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json)) with one plugin, [plugins/doc-ai](../plugins/doc-ai):
+
+- [.mcp.json](../plugins/doc-ai/.mcp.json) registers the MCP server (`DOC_AI_MCP_URL`, default `http://localhost:4310/mcp`).
+- [skills/doc-ai/SKILL.md](../plugins/doc-ai/skills/doc-ai/SKILL.md) is the usage guide Claude loads when a request is about the user's documents: which tool to pick, search examples, the `aggregate` allowlist and double-counting pitfalls, the correction and import flows, and mini apps.
+
+Install with `/plugin marketplace add eliaweiss/doc-ai` then `/plugin install doc-ai@doc-ai`. Keep the skill in step with this page when tools change; `claude plugin validate .` checks the manifests.
+
+## Results and errors
+
 Every tool returns its result as pretty-printed JSON text. Errors are returned as tool errors (`isError`) with the message, not as protocol failures.
 
 ## Tools
@@ -60,7 +71,8 @@ Registered by [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.
 
 - "What's the status of doc-ai?" → `get_status`
 - "What did I spend on toner?" → `list_searchable_entities`, then `search_entities` with query "toner"
-- "Total spend per vendor in 2025" → `aggregate` with a sum metric, a group-by on the vendor field and a date range
+- "Invoice spend per month in 2025" → `aggregate` with a sum metric, `groupBy` `month` and `currency`, a `schemaType` filter and a date range
+- "Total spend per vendor in 2025" → `search_entities` on the header schema type for that date range, then group by vendor client-side (`aggregate` can only group by index columns such as `docType`, `currency` or `month`)
 - "The total on invoice X should be 1,240.50" → `get_document`, then `update_entity_fields`
 - "Add a document type for utility bills" → `get_document_type` on `INVOICE`, then `create_document_type`
 - "Find the receipts in ~/Pictures/2025 and import them" → `find_documents_in_folder`, then the picker or `import_photos`

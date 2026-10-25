@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "doc-ai": {
+      "type": "http",
+      "url": "${DOC_AI_MCP_URL:-http://localhost:4310/mcp}"
+    }
+  }
+}

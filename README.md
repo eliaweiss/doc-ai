@@ -45,6 +45,17 @@ Clients that support remote HTTP MCP can use `http://localhost:4310/mcp` directl
 }
 ```
 
+#### Claude Code plugin
+
+This repository is also a Claude Code plugin marketplace. The `doc-ai` plugin ([plugins/doc-ai](plugins/doc-ai)) connects Claude Code to the MCP server and adds a `doc-ai` skill that teaches it how to use the tools (search vs. aggregate, aggregation limits, corrections, photo import, mini apps). In Claude Code:
+
+```
+/plugin marketplace add eliaweiss/doc-ai
+/plugin install doc-ai@doc-ai
+```
+
+From a local checkout, use `/plugin marketplace add ./path/to/doc-ai` instead. Set `DOC_AI_MCP_URL` if the server isn't at `http://localhost:4310/mcp`. If you already added doc-ai as an MCP server by hand, remove that entry (`claude mcp remove doc-ai`) so the tools aren't listed twice.
+
 Tools: `get_status`, `list_document_types`, `get_document_type`, `create_document_type`, `list_documents`, `get_document`, `list_searchable_entities`, `search_entities`, `get_entity`, `aggregate`, `update_entity_fields`, `reprocess_document`, `find_documents_in_folder`, `get_folder_scan`, `import_photos` (plus `get_photo_thumbnails`, which only the picker UI calls).
 
 ## Scan a photo folder + import (Eye, experimental)

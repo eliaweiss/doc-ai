@@ -1,0 +1,18 @@
+{
+  "name": "doc-ai",
+  "owner": {
+    "name": "Elia Weiss"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for doc-ai, the local document intelligence server."
+  },
+  "plugins": [
+    {
+      "name": "doc-ai",
+      "source": "./plugins/doc-ai",
+      "description": "Connects Claude Code to a local doc-ai server over MCP and teaches it how to search, aggregate, correct and import documents and build mini apps.",
+      "version": "0.1.0",
+      "category": "productivity"
+    }
+  ]
+}
