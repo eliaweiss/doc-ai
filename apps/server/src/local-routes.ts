@@ -7,7 +7,6 @@
  * - POST /api/uploads/:id/complete   → finishIngest (size check, XLSX→CSV, CLASSIFY job)
  * - GET  /api/uploads/:id/:fileName  → file bytes for the viewer
  * - POST /api/org/:orgId/documents/:documentId/extract → re-queue in the local worker
- * - POST /api/org/:orgId/documents/:documentId/get-reconciliation → empty (reconciliation is v2)
  *
  * Plus empty answers for zdocs features the shared UI shell still calls
  * (analytics), so pages load without errors.
@@ -140,10 +139,6 @@ export function mountLocalRoutes(app: Hono, opts: { onEnqueued?: () => void }) {
       message: result.queued ? "Extraction queued" : "Document is already being processed",
     });
   });
-
-  app.post("/api/org/:orgId/documents/:documentId/get-reconciliation", (c) =>
-    c.json({ links: [], reconciliationLinks: [] })
-  );
 
   app.all("/api/user-journey-events", (c) => c.json({ success: true }));
   // Settings page asks for a webhook URL / inbound email address; neither exists locally

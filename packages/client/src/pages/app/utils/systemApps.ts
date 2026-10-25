@@ -86,7 +86,7 @@ const SYSTEM_APPS: SystemApp[] = [
     path: "/reconciliation/ledger",
     color: "#ef4444", // red
     hideOnMobile: true,
-    isHidden: IS_DOC_VISION
+    isHidden: true, // doc-ai: ledger trace not ported (broken link)
   },
   // disabled for now - not ready for production
   // {
@@ -104,6 +104,7 @@ const SYSTEM_APPS: SystemApp[] = [
     path: "/ai-builder",
     color: "#06d49b", // cyan-green
     hideOnMobile: true,
+    isHidden: true, // doc-ai: no AI builder (broken link)
   },
   {
     id: "schema",
@@ -121,7 +122,7 @@ const SYSTEM_APPS: SystemApp[] = [
     docsUrl: "/docs/system-apps/tasks",
     path: "/tasks",
     color: "#facc15", // yellow-green
-    isHidden: IS_DOC_VISION
+    isHidden: true, // doc-ai: tasks not ported (broken link)
   },
   {
     id: "bank-links",

@@ -42,7 +42,7 @@ zdocs is multi-tenant: nearly every query is named `…ForOrg(orgId, …)` and e
 | `organizations` | [organizations.ts](../packages/db-schema/src/schemas/organizations.ts) | The single local org (name, base currency, time zone; webhook and email columns unused locally). |
 | `users`, `accounts`, `sessions`, `verification_tokens` | [auth.ts](../packages/db-schema/src/schemas/auth.ts) | Kept from zdocs for foreign keys; only the local user exists. |
 | `process_locks` | [process-locks.ts](../packages/db-schema/src/schemas/process-locks.ts) | zdocs' cross-process lock; not needed by the single process. |
-| `reconciliation_links`, `saved_reconciliation_sessions`, `saved_ledger_trace_sessions` | [reconciliation-links.ts](../packages/db-schema/src/schemas/reconciliation-links.ts) | Reconciliation (matching transactions across documents). The tables exist; the feature is planned for v2. |
+| `reconciliation_links`, `saved_reconciliation_sessions`, `saved_ledger_trace_sessions` | [reconciliation-links.ts](../packages/db-schema/src/schemas/reconciliation-links.ts) | Reconciliation (matching transactions across documents). Used by the workbench; `saved_ledger_trace_sessions` is not used yet (ledger trace isn't ported). |
 
 ### Queries
 

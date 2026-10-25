@@ -103,7 +103,7 @@ The zdocs client (`packages/client`, `packages/client-component`) is copied unch
 
 - `src/main.tsx` + `src/routes.tsx` replace zdocs' Next layouts and the thin `(pages)/.../page.tsx` wrappers.
 - Vite aliases (`vite.config.ts`) point `next/navigation`, `next/link`, `next/image`, `next-auth/react`, `next-auth` and `next-intl` at small shims in `src/shims/` (react-router, always-signed-in local user, `use-intl`).
-- Pages are imported by deep path, so zdocs features that weren't ported (billing, mini-apps, reconciliation, integrations) are left out of the bundle unless a kept page imports them.
+- Pages are imported by deep path, so zdocs features that weren't ported (billing, the AI builder, integrations) are left out of the bundle unless a kept page imports them.
 
 The API the client calls is zdocs' own App Router handlers, copied to `apps/server/src/zdocs-api/` and mounted on Hono by `src/next-compat/mount-routes.ts`. tsconfig `paths` map `next/server`, `next-auth/next` and `@/app/...` to `src/next-compat/`. The S3/Lambda routes (presigned upload, upload-complete, file download, extract) are replaced by `src/local-routes.ts` with the same request/response contract. Uploads land in the watch folder, under a subfolder named after the UI folder. Any other `/api/*` call gets a JSON 404.
 
@@ -143,6 +143,6 @@ Tested end to end on the Gateway with a synthetic one-page invoice PDF:
 - **Schema review**: not implemented. Code formulas are off unless you set `DOC_AI_ALLOW_CODE_FORMULAS=true`, and MCP rejects schemas that contain them.
 - **UI**: the app switcher shows Files & Folders, Extraction Templates and Settings. API/Webhook, Home, billing, sharing and analytics are hidden or disabled (`doc-ai:` comments mark each edit to the copied client). The document viewer calls the QuickBooks/Xero status endpoints, which return 404; the client treats that as "not connected". The bundle is large (about 4.4 MB) because the chat/markdown components pull in shiki and mermaid. `upload-sample` (schema from sample) needs a local replacement for its S3 upload.
 - **Schema registry**: the format for public or downloadable schemas is not designed yet.
-- **Reconciliation**: v2. The tables exist; the queries and handlers aren't copied.
+- **Reconciliation**: the workbench (`/reconciliation/workbench`) is ported; the ledger trace and the uiTx reconciliation methods aren't.
 - **Migrations**: when you change `packages/db-schema/src/schemas`, run `npm run db:generate`.
 - The pipeline logs are verbose (zdocs' `console.log`s are kept as-is).

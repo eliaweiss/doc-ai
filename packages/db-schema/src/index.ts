@@ -36,3 +36,4 @@ export * from "./queries/ai-model-settings";
 export * from "./queries/local";
 export * from "./queries/mini-apps";
 export * from "./queries/mini-apps-history";
+export * from "./queries/reconciliation";

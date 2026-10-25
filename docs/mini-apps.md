@@ -4,7 +4,7 @@ Mini apps are small HTML/JS/CSS apps, built in zdocs' AI builder, that read and 
 
 ## Using them
 
-- **Applications** (`/apps`, the last entry in the app menu) lists every mini app. Click one to open it. The switch pins it to the app menu.
+- **Apps** (`/apps`, the last entry in the app menu) lists the pinned apps first (drag to reorder the app menu), then every other system app and mini app. Click one to open it. The switch adds it to or removes it from the app menu.
 - **`/app/:miniAppId`** runs one app under the header, with refresh, print, fullscreen and close buttons ([MiniAppPage.tsx](../packages/client/src/pages/mini-apps/MiniAppPage.tsx)).
 
 ## How an app runs

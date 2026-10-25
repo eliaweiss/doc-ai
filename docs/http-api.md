@@ -44,7 +44,6 @@ Defined in [apps/server/src/photo-sort/routes.ts](../apps/server/src/photo-sort/
 | `POST /api/uploads/:id/complete` | Mark complete, convert spreadsheets, queue | Same, via `finishIngest` |
 | `GET /api/uploads/:id/:fileName` | Download from S3 | Read from the watch folder or cache |
 | `POST /api/org/:orgId/documents/:documentId/extract` | Run extraction on Lambda | Re-queue in the local worker |
-| `POST /api/org/:orgId/documents/:documentId/get-reconciliation` | Reconciliation links | Empty (reconciliation is v2) |
 
 It also answers a few calls the shared UI shell makes for features that don't exist locally, so pages load cleanly: user-journey analytics events (accepted and dropped), and webhook / inbound-email address generation (no-op).
 
@@ -78,13 +77,14 @@ Org access checks still run ([userCanAccessOrgId.ts](../apps/server/src/zdocs-ap
 | Saved queries | list/create, and get/update/delete per query |
 | Notifications | list, and update per notification |
 | Quick access | get, add, remove, reorder |
+| Reconciliation | `reconciliation/create-link`, `reconciliation/delete`, `reconciliation/links/get`, `reconciliation/links/:id/delete`, `reconciliation/get-reconciled-IdsToType`, `reconciliation/get-reconciled-TypeToIds`, `reconciliation/trace`, `saved-reconciliation-sessions` (list/create, and get/update/delete per session), `documents/:documentId/get-reconciliation` |
 | Mini apps | `mini-apps/list-miniapps`, `mini-apps/create`, and get/update/delete per app (see [Mini apps](mini-apps.md)) |
 
 Outside `/api/org`, `POST /api/ui-tx` is the uiTx SDK endpoint used by mini apps. It keeps zdocs' session path only; the API-key path is removed because doc-ai has no API keys.
 
 ## Everything else
 
-Any other `/api/*` path returns a JSON 404, "Not available in doc-ai: …". This covers the zdocs features that weren't ported (billing, integrations such as QuickBooks and Xero, the AI builder, tasks, sharing). The client treats, for example, a 404 from the QuickBooks status endpoint as "not connected".
+Any other `/api/*` path returns a JSON 404, "Not available in doc-ai: …". This covers the zdocs features that weren't ported (billing, integrations such as QuickBooks and Xero, the AI builder, tasks, the reconciliation ledger trace's saved sessions, sharing). The client treats, for example, a 404 from the QuickBooks status endpoint as "not connected".
 
 ## Static files
 

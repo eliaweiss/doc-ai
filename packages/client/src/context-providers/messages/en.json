@@ -147,7 +147,7 @@
         "modeDataSourcesDescription": "Connect external data: file datasets, ERPs, APIs",
         "modeIntegrations": "Integrations",
         "modeIntegrationsDescription": "Connect Doc-Vision to QuickBooks and other external services",
-        "modeApps": "Home",
+        "modeApps": "Apps",
         "switchToLightMode": "Switch to light mode",
         "switchToDarkMode": "Switch to dark mode",
         "documentation": "Documentation",

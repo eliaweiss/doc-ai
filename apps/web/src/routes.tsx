@@ -12,6 +12,7 @@ import SearchPage from "@zdocs/client/src/pages/search/SearchPage";
 import { OrganizationSettingsPage } from "@zdocs/client/src/pages/app/org-admin/OrganizationSettingsPage";
 import { MiniAppsPage } from "@zdocs/client/src/pages/mini-apps/MiniAppsPage";
 import { MiniAppPage } from "@zdocs/client/src/pages/mini-apps/MiniAppPage";
+import { ReconciliationWorkbenchPage } from "@zdocs/client/src/pages/reconciliation/ReconciliationWorkbenchPage";
 
 // (pages)/folder/page.tsx
 export function DrivePage() {
@@ -53,6 +54,11 @@ export function SearchRoute() {
 // (pages)/settings/page.tsx
 export function SettingsRoute() {
   return <OrganizationSettingsPage />;
+}
+
+// (pages)/reconciliation/workbench/page.tsx
+export function ReconciliationWorkbenchRoute() {
+  return <ReconciliationWorkbenchPage />;
 }
 
 // doc-ai: mini app list (replaces (pages)/home)

@@ -26,8 +26,9 @@ The main shell wraps the app in toasts, the zdocs app context and a locale provi
 | `/document/:documentId` | **Document viewer**: file preview on one side, extracted data on the other, editable header fields, line-item grids (add and remove rows, mark duplicates), notification banner, change type, re-extract | [pages/document](../packages/client/src/pages/document) |
 | `/schema` | **Extraction Templates**: browse, create, edit, import/export document types and their fields, formulas and folder mappings | [pages/schema](../packages/client/src/pages/schema) |
 | `/search` | **Search**: free-text and filtered entity search, result tabs per schema type, grid and graph views, date shortcuts, saved queries | [pages/search](../packages/client/src/pages/search) |
-| `/apps` | **Applications**: the list of [mini apps](mini-apps.md), with a switch to pin each to the app menu | [pages/mini-apps](../packages/client/src/pages/mini-apps) |
+| `/apps` | **Apps**: the apps pinned to the app menu (drag to reorder, switch off to remove), then the system apps and [mini apps](mini-apps.md) not yet pinned, each with a switch to add it | [pages/mini-apps](../packages/client/src/pages/mini-apps) |
 | `/app/:miniAppId` | **Mini app**: runs one app, view only | [MiniAppPage.tsx](../packages/client/src/pages/mini-apps/MiniAppPage.tsx) |
+| `/reconciliation/workbench` | **Reconciliation**: match transactions across documents (for example card statement lines to receipts), auto-reconcile, suggested pairs and duplicates, saved sessions, CSV export | [pages/reconciliation](../packages/client/src/pages/reconciliation) |
 | `/settings` | **Settings**: general preferences and the Processing section (watch folder, data folder, provider, key, models, connection test) | [pages/app/org-admin](../packages/client/src/pages/app/org-admin) |
 | anything else | Redirects to `/folder` | |
 
@@ -54,7 +55,7 @@ The client files were written for Next.js. Rather than edit them, the Vite confi
 
 Other build details from [vite.config.ts](../apps/web/vite.config.ts):
 
-- Pages are imported **by deep path** (`@zdocs/client/src/...`) instead of through the package's barrel file. The barrel would pull in every zdocs feature; deep imports keep unported features (billing, reconciliation, integrations, tasks, AI builder) out of the bundle unless a kept page imports them.
+- Pages are imported **by deep path** (`@zdocs/client/src/...`) instead of through the package's barrel file. The barrel would pull in every zdocs feature; deep imports keep unported features (billing, ledger trace, integrations, tasks, AI builder) out of the bundle unless a kept page imports them.
 - `NEXT_PUBLIC_*` values the client reads are fixed at build time: app name `doc-ai`, empty URLs, and the dataset, bank-link, QuickBooks and Xero features turned off.
 - The dev server runs on port 4311 and proxies `/api` and `/mcp` to the doc-ai server.
 
