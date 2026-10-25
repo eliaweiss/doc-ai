@@ -11,7 +11,7 @@ import useOrgStore from "../context-providers/orgStore";
 import { useTheme } from "../hooks/useTheme";
 import { ContactUsDialog } from "./ContactUsDialog";
 import { ProfileDialog } from "./profile/ProfileDialog";
-import { getSystemApps, SystemApp } from "../pages/app/utils/systemApps";
+import { getAllSystemApps, SystemApp } from "../pages/app/utils/systemApps";
 import { IS_DOC_VISION } from "@zdocs/util";
 import { useLogUserJourneyEvent } from "../utilities/api/logUserJourneyEventApi";
 
@@ -163,7 +163,7 @@ export function UserMenu({
 
     const gotoDocumentation = () => {
         setIsMenuOpen(false);
-        const systemApp = getSystemApps().find((app: SystemApp) => app.path === `/${pathFirstPart}`);
+        const systemApp = getAllSystemApps().find((app: SystemApp) => app.path === `/${pathFirstPart}`);
         const docsUrl = systemApp?.docsUrl || "/docs";
         const openUrl = `${process.env.NEXT_PUBLIC_DOCS_URL}${docsUrl}`;
         window.open(openUrl, "_blank");

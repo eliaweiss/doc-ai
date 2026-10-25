@@ -25,10 +25,17 @@ export interface SystemApp {
   color: string; // Hex color code
   hideOnMobile?: boolean;
   isHidden?: boolean;
+  inSettingsMenu?: boolean; // doc-ai: opened from the Settings sidebar, not offered in the app switcher
 }
 
 
+// Apps offered in the app switcher, quick access bar and Applications page
 export const getSystemApps = (): SystemApp[] => {
+  return getAllSystemApps().filter((app) => !app.inSettingsMenu);
+};
+
+// Every reachable system app, including the ones opened from the Settings sidebar
+export const getAllSystemApps = (): SystemApp[] => {
   return SYSTEM_APPS.filter(
     (app) => app.isHidden ? false : (isMobileWidth() ? !app.hideOnMobile : true)
   );
@@ -114,6 +121,7 @@ const SYSTEM_APPS: SystemApp[] = [
     path: "/schema",
     color: "#a855f7", // mauve
     hideOnMobile: true,
+    inSettingsMenu: true, // doc-ai: moved from the app switcher to the Settings sidebar
   },
   {
     id: "tasks",

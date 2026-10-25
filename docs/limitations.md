@@ -22,7 +22,7 @@ Tested end to end on the Gateway provider with a synthetic one-page invoice PDF:
 **Schema review.** Not implemented. Code formulas are off unless `DOC_AI_ALLOW_CODE_FORMULAS=true`, and MCP rejects schemas that contain them. See [Security](security.md#code-formulas).
 
 **UI.**
-- Only Files & Folders, Extraction Templates and Settings are offered. API/Webhook, Home, billing, sharing and analytics are hidden or disabled.
+- Only Files & Folders and Settings are offered in the app switcher (Extraction Templates opens from the Settings sidebar). API/Webhook, Home, billing, sharing and analytics are hidden or disabled.
 - The document viewer calls QuickBooks/Xero status endpoints that return 404, treated as "not connected".
 - The bundle is about 4.4 MB because chat and markdown components pull in shiki and mermaid.
 - "Schema from sample" (upload a sample to generate a type) needs a local replacement for its S3 upload.

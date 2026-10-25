@@ -1,8 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@zdocs/client-component";
-import { Building2, Cpu } from "lucide-react";
+import { Building2, Cpu, Database } from "lucide-react";
 import { useOrganizationSettings, type SettingsSection } from "../OrganizationSettingsProvider";
 import { cn } from "../../../../lib/utils";
 import { useLogUserJourneyEvent } from "../../../../utilities/api/logUserJourneyEventApi";
@@ -20,6 +21,8 @@ interface MenuItem {
 export function OrganizationSettingsSidebar({ onItemSelected }: OrganizationSettingsSidebarProps) {
   const tOrgs = useTranslations("organizations");
   const tLocal = useTranslations("localSettings");
+  const tApp = useTranslations("appPage");
+  const router = useRouter();
   const { selectedSection, setSelectedSection } = useOrganizationSettings();
   const { logEvent } = useLogUserJourneyEvent();
 
@@ -71,6 +74,19 @@ export function OrganizationSettingsSidebar({ onItemSelected }: OrganizationSett
             </Button>
           );
         })}
+        {/* doc-ai: Extraction Templates moved here from the app switcher; still opens as its own app */}
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={() => {
+            router.push("/schema");
+            onItemSelected?.();
+          }}
+          data-testid="org-settings-nav-schema"
+        >
+          <Database className="mr-2 h-4 w-4" />
+          {tApp("modeDocumentTypes")}
+        </Button>
       </nav>
     </aside>
   );

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useQuickAccess } from "../../../context-providers/QuickAccessProvider";
-import { getSystemApps } from "../utils/systemApps";
+import { getAllSystemApps } from "../utils/systemApps";
 import useOrgStore from "../../../context-providers/orgStore";
 import useAppStore from "../../../context-providers/appStore";
 import { loadMiniAppApi } from "../../../utilities/api/miniAppApi";
@@ -69,7 +69,7 @@ export function AppSelector() {
   // Detect current system app from pathname
   const currentSystemApp = useMemo(() => {
     if (!pathname) return null;
-    return getSystemApps().find(
+    return getAllSystemApps().find(
       (app) =>
         pathname === app.path || pathname.startsWith(app.path + "/")
     ) || null;

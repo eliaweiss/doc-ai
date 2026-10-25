@@ -34,7 +34,7 @@ The main shell wraps the app in toasts, the zdocs app context and a locale provi
 
 `?showUpload=true` on a drive route opens the upload dialog.
 
-The app switcher in the header shows **Files & Folders**, **Extraction Templates** and **Settings** ([systemApps.ts](../packages/client/src/pages/app/utils/systemApps.ts)), any pinned mini apps, and the Applications entry at the bottom.
+The app switcher in the header shows **Files & Folders** and **Settings** ([systemApps.ts](../packages/client/src/pages/app/utils/systemApps.ts)), any pinned mini apps, and the Applications entry at the bottom. **Extraction Templates** is opened from the Settings sidebar instead and still runs as its own app.
 
 ## State
 

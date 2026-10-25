@@ -32,7 +32,7 @@ If no Gateway key is set, the server warns at start and documents wait in the `K
 - Drop a PDF or image into the watch folder (or use **New → Upload** in the UI). Within a few seconds it appears in the drive and moves through the statuses `PENDING` → `PARTIAL` → `EXTRACTED` → `INDEXED`.
 - Open the document to see the extracted header fields and line items next to a preview of the file. Fields can be edited in place.
 - Open **Settings → Processing** to change the watch folder, provider, key and models, and to run a connection test.
-- Open **Extraction Templates** (`/schema`) to look at the built-in document types or create your own.
+- Open **Extraction Templates** (`/schema`, from the Settings sidebar) to look at the built-in document types or create your own.
 - Open **Search** (`/search`) to search across all extracted entities.
 
 ## Connecting an MCP client
