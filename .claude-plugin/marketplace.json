@@ -11,7 +11,7 @@
       "name": "doc-ai",
       "source": "./plugins/doc-ai",
       "description": "Connects Claude Code to a local doc-ai server over MCP and teaches it how to search, aggregate, correct and import documents and build mini apps.",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "category": "productivity"
     }
   ]

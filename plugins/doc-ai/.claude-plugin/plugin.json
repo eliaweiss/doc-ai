@@ -1,6 +1,6 @@
 {
   "name": "doc-ai",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Use doc-ai's MCP server: query extracted invoices, receipts and statements, correct values, import photo folders and build mini apps.",
   "author": {
     "name": "Elia Weiss"
