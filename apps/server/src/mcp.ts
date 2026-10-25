@@ -34,6 +34,7 @@ import { registerPhotoSortTools } from "./photo-sort/mcp-tools";
 import { registerMiniAppTools } from "./mini-apps/mcp-tools";
 import { registerFolderTools, type ApiPost } from "./folders/mcp-tools";
 import { registerReconciliationTools } from "./reconciliation/mcp-tools";
+import { checkExpectedCount, selectEntities, selectionPreview, selectionSchema, type Selection } from "./selection";
 
 const ctx: UiTxContext = { orgId: LOCAL_ORG_ID, authMethod: "api_key" };
 
@@ -244,11 +245,68 @@ export function createMcpServer(opts: McpOptions) {
   server.registerTool(
     "update_entity_fields",
     {
-      description: "Correct extracted values on a header or line item. Field names are validated against the schema.",
-      inputSchema: { entityId: z.string(), fields: z.record(z.any()) },
+      description:
+        "Correct extracted values on a header or line item. Field names are validated against the schema.\n" +
+        "To set the same values on many entities, pass select (search_entities filters, one schemaType) instead of " +
+        "entityId: call with dryRun: true first (counts and samples, nothing changed), show the user, then call again " +
+        "with expectedCount set to the dry run's entityCount. excludeEntityIds drops entities that shouldn't change.",
+      inputSchema: {
+        entityId: z.string().optional(),
+        select: selectionSchema.optional(),
+        excludeEntityIds: z.array(z.string()).optional(),
+        fields: z.record(z.any()),
+        dryRun: z.boolean().optional(),
+        expectedCount: z.number().int().nonnegative().optional(),
+      },
     },
-    wrap(async (args: { entityId: string; fields: Record<string, unknown> }) =>
-      handleUpdateEntityFields(ctx, { ...args, orgId: LOCAL_ORG_ID })
+    wrap(
+      async (args: {
+        entityId?: string;
+        select?: Selection;
+        excludeEntityIds?: string[];
+        fields: Record<string, unknown>;
+        dryRun?: boolean;
+        expectedCount?: number;
+      }) => {
+        if (!args.entityId === !args.select) throw new Error("Pass either entityId or select");
+        if (args.entityId) {
+          return handleUpdateEntityFields(ctx, { entityId: args.entityId, fields: args.fields, orgId: LOCAL_ORG_ID });
+        }
+
+        const excluded = new Set(args.excludeEntityIds ?? []);
+        const entities = (await selectEntities(ctx, args.select!)).filter((e) => !excluded.has(e.ref.entityId));
+        const schemaTypes = new Set(entities.map((e) => e.ref.schemaType));
+        if (schemaTypes.size > 1) {
+          throw new Error(`select matches several schemaTypes (${[...schemaTypes].join(", ")}); narrow it to one`);
+        }
+        if (args.dryRun) {
+          return selectionPreview(entities, [...new Set(entities.map((e) => e.ref.documentId))], args.select!);
+        }
+        checkExpectedCount(entities.length, args.expectedCount, "entityCount");
+
+        const updated: string[] = [];
+        const failed: { entityId: string; error: string }[] = [];
+        for (const e of entities) {
+          let error: string | undefined;
+          try {
+            const res: any = await handleUpdateEntityFields(ctx, {
+              entityId: e.ref.entityId,
+              fields: args.fields,
+              orgId: LOCAL_ORG_ID,
+            });
+            if (res?.ok === false) error = res.error?.message ?? "update failed";
+          } catch (err) {
+            error = err instanceof Error ? err.message : String(err);
+          }
+          if (!error) updated.push(e.ref.entityId);
+          else {
+            failed.push({ entityId: e.ref.entityId, error });
+            // Same fields for every entity: if the first fails (e.g. unknown field), the rest would too
+            if (updated.length === 0) return { updated: 0, failed, stopped: "first update failed; nothing changed" };
+          }
+        }
+        return { updated: updated.length, failed };
+      }
     )
   );
 

@@ -13,9 +13,24 @@ doc-ai exposes its data to AI assistants through the Model Context Protocol at `
 The repository root is a Claude Code plugin marketplace ([.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json)) with one plugin, [plugins/doc-ai](../plugins/doc-ai):
 
 - [.mcp.json](../plugins/doc-ai/.mcp.json) registers the MCP server (`DOC_AI_MCP_URL`, default `http://localhost:4310/mcp`).
-- [skills/doc-ai/SKILL.md](../plugins/doc-ai/skills/doc-ai/SKILL.md) is the usage guide Claude loads when a request is about the user's documents: which tool to pick, search examples, `aggregate` with index and schema fields and its defaults, the correction and import flows, and mini apps.
+- [skills/doc-ai/SKILL.md](../plugins/doc-ai/skills/doc-ai/SKILL.md) is the usage guide Claude loads when a request is about the user's documents: which tool to pick, search examples, `aggregate` with index and schema fields and its defaults, the correction, reconciliation and import flows, and mini apps.
 
 Install with `/plugin marketplace add eliaweiss/doc-ai` then `/plugin install doc-ai@doc-ai`. Keep the skill in step with this page when tools change; `claude plugin validate .` checks the manifests.
+
+## MCP tools and the mini-app SDK
+
+The MCP tools cover what a mini app can do through the uiTx SDK, and call the same handlers. So a one-off change ("link these payments to their invoices", "fix the totals on these receipts", "move last year's statements to an archive folder") can be asked for in chat, with the model deciding case by case, instead of being built as an app.
+
+| uiTx SDK method | MCP tool |
+|---|---|
+| `getSession` | `get_status` |
+| `searchEntities`, `getEntity`, `listDocuments`, `aggregate` | `search_entities`, `get_entity`, `list_documents`, `aggregate` |
+| `updateEntityFields` | `update_entity_fields` |
+| `listReconciliationLinks`, `traceReconciliation`, `createReconciliationLink`, `deleteReconciliationLink` | `list_reconciliation_links`, `trace_reconciliation`, `create_reconciliation_link` (takes entity IDs instead of full refs), `delete_reconciliation_link` |
+| `listFolders`, `moveDocuments`, `renameFolder`, `moveFolder`, `deleteFolder` | `list_folders`, `move_documents`, `rename_folder`, `move_folder`, `delete_folder` |
+| `ui.toast`, `ui.confirm`, `ui.open*`, `ui.uploadToFolder` | None; these drive the web UI |
+
+The MCP server also has tools the SDK doesn't: `create_folder`, document types, `reprocess_document`, Import from folder and the mini-app tools. Unlike an app's `ui.confirm`, MCP writes happen as soon as the tool is called; the skill tells the model to show the user what it will change first. For bulk writes, the `dryRun` and `expectedCount` pair enforces that step ([Bulk changes](#bulk-changes)). There's no tool that runs arbitrary uiTx code. Filter-based bulk tools cover the cases where the same change applies to many records; changes that differ per record are still made one call at a time.
 
 ## Results and errors
 
@@ -48,7 +63,7 @@ Every tool returns its result as pretty-printed JSON text. Errors are returned a
 | `search_entities` | `query`, `limit?`, `offset?`, `filters?` (preview and entity filters), `exactMatch?`, `where?`, `sort?` | Searches headers and line items. The tool description includes the full parameter guide written for LLMs. | [searchEntities.ts](../packages/srv/src/ui-tx/handlers/searchEntities.ts) |
 | `get_entity` | `entityId` | One header (document ID) or line item (`documentId_collectionKey_index`). | [getEntity.ts](../packages/srv/src/ui-tx/handlers/getEntity.ts) |
 | `aggregate` | `from` (`entities`), `metrics` (count/sum/avg with `field` and `as`), `groupBy?`, `where?`, `schemaType?`, `dateFrom?`, `dateTo?`, `limit?` | Totals, counts and averages, optionally grouped. With `schemaType`, fields of that schema (e.g. `vendorName`) can be grouped, filtered and summed. Unknown fields are errors; see [Search and querying](search.md#aggregation) for the defaults. | [aggregate.ts](../packages/srv/src/ui-tx/handlers/aggregate.ts) |
-| `update_entity_fields` | `entityId`, `fields` | Corrects extracted values; field names are checked against the schema. | [updateEntityFields.ts](../packages/srv/src/ui-tx/handlers/updateEntityFields.ts) |
+| `update_entity_fields` | `entityId` or `select`, `fields`, `excludeEntityIds?`, `dryRun?`, `expectedCount?` | Corrects extracted values; field names are checked against the schema. With `select`, sets the same `fields` on every match (one schemaType only; see [Bulk changes](#bulk-changes)). | [updateEntityFields.ts](../packages/srv/src/ui-tx/handlers/updateEntityFields.ts) |
 
 Search semantics are described in [Search and querying](search.md).
 
@@ -85,7 +100,7 @@ Registered by [folders/mcp-tools.ts](../apps/server/src/folders/mcp-tools.ts). C
 | `rename_folder` | `folderId`, `name` | Renames the folder and its directory; documents are repointed. Not the root. |
 | `move_folder` | `folderId`, `parentId?` (default: root) | Moves a folder with its subtree. Rejects moving into itself; not the root. |
 | `delete_folder` | `folderId` | Deletes an empty folder (no documents, no subfolders); its directory goes to the doc-ai trash. Errors with the counts otherwise. |
-| `move_documents` | `documentIds` (max 500), `folderId` | Moves documents and their files; returns `moved` and per-document `failed`. |
+| `move_documents` | `documentIds` (max 500) or `select`, `folderId`, `excludeDocumentIds?`, `dryRun?`, `expectedCount?` | Moves documents and their files; returns `moved` and per-document `failed`. With `select`, moves every matching document (see [Bulk changes](#bulk-changes)). |
 
 Unlike the UI's folder delete, which also deletes the folder's documents and subfolders, `delete_folder` never deletes documents.
 
@@ -103,6 +118,18 @@ Registered by [mini-apps/mcp-tools.ts](../apps/server/src/mini-apps/mcp-tools.ts
 
 There's no delete tool; apps can be deleted through the HTTP API.
 
+### Bulk changes
+
+`move_documents` and `update_entity_fields` take `select` in place of IDs, so a change to many records needs a few small calls and no ID lists in the conversation. The shared code is in [selection.ts](../apps/server/src/selection.ts).
+
+- `select` has the same `query`, `filters` and `where` as `search_entities`, without paging. The server pages through the search itself. An empty selection is refused, and so is one matching more than 2000 entities. Matched line items stand for their documents when moving.
+- `dryRun: true` changes nothing. It returns `entityCount`, `documentCount`, `schemaTypes` and up to 8 samples, each with date, amount, description and the fields `where` filtered on.
+- A real run with `select` must pass `expectedCount`: the dry run's `documentCount` for `move_documents`, or its `entityCount` for `update_entity_fields`. If the selection matches a different number by then, nothing changes. This makes the dry run, and the confirmation with the user that goes with it, a required step.
+- `excludeDocumentIds` / `excludeEntityIds` drop records the dry run showed shouldn't be included.
+- `update_entity_fields` with `select` refuses a selection that spans several schemaTypes. It stops before changing anything if the first update fails (for example, an unknown field).
+
+The intended flow is to call `aggregate` with `groupBy` on the identifying field to see the distinct values, then have the model decide which belong together, dry-run, confirm with the user and run. On a real install with 221 receipts, the distinct merchant list was 6 KB, against 266 KB for searching every receipt. The dry run for one shop's three spellings was under 2 KB.
+
 ### MCP Apps picker
 
 `find_documents_in_folder` declares a UI resource, `ui://doc-ai/import-picker.html`, using the [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) extension. Hosts that support MCP Apps render it inline next to the tool result: a grid of thumbnails with everything found pre-selected, select/unselect all, a target-folder picker and an Import button. The page is [picker.html](../apps/server/src/photo-sort/picker.html); at serve time the MCP Apps client bundle is inlined into it, because hosts sandbox the page and it can't load scripts from elsewhere. Hosts without MCP Apps get the same information as text, and the model can call `import_photos` itself.
@@ -117,6 +144,7 @@ There's no delete tool; apps can be deleted through the HTTP API.
 - "Add a document type for utility bills" → `get_document_type` on `INVOICE`, then `create_document_type`
 - "Which bank transaction paid invoice X?" → `list_reconciliation_links` with the invoice's `entityId`, or `trace_reconciliation` for longer chains
 - "Match March's card payments to the open invoices" → `search_entities` on both sides, then `create_reconciliation_link` for each pair the user approves
+- "Move my receipts from Mercado Dona Helena to a Groceries folder" → `aggregate` grouped by `merchantName` to see its spellings, `create_folder`, `move_documents` with `select` and `dryRun`, then again with `expectedCount`
 - "Put all 2025 receipts in a Receipts/2025 folder" → `list_folders`, `create_folder` (twice, for each level), `search_entities` or `list_documents` for the IDs, then `move_documents`
 - "Find the receipts in ~/Pictures/2025 and import them" → `find_documents_in_folder`, then the picker or `import_photos`
 - "Make me an app that shows monthly spend per category" → `get_mini_app_guide`, `list_searchable_entities` and `search_entities` to learn the data, then `create_mini_app`

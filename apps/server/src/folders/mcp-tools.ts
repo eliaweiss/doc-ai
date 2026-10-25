@@ -16,11 +16,14 @@ import {
   listDocumentsInFoldersForOrg,
 } from "@zdocs/db-schema";
 import type { Folder } from "@zdocs/types";
+import type { UiTxContext } from "@zdocs/srv";
+import { checkExpectedCount, selectEntities, selectionPreview, selectionSchema, type Selection } from "../selection";
 
 /** POSTs a JSON body to an app route and returns the JSON response; throws its error message */
 export type ApiPost = (path: string, body: unknown) => Promise<any>;
 
 const ORG = `/api/org/${LOCAL_ORG_ID}`;
+const ctx: UiTxContext = { orgId: LOCAL_ORG_ID, authMethod: "api_key" };
 
 /** "My Drive/Receipts/2025" */
 function folderPath(folders: Folder[], folderId: string): string {
@@ -189,11 +192,40 @@ export function registerFolderTools(
     {
       description:
         "Move documents into a folder; their files move to that folder's directory in the watch folder. " +
-        "Returns the ids moved and any that failed.",
-      inputSchema: { documentIds: z.array(z.string()).min(1).max(500), folderId: z.string() },
+        "Returns the ids moved and any that failed.\n" +
+        "Pass documentIds, or select (search_entities filters; matched line items move their documents) to move " +
+        "many without listing ids. With select: call with dryRun: true first (counts and samples, nothing moved), " +
+        "show the user, then call again with expectedCount set to the dry run's documentCount. " +
+        "excludeDocumentIds drops documents the dry run showed shouldn't move.",
+      inputSchema: {
+        documentIds: z.array(z.string()).min(1).max(500).optional(),
+        select: selectionSchema.optional(),
+        excludeDocumentIds: z.array(z.string()).optional(),
+        folderId: z.string(),
+        dryRun: z.boolean().optional(),
+        expectedCount: z.number().int().nonnegative().optional(),
+      },
     },
-    wrap(async ({ documentIds, folderId }: { documentIds: string[]; folderId: string }) =>
-      moveDocumentsToFolder(api, documentIds, folderId)
+    wrap(
+      async (args: {
+        documentIds?: string[];
+        select?: Selection;
+        excludeDocumentIds?: string[];
+        folderId: string;
+        dryRun?: boolean;
+        expectedCount?: number;
+      }) => {
+        if (!args.documentIds === !args.select) throw new Error("Pass either documentIds or select");
+        if (args.documentIds) return moveDocumentsToFolder(api, args.documentIds, args.folderId);
+
+        await requireFolder(args.folderId);
+        const excluded = new Set(args.excludeDocumentIds ?? []);
+        const entities = (await selectEntities(ctx, args.select!)).filter((e) => !excluded.has(e.ref.documentId));
+        const documentIds = [...new Set(entities.map((e) => e.ref.documentId))];
+        if (args.dryRun) return selectionPreview(entities, documentIds, args.select!);
+        checkExpectedCount(documentIds.length, args.expectedCount, "documentCount");
+        return moveDocumentsToFolder(api, documentIds, args.folderId);
+      }
     )
   );
 }

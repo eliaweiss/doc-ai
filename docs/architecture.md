@@ -9,7 +9,7 @@ doc-ai runs as a single long-lived Node.js process, the server in [apps/server](
 | Folder watcher | [apps/server/src/watcher.ts](../apps/server/src/watcher.ts) | S3 presigned upload + the upload-complete route |
 | Queue worker | [apps/server/src/worker.ts](../apps/server/src/worker.ts) | The cron route, HTTP self-dispatch between steps, and the Lambda workers |
 | HTTP server (UI + API) | [apps/server/src/main.ts](../apps/server/src/main.ts), [api.ts](../apps/server/src/api.ts), [local-routes.ts](../apps/server/src/local-routes.ts), [next-compat/](../apps/server/src/next-compat) | The Next.js app |
-| MCP server | [apps/server/src/mcp.ts](../apps/server/src/mcp.ts), [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.ts) | New (wraps zdocs' in-app agent handlers) |
+| MCP server | [apps/server/src/mcp.ts](../apps/server/src/mcp.ts), [reconciliation/mcp-tools.ts](../apps/server/src/reconciliation/mcp-tools.ts), [folders/mcp-tools.ts](../apps/server/src/folders/mcp-tools.ts), [mini-apps/mcp-tools.ts](../apps/server/src/mini-apps/mcp-tools.ts), [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.ts) | New (wraps zdocs' in-app agent handlers) |
 
 Because PGlite is an in-process database, only one process can open a given data folder at a time. Tools that write to the database (such as the zdocs import script) must run with the server stopped.
 

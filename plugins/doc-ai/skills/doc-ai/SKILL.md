@@ -41,6 +41,7 @@ Search and aggregation work on **entities**, not documents. Each document yields
 | Re-run extraction (after a schema change or a bad extraction) | `reprocess_document` |
 | See or add document types | `list_document_types`, `get_document_type`, `create_document_type` |
 | Which payment settled which invoice; link or unlink them | `list_reconciliation_links`, `trace_reconciliation`, `create_reconciliation_link`, `delete_reconciliation_link` |
+| Do the same thing to many records (move, set a field) | `aggregate` to see the distinct values, then `move_documents` / `update_entity_fields` with `select` (see Bulk changes) |
 | See folders, or organize documents into folders | `list_folders`, then `create_folder`, `rename_folder`, `move_folder`, `move_documents`, `delete_folder` |
 | Import receipt photos from a folder | `find_documents_in_folder` → `import_photos` |
 | Build a small app over the data | `get_mini_app_guide` first, then `create_mini_app` / `update_mini_app` |
@@ -133,6 +134,18 @@ Card spend at merchants matching "google":
 
 Field names above are from a real install; confirm them with `list_searchable_entities`.
 
+## Bulk changes
+
+When the user wants the same change on many records ("put all my lunch receipts in a Lunch folder", "set category to Travel on every Uber receipt"), don't read every record and don't call a tool per record. Each search result row costs tokens; a few hundred rows fill the context.
+
+1. **See the distinct values, not the rows.** `aggregate` with the `schemaType`, `groupBy` on the identifying field and a count returns one row per distinct value: `{ "from": "entities", "schemaType": "RECEIPT_header", "groupBy": ["merchantName"], "metrics": [{ "op": "count", "as": "n" }] }`. Add `where` with `contains` to narrow a long list (e.g. `merchantName contains "luigi"`). Names vary ("Luigi's", "LUIGIS PIZZERIA", "Luigi's Trattoria #2"); decide which spellings are the same place and which aren't ("Luigi's Car Wash" isn't lunch). That judgment is your job; ask the user when unsure.
+2. **Dry-run with a selection.** `move_documents` and `update_entity_fields` take `select` instead of ids: the same `query` / `filters` / `where` as `search_entities`, resolved on the server, so ids never pass through the conversation. With `dryRun: true` they return `entityCount`, `documentCount`, `schemaTypes` and up to 8 samples, and change nothing:
+   `{ "select": { "filters": { "entity": { "schemaType": "RECEIPT_header" } }, "where": [{ "schemaType": "RECEIPT_header", "field": "merchantName", "op": "in", "value": ["Luigi's", "LUIGIS PIZZERIA", "Luigi's Trattoria #2"] }] }, "folderId": "…", "dryRun": true }`
+3. **Confirm with the user**: the count, the names you included and excluded, a few samples, and the target folder or new values.
+4. **Run it** with the same `select` and `expectedCount` set to the dry run's `documentCount` (`move_documents`) or `entityCount` (`update_entity_fields`). If the selection now matches a different number, nothing changes and you dry-run again. Drop specific records with `excludeDocumentIds` / `excludeEntityIds`.
+
+`update_entity_fields` with `select` sets the same `fields` on every match, so the selection must cover one `schemaType`; if the first update fails (e.g. an unknown field), it stops before changing anything. A selection can't be empty and is capped at 2000 entities. Matched line items move their whole document. When each record needs a different value, update them one by one with `entityId`.
+
 ## Correcting data
 
 1. Get the current values (`get_document` for the whole document, `get_entity` for one header or line item).
@@ -161,7 +174,7 @@ doc-ai folders mirror the watch folder on disk: the root folder is the watch fol
 - Start with `list_folders`: it gives each folder's `id`, full `path` (e.g. `"Documents/Receipts/2025"`) and `documentCount`. All other folder tools take ids, never paths or names.
 - `create_folder` takes `name` and an optional `parentId` (default: the root). A sibling with the same name is rejected. For a nested path, create each level in turn.
 - `rename_folder` (`folderId`, `name`) and `move_folder` (`folderId`, optional `parentId`, default the root) carry subfolders and documents along. A folder can't be moved into its own subtree; the root can't be renamed or moved.
-- `move_documents` takes `documentIds` (up to 500) and a target `folderId`. It moves what it can and reports `moved` and `failed` per document; report failures to the user. Find document ids with `list_documents` (filter by `folderId`) or `search_entities`.
+- `move_documents` takes `documentIds` (up to 500) and a target `folderId`. It moves what it can and reports `moved` and `failed` per document; report failures to the user. Find document ids with `list_documents` (filter by `folderId`) or `search_entities`. To move many documents picked by a filter, use `select` with a dry run instead of listing ids (see Bulk changes).
 - `delete_folder` only deletes an **empty** folder (no documents, no subfolders); otherwise it errors with the counts and deletes nothing. The directory goes to the doc-ai trash. To remove a folder with contents, move the documents out (and delete or move subfolders) first, after confirming with the user where they should go. There is no tool that deletes documents.
 - Moving many documents or restructuring several folders changes the user's files on disk: confirm the plan with the user before doing it, then show the result with `list_folders`.
 - Right after a change, the watcher may briefly show a stale folder (for example a just-deleted folder for about 5 seconds). If `list_folders` looks off immediately after a change, check again before acting on it.
