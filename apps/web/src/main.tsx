@@ -13,7 +13,7 @@ import "./globals.css";
 import AppProvider from "@zdocs/client/src/context-providers/app-context";
 import { LocaleProvider } from "@zdocs/client/src/context-providers/LocaleContext";
 import { DynamicFavicon } from "@zdocs/client/src/components/DynamicFavicon";
-import { DrivePage, DriveFolderPage, DocumentPage, SchemaRoute, SearchRoute, SettingsRoute } from "./routes";
+import { DrivePage, DriveFolderPage, DocumentPage, SchemaRoute, SearchRoute, SettingsRoute, MiniAppsRoute, MiniAppRoute } from "./routes";
 
 function App({ children }: { children: React.ReactNode }) {
   return (
@@ -53,6 +53,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="/schema" element={<SchemaRoute />} />
             <Route path="/search" element={<SearchRoute />} />
             <Route path="/settings" element={<SettingsRoute />} />
+            <Route path="/apps" element={<MiniAppsRoute />} />
+            <Route path="/app/:miniAppId" element={<MiniAppRoute />} />
             <Route path="*" element={<Navigate to="/folder" replace />} />
           </Routes>
         </App>

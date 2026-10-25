@@ -1,5 +1,6 @@
 "use client";
 
+import { Grid3x3 } from "lucide-react";
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
@@ -76,7 +77,16 @@ export function QuickAccessProvider({
       }
     });
 
-    // doc-ai: no "Applications" (/home) entry; there is no mini-app catalog locally
+    // doc-ai: "Applications" opens the mini-app list (/apps) instead of /home
+    menuItemsList.push({
+      id: "home",
+      name: t("modeApps"),
+      path: "/apps",
+      icon: Grid3x3,
+      color: "#6b7280", // gray
+      mode: "home",
+      isMiniApp: false,
+    });
 
     return menuItemsList;
   }, [items, miniApps, t]);

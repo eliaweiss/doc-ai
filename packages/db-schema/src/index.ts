@@ -3,7 +3,7 @@
  *
  * Org-scoped query functions copied from zdocs. Only the modules doc-ai needs
  * are kept: documents, document types, folders, queue, notifications, search,
- * AI usage. Auth, billing, integrations, mini-apps and tasks were removed.
+ * AI usage, mini-apps. Auth, billing, integrations and tasks were removed.
  *
  * db.ts is replaced by an embedded PGlite instance; local.ts is new.
  */
@@ -34,3 +34,5 @@ export * from "./queries/quick-access";
 export * from "./queries/setLineItemDuplicate";
 export * from "./queries/ai-model-settings";
 export * from "./queries/local";
+export * from "./queries/mini-apps";
+export * from "./queries/mini-apps-history";

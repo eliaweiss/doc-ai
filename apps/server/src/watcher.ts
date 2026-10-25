@@ -5,7 +5,10 @@
  * - Waits for the file size to settle (Google Drive "mirror files" writes in chunks).
  * - Dedupe by MD5 content hash, like zdocs: one document per content.
  * - A known hash at a new path is treated as a rename/move.
- * - Deletions are only logged for now (documents are kept).
+ * - The directory tree is the folder tree: a file's folder is its directory
+ *   (missing folders are created), new directories become folders, and
+ *   directories removed on disk drop their folder once it's empty.
+ * - File deletions are only logged for now (documents are kept).
  */
 import { createHash } from "crypto";
 import { promises as fs } from "fs";
@@ -14,6 +17,10 @@ import chokidar from "chokidar";
 import {
   LOCAL_ORG_ID,
   createDocumentForOrg,
+  deleteFolder,
+  getFoldersByOrgId,
+  listDocumentsInFoldersForOrg,
+  updateDocumentForOrg,
   enqueueDocument,
   findDocumentsByContentHashForOrg,
   findDocumentByS3KeyForOrg,
@@ -33,6 +40,7 @@ import {
   spreadsheetToText,
   validateDocumentUploadSize,
 } from "@zdocs/srv";
+import { ensureFolderForRelDir, exists, findFolderForRelDir } from "./folder-sync";
 
 export const SUPPORTED_EXTENSIONS = new Set([
   "pdf", "jpg", "jpeg", "jfif", "png", "gif", "webp", "tiff", "tif",
@@ -54,12 +62,12 @@ export function md5(buffer: Buffer): string {
 
 export interface WatcherOptions {
   watchDir: string;
-  rootFolderId: string;
   onEnqueued?: () => void;
 }
 
 export async function ingestFile(absPath: string, opts: WatcherOptions): Promise<void> {
-  const rel = path.relative(opts.watchDir, absPath);
+  // NFC so paths match the stored ones even when macOS reports decomposed names
+  const rel = path.relative(opts.watchDir, absPath).normalize("NFC");
   const base = path.basename(absPath);
   const ext = path.extname(base).slice(1).toLowerCase();
   if (isIgnoredName(base) || !SUPPORTED_EXTENSIONS.has(ext)) return;
@@ -68,12 +76,21 @@ export async function ingestFile(absPath: string, opts: WatcherOptions): Promise
   if (buffer.length === 0) return;
   const contentHash = md5(buffer);
   const fileName = base.slice(0, base.length - ext.length - 1);
+  const folder = await ensureFolderForRelDir(path.dirname(rel));
 
   const sameContent = await findDocumentsByContentHashForOrg(LOCAL_ORG_ID, contentHash);
   const sourcePathOf = (d: (typeof sameContent)[number]) =>
-    (d.metadata as { sourcePath?: string } | null)?.sourcePath;
-  // Already known at this path (also covers identical copies in several folders)
-  if (sameContent.some((d) => sourcePathOf(d) === rel)) return;
+    (d.metadata as { sourcePath?: string } | null)?.sourcePath?.normalize("NFC");
+  // Already known at this path (also covers identical copies in several folders).
+  // The directory decides the folder, e.g. after files were moved while doc-ai was off.
+  const known = sameContent.find((d) => sourcePathOf(d) === rel);
+  if (known) {
+    if (known.folderId !== folder.id) {
+      await updateDocumentForOrg(LOCAL_ORG_ID, known.id, { folderId: folder.id });
+      console.log(`[Watcher] ${rel}: folder set from its directory`);
+    }
+    return;
+  }
 
   // Same bytes at a new path, and one of the known copies is gone: it was renamed / moved
   for (const candidate of sameContent) {
@@ -88,6 +105,9 @@ export async function ingestFile(absPath: string, opts: WatcherOptions): Promise
       fileName,
       metadata: { ...(candidate.metadata ?? {}), sourcePath: rel },
     });
+    if (candidate.folderId !== folder.id) {
+      await updateDocumentForOrg(LOCAL_ORG_ID, candidate.id, { folderId: folder.id });
+    }
     console.log(`[Watcher] ${rel}: same content as document ${candidate.id}, path updated`);
     return;
   }
@@ -108,7 +128,7 @@ export async function ingestFile(absPath: string, opts: WatcherOptions): Promise
     fileName,
     fileExtension: ext,
     contentHash,
-    folderId: opts.rootFolderId,
+    folderId: folder.id,
     isTest: false,
     metadata: { sourcePath: rel },
   });
@@ -168,6 +188,18 @@ export async function finishIngest(
   }
 }
 
+async function dropFolderIfGone(watchDir: string, relDir: string): Promise<void> {
+  if (await exists(path.join(watchDir, relDir))) return;
+  const folder = await findFolderForRelDir(relDir);
+  if (!folder || !folder.parentId) return;
+  const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
+  if (folders.some((f) => f.parentId === folder.id)) return;
+  if ((await listDocumentsInFoldersForOrg(LOCAL_ORG_ID, [folder.id])).length > 0) return;
+  if (await deleteFolder(folder.id, LOCAL_ORG_ID)) {
+    console.log(`[Watcher] ${relDir} removed on disk: folder "${folder.name}" deleted`);
+  }
+}
+
 export function startWatcher(opts: WatcherOptions) {
   const cacheDir = getCacheDir();
   const watcher = chokidar.watch(opts.watchDir, {
@@ -176,16 +208,28 @@ export function startWatcher(opts: WatcherOptions) {
     awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 250 },
   });
 
-  // Serialize ingestion so hash-dedupe checks don't race each other
+  // Serialize ingestion so hash-dedupe checks and folder creation don't race each other
   let chain = Promise.resolve();
-  const enqueue = (p: string) => {
+  const serial = (label: string, fn: () => Promise<unknown>) => {
     chain = chain
-      .then(() => ingestFile(p, opts))
-      .catch((error) => console.error(`[Watcher] Failed to ingest ${p}:`, error));
+      .then(fn)
+      .then(() => undefined)
+      .catch((error) => console.error(`[Watcher] Failed: ${label}:`, error));
   };
+  const enqueue = (p: string) => serial(p, () => ingestFile(p, opts));
+  const rel = (p: string) => path.relative(opts.watchDir, p).normalize("NFC");
 
   watcher.on("add", enqueue);
   watcher.on("change", enqueue);
+  watcher.on("addDir", (p) => {
+    if (rel(p)) serial(p, () => ensureFolderForRelDir(rel(p)));
+  });
+  // A removed directory drops its folder once nothing is left in it. Wait a bit:
+  // on a rename, the files' add/unlink events arrive after the unlinkDir.
+  watcher.on("unlinkDir", (p) => {
+    if (!rel(p)) return;
+    setTimeout(() => serial(p, () => dropFolderIfGone(opts.watchDir, rel(p))), 5000);
+  });
   watcher.on("unlink", (p) =>
     console.log(`[Watcher] ${path.relative(opts.watchDir, p)} removed (document kept)`)
   );

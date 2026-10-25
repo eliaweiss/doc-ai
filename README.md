@@ -47,9 +47,9 @@ Clients that support remote HTTP MCP can use `http://localhost:4310/mcp` directl
 
 Tools: `get_status`, `list_document_types`, `get_document_type`, `create_document_type`, `list_documents`, `get_document`, `list_searchable_entities`, `search_entities`, `get_entity`, `aggregate`, `update_entity_fields`, `reprocess_document`, `find_documents_in_folder`, `get_folder_scan`, `import_photos` (plus `get_photo_thumbnails`, which only the picker UI calls).
 
-## Import from folder (Eye)
+## Scan a photo folder + import (Eye, experimental)
 
-Point doc-ai at any folder of photos and it finds the receipts and documents in it. In the UI, open **New → Import from Folder**, type or browse to a folder and click **Scan**. Every receipt and document found is selected (except ones already in doc-ai). Unselect what you don't want, pick a doc-ai folder and click **Import**. Files are copied into the watch folder and processed like uploads; the source folder is never changed.
+Search a folder elsewhere on the computer (Pictures, Downloads, a phone backup) for photos of receipts, invoices and other financial documents that might be relevant, and import them into a doc-ai folder. In the UI, open **New → Scan Photo Folder + Import**, type or browse to a folder and click **Scan**. Every receipt and document found is selected (except ones already in doc-ai). Unselect what you don't want, pick a doc-ai folder and click **Import**. Files are copied into the watch folder and processed like uploads; the source folder is never changed.
 
 From Claude, ask something like "find the receipts in ~/Pictures/2025 and import them". `find_documents_in_folder` returns the list as text and, in hosts that support [MCP Apps](https://github.com/modelcontextprotocol/ext-apps), an inline picker with thumbnails, select/unselect all and an Import button. Claude can also import directly with `import_photos`.
 
@@ -77,6 +77,24 @@ HTTP :4310  ├─ /        zdocs client, built with Vite (apps/web)
 - **Watcher** (`apps/server/src/watcher.ts`) waits for file sizes to settle, skips temp and placeholder files, and dedupes by MD5 like zdocs. If a known hash appears at a new path, it's treated as a rename. Like zdocs' upload route, it converts XLS/XLSX files to CSV, writing the CSV to the cache dir. The watcher replaces zdocs' S3 upload and `uploads/[id]/complete` route.
 - **Worker** (`apps/server/src/worker.ts`) claims jobs with zdocs' `claimPendingJobs` and calls the pipeline functions directly. It replaces the cron route, the HTTP self-dispatch and Lambda. When it starts, it resets jobs left `IN_PROGRESS` by an earlier run.
 - **DB** (`packages/db-schema`): zdocs' Drizzle schema and queries on PGlite (with `pg_trgm` and `vector`). Migrations run when the service starts (`packages/db-schema/migrations`). A fixed org row (`id: "local"`) keeps zdocs' `*ForOrg(orgId, …)` queries unchanged.
+
+### Folders = directories
+
+The watch folder's directory tree is the folder tree; the root folder is the watch folder itself. Sync runs both ways (`apps/server/src/folder-sync.ts`, `folder-routes.ts`, `watcher.ts`):
+
+| You do this | doc-ai does this |
+|---|---|
+| Add a file in a subdirectory | Document goes into the matching folder; missing folders are created |
+| Create a directory on disk | Folder created |
+| Move or rename a file on disk | Document follows, folder included |
+| Remove a directory on disk | Its folder is dropped once nothing is left in it |
+| Create a folder in the UI | Directory created |
+| Rename or move a folder in the UI | Directory renamed or moved |
+| Move a document in the UI, or a folder rule routes it | File moved |
+| Upload in the UI | File written to the folder's full path |
+| Delete a folder or document in the UI | Directory or file moved to `<data dir>/trash/<time>/`, never deleted. Deleting a folder also deletes the documents and subfolders inside it. |
+
+Folder names that would map to an existing sibling directory (case-insensitive) are rejected. Removing a file on disk still keeps its document.
 
 ### Web UI (`apps/web`)
 

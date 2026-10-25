@@ -1,4 +1,5 @@
-export type { UiTxContext } from "./handleUiTxRequest";
+export { handleUiTxRequest, type UiTxContext } from "./handleUiTxRequest";
+export { handleGetSession } from "./handlers/getSession";
 export { handleSearchEntities } from "./handlers/searchEntities";
 export { handleGetEntity } from "./handlers/getEntity";
 export { handleListDocuments } from "./handlers/listDocuments";

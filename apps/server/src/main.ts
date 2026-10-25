@@ -17,6 +17,7 @@ import { createApi } from "./api";
 import { handleMcpRequest } from "./mcp";
 import { mountZdocsRoutes } from "./next-compat/mount-routes";
 import { mountLocalRoutes } from "./local-routes";
+import { mountFolderSyncRoutes } from "./folder-routes";
 
 // zdocs client, built by `npm run build -w @doc-ai/web`
 const webDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../web/dist");
@@ -25,7 +26,7 @@ async function main() {
   const config = getConfig();
   await fs.mkdir(config.dataDir, { recursive: true });
 
-  const { rootFolder } = await initDatabase();
+  await initDatabase();
   console.log(`[doc-ai] Database ready at ${config.dataDir}`);
 
   if (config.provider === "gateway" && !config.gatewayApiKey) {
@@ -40,7 +41,7 @@ async function main() {
   const restartWatcher = async () => {
     await watcher?.close();
     const { watchDir } = getConfig();
-    watcher = watchDir ? startWatcher({ watchDir, rootFolderId: rootFolder.id, onEnqueued }) : null;
+    watcher = watchDir ? startWatcher({ watchDir, onEnqueued }) : null;
     if (!watcher) console.warn("[doc-ai] No watch folder set: folder watching is off.");
   };
   await restartWatcher();
@@ -48,6 +49,8 @@ async function main() {
   const app = new Hono();
   app.route("/api/local", createApi({ onEnqueued, onWatchDirChanged: restartWatcher }));
   mountLocalRoutes(app, { onEnqueued });
+  // Before the zdocs routes: wraps their folder/document handlers with directory sync
+  mountFolderSyncRoutes(app);
   const mounted = await mountZdocsRoutes(app);
   console.log(`[doc-ai] Mounted ${mounted.length} zdocs API handlers`);
   // zdocs features that don't exist locally (billing, mini-apps, integrations, ...)

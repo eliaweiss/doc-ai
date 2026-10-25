@@ -10,7 +10,7 @@
  * - POST /api/org/:orgId/documents/:documentId/get-reconciliation → empty (reconciliation is v2)
  *
  * Plus empty answers for zdocs features the shared UI shell still calls
- * (mini-apps, analytics), so pages load without errors.
+ * (analytics), so pages load without errors.
  */
 import type { Hono } from "hono";
 import { promises as fs } from "fs";
@@ -33,6 +33,7 @@ import {
 } from "@zdocs/srv";
 import { finishIngest, SUPPORTED_EXTENSIONS } from "./watcher";
 import { reprocessDocument } from "./services";
+import { folderRelDir, freeRelPath as freeRelPathInWatchDir } from "./folder-sync";
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
@@ -40,15 +41,9 @@ export function safeName(name: string): string {
   return path.basename(name).replace(/[/\\:*?"<>|\x00-\x1f]/g, "_");
 }
 
-/** Unused relative path in the watch folder: "<folder>/<name>", "<name> (1)", ... */
+/** Unused relative path "<subdir>/<name>", "<subdir>/<name> (1)", ... in the watch folder */
 export async function freeRelPath(watchDir: string, subdir: string, name: string): Promise<string> {
-  const ext = path.extname(name);
-  const stem = path.basename(name, ext);
-  for (let i = 0; ; i++) {
-    const rel = path.join(subdir, i === 0 ? name : `${stem} (${i})${ext}`);
-    const exists = await fs.stat(path.join(watchDir, rel)).then(() => true, () => false);
-    if (!exists) return rel;
-  }
+  return freeRelPathInWatchDir(watchDir, path.join(subdir, name));
 }
 
 export function mountLocalRoutes(app: Hono, opts: { onEnqueued?: () => void }) {
@@ -75,9 +70,8 @@ export function mountLocalRoutes(app: Hono, opts: { onEnqueued?: () => void }) {
     const targetFolder = folder ?? root;
     if (!targetFolder) return c.json({ message: "No root folder" }, 500);
 
-    // UI folders map to subfolders of the watch folder (root folder = watch folder itself)
-    const subdir = targetFolder.id === root?.id ? "" : safeName(targetFolder.name);
-    const rel = await freeRelPath(watchDir, subdir, name);
+    // The folder's directory in the watch folder (root folder = watch folder itself)
+    const rel = await freeRelPathInWatchDir(watchDir, path.join(await folderRelDir(targetFolder.id), name));
 
     const document = await createDocumentForOrg(LOCAL_ORG_ID, {
       folderId: targetFolder.id,
@@ -151,7 +145,6 @@ export function mountLocalRoutes(app: Hono, opts: { onEnqueued?: () => void }) {
     c.json({ links: [], reconciliationLinks: [] })
   );
 
-  app.post("/api/org/:orgId/mini-apps/list-miniapps", (c) => c.json({ miniApps: [] }));
   app.all("/api/user-journey-events", (c) => c.json({ success: true }));
   // Settings page asks for a webhook URL / inbound email address; neither exists locally
   app.post("/api/org/:orgId/webhook/generate", (c) => c.json({ organization: null }));

@@ -242,9 +242,17 @@ export default function ImportFromFolderModal({ isOpen, onClose }: ImportFromFol
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent className="max-w-4xl" data-testid="import-from-folder-modal">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {t("title")}
+            <span className="text-[10px] font-normal uppercase tracking-wide rounded px-1.5 py-0.5 border border-border text-muted-foreground">
+              {t("experimental")}
+            </span>
+          </DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground -mt-2">{t("description")}</p>
+        <div className="text-sm text-muted-foreground -mt-2 space-y-1">
+          <p>{t("description")}</p>
+          <p className="text-xs">{t("descriptionDetails")}</p>
+        </div>
 
         <div className="flex gap-2">
           <Input

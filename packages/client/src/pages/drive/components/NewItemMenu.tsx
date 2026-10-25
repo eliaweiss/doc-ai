@@ -103,6 +103,9 @@ export default function NewItemMenu() {
             >
               <ScanSearch className="w-4 h-4 mr-2" />
               <span>{tImport("menuItem")}</span>
+              <span className="ml-2 text-[10px] uppercase tracking-wide rounded px-1.5 py-0.5 border border-border text-muted-foreground">
+                {tImport("experimental")}
+              </span>
             </li>
           </ul>
         </ContextMenu>

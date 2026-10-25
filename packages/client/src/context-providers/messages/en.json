@@ -300,9 +300,11 @@
         "confirmDelete": "Are you sure you want to delete this document?"
     },
     "importFromFolder": {
-        "menuItem": "Import from Folder",
-        "title": "Import receipts and documents from a folder",
-        "description": "Photos in the folder (and its subfolders) are sorted on this computer by the Eye model. Pick the ones to import; the originals are not changed.",
+        "menuItem": "Scan Photo Folder + Import",
+        "experimental": "Experimental",
+        "title": "Scan a photo folder and import",
+        "description": "Search a folder elsewhere on this computer (for example Pictures, Downloads or a phone backup) for photos of receipts, invoices and other financial documents that might be relevant, and import them into a doc-ai folder.",
+        "descriptionDetails": "Photos in the folder and its subfolders are sorted on this computer by the Eye model; nothing is uploaded for sorting. Everything found is selected; unselect what you don't need. The original files are copied, never moved or changed. Photos only for now (no PDFs).",
         "folderPlaceholder": "/Users/me/Pictures/Receipts",
         "browse": "Browse",
         "up": "Up",

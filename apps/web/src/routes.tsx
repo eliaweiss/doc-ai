@@ -10,6 +10,8 @@ import { DocumentViewPage } from "@zdocs/client/src/pages/document/DocumentViewP
 import { SchemaPage } from "@zdocs/client/src/pages/schema/SchemaPage";
 import SearchPage from "@zdocs/client/src/pages/search/SearchPage";
 import { OrganizationSettingsPage } from "@zdocs/client/src/pages/app/org-admin/OrganizationSettingsPage";
+import { MiniAppsPage } from "@zdocs/client/src/pages/mini-apps/MiniAppsPage";
+import { MiniAppPage } from "@zdocs/client/src/pages/mini-apps/MiniAppPage";
 
 // (pages)/folder/page.tsx
 export function DrivePage() {
@@ -51,4 +53,15 @@ export function SearchRoute() {
 // (pages)/settings/page.tsx
 export function SettingsRoute() {
   return <OrganizationSettingsPage />;
+}
+
+// doc-ai: mini app list (replaces (pages)/home)
+export function MiniAppsRoute() {
+  return <MiniAppsPage />;
+}
+
+// doc-ai: run one mini app, view only (replaces (pages)/ai-builder/[miniAppId])
+export function MiniAppRoute() {
+  const { miniAppId } = useParams();
+  return <MiniAppPage miniAppId={miniAppId as string} />;
 }

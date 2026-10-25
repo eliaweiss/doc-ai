@@ -31,10 +31,11 @@ export function AppSelector() {
   const [currentMiniApp, setCurrentMiniApp] = useState<MiniApp | null>(null);
   const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
 
-  // Extract mini app ID from pathname if we're on an ai-builder page
+  // Extract mini app ID from pathname if we're on a mini app page
+  // doc-ai: mini apps open at /app/:id (view only) instead of /ai-builder/:id
   const currentMiniAppId = useMemo(() => {
-    if (pathname?.startsWith("/ai-builder/")) {
-      const match = pathname.match(/\/ai-builder\/([^/?]+)/);
+    if (pathname?.startsWith("/app/")) {
+      const match = pathname.match(/\/app\/([^/?]+)/);
       return match ? match[1] : null;
     }
     return null;
@@ -84,11 +85,11 @@ export function AppSelector() {
     const match = menuItems.find((item) => {
       if (pathname === item.path) return true;
       if (
-        item.path.startsWith("/ai-builder/") &&
-        pathname?.startsWith("/ai-builder/")
+        item.path.startsWith("/app/") &&
+        pathname?.startsWith("/app/")
       ) {
-        const itemAppId = item.path.split("/ai-builder/")[1]?.split("?")[0];
-        const pathAppId = pathname.split("/ai-builder/")[1]?.split("?")[0];
+        const itemAppId = item.path.split("/app/")[1]?.split("?")[0];
+        const pathAppId = pathname.split("/app/")[1]?.split("?")[0];
         return itemAppId === pathAppId;
       }
     // Don't match the /ai-builder root item when on a specific mini-app page

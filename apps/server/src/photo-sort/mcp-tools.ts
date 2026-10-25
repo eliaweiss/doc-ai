@@ -99,9 +99,11 @@ export function registerPhotoSortTools(server: McpServer, opts: { onEnqueued?: (
   server.registerTool(
     "find_documents_in_folder",
     {
-      title: "Find receipts and documents in a folder",
+      title: "Scan a photo folder for financial documents",
       description:
-        "Sort the photos in a local folder (subfolders included) with the on-device Eye model and find the receipts and " +
+        "Experimental. Search a folder elsewhere on this computer (e.g. Pictures, Downloads, a phone backup) for photos of " +
+        "receipts, invoices and other financial documents that might be relevant, to import them into doc-ai. " +
+        "Sorts the photos (subfolders included) with the on-device Eye model and finds the receipts and " +
         "documents (also whiteboards and ID cards; screenshots if asked). Shows the user an inline picker where everything " +
         "found is selected and they choose what to import into doc-ai. Only photos (JPG, PNG, WebP, GIF, TIFF) for now, not PDFs. " +
         "The folder is never changed; importing copies the files.",

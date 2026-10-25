@@ -55,3 +55,7 @@ export { quickAccessTbl } from "./quick-access";
 
 // Per-action model selection (doc-ai Settings → Processing)
 export { aiModelSettingsTbl } from "./ai-model-settings";
+
+// Mini apps (doc-ai: viewer only; created through the API/MCP)
+export { miniAppsTbl } from "./mini-apps";
+export { miniAppsHistoryTbl } from "./mini-apps-history";

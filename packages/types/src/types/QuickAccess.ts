@@ -20,8 +20,9 @@ export type SystemAppId =
   | "integrations"
   | "home";
 
-// doc-ai: "api-settings" removed (no inbound webhook / API keys locally)
-export const DEFAULT_ENABLED_SYSTEM_APP_IDS: SystemAppId[] = ["files", "schema", "settings"];
+// doc-ai: "api-settings" removed (no inbound webhook / API keys locally); "search" added
+// (zdocs users add it from the Apps page, which doc-ai doesn't route)
+export const DEFAULT_ENABLED_SYSTEM_APP_IDS: SystemAppId[] = ["files", "search", "schema", "settings"];
 
 export type QuickAccessAppType = "system" | "mini_app";
 

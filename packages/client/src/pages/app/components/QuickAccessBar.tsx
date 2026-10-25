@@ -87,7 +87,7 @@ export function QuickAccessBar() {
             description: miniApp.description || undefined,
             icon: miniApp.icon,
             color: miniApp.color,
-            path: `/ai-builder/${miniApp.id}?fullscreen=true`,
+            path: `/app/${miniApp.id}`, // doc-ai: view-only route, no AI builder
           };
         }
         // If mini app not found yet, return null (will be filtered out)

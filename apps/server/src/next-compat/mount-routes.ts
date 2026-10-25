@@ -58,7 +58,8 @@ export async function mountZdocsRoutes(app: Hono): Promise<string[]> {
         const req = new NextRequest(raw.url, {
           method: raw.method,
           headers: raw.headers,
-          body: raw.method === "GET" || raw.method === "HEAD" ? undefined : await raw.arrayBuffer(),
+          // c.req.arrayBuffer() reuses a body a middleware already parsed (raw can only be read once)
+          body: raw.method === "GET" || raw.method === "HEAD" ? undefined : await c.req.arrayBuffer(),
         });
         return handler(req, { params: Promise.resolve(c.req.param()) });
       });

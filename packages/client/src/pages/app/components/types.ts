@@ -46,7 +46,7 @@ export const systemAppToAppItem = (
 export const miniAppToAppItem = (miniApp: MiniApp): AppItem => ({
   id: miniApp.id,
   name: miniApp.name,
-  path: `/ai-builder/${miniApp.id}?fullscreen=true`,
+  path: `/app/${miniApp.id}`, // doc-ai: view-only route, no AI builder
   mode: `mini-app-${miniApp.id}`,
   iconName: miniApp.icon,
   color: miniApp.color,

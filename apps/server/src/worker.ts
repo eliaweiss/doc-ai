@@ -12,7 +12,8 @@ import {
   cancelJob,
   getDocumentForOrg,
 } from "@zdocs/db-schema";
-import { classifyDocument, extractDocument } from "@zdocs/srv";
+import { classifyDocument, extractDocument, getConfig } from "@zdocs/srv";
+import { syncDocumentFile } from "./folder-sync";
 import type { QueueJob } from "@zdocs/types";
 
 const POLL_INTERVAL_MS = 5_000;
@@ -33,6 +34,13 @@ async function runJob(job: QueueJob): Promise<void> {
   }
 
   await extractDocument({ orgId, documentId, jobId });
+
+  // Classification / folder rules may have moved the document: move its file too
+  if (getConfig().watchDir) {
+    await syncDocumentFile(documentId).catch((error) =>
+      console.error(`[Worker] Failed to move file for ${documentId}:`, error)
+    );
+  }
 }
 
 export function startWorker() {

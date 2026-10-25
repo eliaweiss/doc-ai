@@ -4,7 +4,7 @@
  * zdocs' query layer is org-scoped everywhere (`*ForOrg(orgId, ...)`);
  * doc-ai keeps that and uses one fixed org row instead of refactoring.
  */
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { zdocsDb } from "../db";
 import { usersTbl } from "../schemas/auth";
 import { organizationsTbl } from "../schemas/organizations";
@@ -162,4 +162,25 @@ export async function updateDocumentStorageForOrg(
     .update(documentTbl)
     .set({ ...data, updatedAt: new Date() })
     .where(and(eq(documentTbl.orgId, orgId), eq(documentTbl.id, documentId)));
+}
+
+/**
+ * Live documents in any of these folders (folder ↔ directory sync).
+ */
+export async function listDocumentsInFoldersForOrg(
+  orgId: string,
+  folderIds: string[]
+): Promise<Document[]> {
+  if (folderIds.length === 0) return [];
+  const rows = await zdocsDb
+    .select()
+    .from(documentTbl)
+    .where(
+      and(
+        eq(documentTbl.orgId, orgId),
+        inArray(documentTbl.folderId, folderIds),
+        isNull(documentTbl.deletedAt)
+      )
+    );
+  return rows as Document[];
 }
