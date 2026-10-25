@@ -15,7 +15,7 @@ import {
   hasActiveJob,
   updateDocumentForOrg,
 } from "@zdocs/db-schema";
-import { getConfig } from "@zdocs/srv";
+import { deleteCacheByPrefix, getConfig } from "@zdocs/srv";
 import {
   EXTRACTION_STATUSES,
   type FieldDefinition,
@@ -67,6 +67,26 @@ export async function reprocessDocument(documentId: string, onEnqueued?: () => v
     extractionErrors: null,
   });
   const job = await enqueueDocument(LOCAL_ORG_ID, documentId, "CLASSIFY");
+  onEnqueued?.();
+  return { queued: true, jobId: job.id };
+}
+
+/**
+ * Re-run extraction with the document's current type (no re-classification),
+ * so a type the user picked sticks. `force` drops cached extraction results.
+ */
+export async function reextractDocument(documentId: string, force: boolean, onEnqueued?: () => void) {
+  const document = await getDocumentForOrg(LOCAL_ORG_ID, documentId);
+  if (!document) throw new Error(`Document not found: ${documentId}`);
+  if (!document.docType) return reprocessDocument(documentId, onEnqueued);
+  if (await hasActiveJob(documentId)) return { queued: false, reason: "already queued" };
+
+  if (force) await deleteCacheByPrefix(`extraction/${document.contentHash || document.s3Key}/`);
+  await updateDocumentForOrg(LOCAL_ORG_ID, documentId, {
+    extractionStatus: "PENDING",
+    extractionErrors: null,
+  });
+  const job = await enqueueDocument(LOCAL_ORG_ID, documentId, "EXTRACT");
   onEnqueued?.();
   return { queued: true, jobId: job.id };
 }

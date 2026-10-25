@@ -1070,7 +1070,8 @@ export async function updateDocumentDataForOrg(
     .update(documentDataTbl)
     .set({
       ...data,
-      lineItems: data.lineItems ? (data.lineItems as any) : undefined,
+      // null clears the line items (change-type), undefined leaves them
+      lineItems: data.lineItems !== undefined ? (data.lineItems as any) : undefined,
       notifications:
         data.notifications !== undefined ? data.notifications : undefined,
       schemaEntityVersion:

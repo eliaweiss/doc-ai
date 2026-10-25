@@ -6,7 +6,8 @@
  * - PUT  /api/uploads/local/:id      → writes the file into the watch folder
  * - POST /api/uploads/:id/complete   → finishIngest (size check, XLSX→CSV, CLASSIFY job)
  * - GET  /api/uploads/:id/:fileName  → file bytes for the viewer
- * - POST /api/org/:orgId/documents/:documentId/extract → re-queue in the local worker
+ * - POST /api/org/:orgId/documents/:documentId/extract → re-extract (current type) in the local worker
+ * - POST /api/org/:orgId/documents/:documentId/change-type → after zdocs' handler, queue extraction
  *
  * Plus empty answers for zdocs features the shared UI shell still calls
  * (analytics), so pages load without errors.
@@ -31,7 +32,7 @@ import {
   resolveDocumentPath,
 } from "@zdocs/srv";
 import { finishIngest, SUPPORTED_EXTENSIONS } from "./watcher";
-import { reprocessDocument } from "./services";
+import { reextractDocument } from "./services";
 import { folderRelDir, freeRelPath as freeRelPathInWatchDir } from "./folder-sync";
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
@@ -130,14 +131,23 @@ export function mountLocalRoutes(app: Hono, opts: { onEnqueued?: () => void }) {
 
   app.post("/api/org/:orgId/documents/:documentId/extract", async (c) => {
     const documentId = c.req.param("documentId");
-    const result = await reprocessDocument(documentId, opts.onEnqueued);
+    const { forceReExtract } = await c.req.json().catch(() => ({}));
+    const result = await reextractDocument(documentId, !!forceReExtract, opts.onEnqueued);
     return c.json({
       success: true,
       documentId,
       queued: result.queued,
-      mode: "vercel",
+      // "lambda" tells the client extraction is async (it polls for the result);
+      // "vercel" would make it read headerData/denormalized from this response
+      mode: "lambda",
       message: result.queued ? "Extraction queued" : "Document is already being processed",
     });
+  });
+
+  // zdocs' handler resets the type and data; locally nothing else picks up the PENDING document
+  app.post("/api/org/:orgId/documents/:documentId/change-type", async (c, next) => {
+    await next();
+    if (c.res.ok) await reextractDocument(c.req.param("documentId"), false, opts.onEnqueued);
   });
 
   app.all("/api/user-journey-events", (c) => c.json({ success: true }));
