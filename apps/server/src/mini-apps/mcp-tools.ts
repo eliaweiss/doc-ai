@@ -82,7 +82,11 @@ BEFORE WRITING CODE: explore the data with this server's tools so the code match
 
 DOC-AI DIFFERENCES FROM THE DOCS BELOW:
 - There is no "moneyTrace" tool on this server: to see real reconciliation link shapes, follow the response structures below.
-- Data methods: getSession, searchEntities, getEntity, listDocuments, aggregate, updateEntityFields, listReconciliationLinks, traceReconciliation, createReconciliationLink, deleteReconciliationLink.
+- Data methods: getSession, searchEntities, getEntity, listDocuments, aggregate, updateEntityFields, listReconciliationLinks, traceReconciliation, createReconciliationLink, deleteReconciliationLink, listFolders, moveDocuments.
+- uiTx.listFolders() returns { folders: Array<{ id, name, path, parentId, isRoot, documentCount }> } sorted by path ("My Drive/Receipts/2025"); the root folder has isRoot: true. listDocuments results carry each document's folderId; search results don't, so map documentId -> folderId with listDocuments().
+- uiTx.listDocuments() returns { total, documents } and only 50 documents by default: page with limit/offset until documents.length reaches total.
+- uiTx.moveDocuments({ documentIds: string[], folderId }) moves documents into a folder (their files move in the watch folder too) and returns { folder: { id, name, path, ... }, moved: string[], failed: Array<{ documentId, error }> }. Confirm with the user (uiTx.ui.confirm) before moving many documents.
+- uiTx.createReconciliationLink({ sourceRef, targetRef, amount, currency, date, type?: "manual" | "suggested" }): sourceRef/targetRef have the same { ref, field: { name, value, description } } shape as listed links; returns { ok: true, linkId }. uiTx.deleteReconciliationLink({ linkId }) removes one.
 
 EDITING: prefer update_mini_app with small anchor-based "edits" over resending the whole code:
 - replace: { type: "replace", anchor, old?, new } (with "old", replaces that text near the anchor; without, replaces the anchor)

@@ -51,6 +51,33 @@ async function requireFolder(folderId: string): Promise<{ folders: Folder[]; fol
   return { folders, folder };
 }
 
+/** All folders with paths and document counts, sorted by path (MCP list_folders, uiTx listFolders) */
+export async function listFoldersWithCounts() {
+  const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
+  const docs = await listDocumentsInFoldersForOrg(LOCAL_ORG_ID, folders.map((f) => f.id));
+  const counts = new Map<string, number>();
+  for (const d of docs) if (d.folderId) counts.set(d.folderId, (counts.get(d.folderId) ?? 0) + 1);
+  return folders
+    .map((f) => ({ ...summary(folders, f), documentCount: counts.get(f.id) ?? 0 }))
+    .sort((a, b) => a.path.localeCompare(b.path));
+}
+
+/** Moves documents one by one through the move route (MCP move_documents, uiTx moveDocuments) */
+export async function moveDocumentsToFolder(api: ApiPost, documentIds: string[], folderId: string) {
+  const { folders } = await requireFolder(folderId);
+  const moved: string[] = [];
+  const failed: { documentId: string; error: string }[] = [];
+  for (const documentId of documentIds) {
+    try {
+      await api(`${ORG}/documents/${documentId}/move`, { folderId });
+      moved.push(documentId);
+    } catch (error) {
+      failed.push({ documentId, error: error instanceof Error ? error.message : String(error) });
+    }
+  }
+  return { folder: summary(folders, folders.find((f) => f.id === folderId)!), moved, failed };
+}
+
 async function rootId(): Promise<string> {
   const root = await getRootFolderForOrg(LOCAL_ORG_ID);
   if (!root) throw new Error("No root folder");
@@ -69,15 +96,7 @@ export function registerFolderTools(
         "List doc-ai folders with their ids, full paths (e.g. \"My Drive/Receipts\") and document counts. " +
         "Folders mirror subdirectories of the watch folder; the root folder is the watch folder itself.",
     },
-    wrap(async () => {
-      const folders = await getFoldersByOrgId(LOCAL_ORG_ID);
-      const docs = await listDocumentsInFoldersForOrg(LOCAL_ORG_ID, folders.map((f) => f.id));
-      const counts = new Map<string, number>();
-      for (const d of docs) if (d.folderId) counts.set(d.folderId, (counts.get(d.folderId) ?? 0) + 1);
-      return folders
-        .map((f) => ({ ...summary(folders, f), documentCount: counts.get(f.id) ?? 0 }))
-        .sort((a, b) => a.path.localeCompare(b.path));
-    })
+    wrap(async () => listFoldersWithCounts())
   );
 
   server.registerTool(
@@ -164,19 +183,8 @@ export function registerFolderTools(
         "Returns the ids moved and any that failed.",
       inputSchema: { documentIds: z.array(z.string()).min(1).max(500), folderId: z.string() },
     },
-    wrap(async ({ documentIds, folderId }: { documentIds: string[]; folderId: string }) => {
-      const { folders } = await requireFolder(folderId);
-      const moved: string[] = [];
-      const failed: { documentId: string; error: string }[] = [];
-      for (const documentId of documentIds) {
-        try {
-          await api(`${ORG}/documents/${documentId}/move`, { folderId });
-          moved.push(documentId);
-        } catch (error) {
-          failed.push({ documentId, error: error instanceof Error ? error.message : String(error) });
-        }
-      }
-      return { folder: summary(folders, folders.find((f) => f.id === folderId)!), moved, failed };
-    })
+    wrap(async ({ documentIds, folderId }: { documentIds: string[]; folderId: string }) =>
+      moveDocumentsToFolder(api, documentIds, folderId)
+    )
   );
 }

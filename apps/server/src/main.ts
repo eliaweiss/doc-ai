@@ -18,6 +18,7 @@ import { handleMcpRequest } from "./mcp";
 import { mountZdocsRoutes } from "./next-compat/mount-routes";
 import { mountLocalRoutes } from "./local-routes";
 import { mountFolderSyncRoutes } from "./folder-routes";
+import { mountUiTxFolderRoutes } from "./folders/ui-tx-routes";
 
 // zdocs client, built by `npm run build -w @doc-ai/web`
 const webDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../web/dist");
@@ -47,15 +48,8 @@ async function main() {
   await restartWatcher();
 
   const app = new Hono();
-  app.route("/api/local", createApi({ onEnqueued, onWatchDirChanged: restartWatcher }));
-  mountLocalRoutes(app, { onEnqueued });
-  // Before the zdocs routes: wraps their folder/document handlers with directory sync
-  mountFolderSyncRoutes(app);
-  const mounted = await mountZdocsRoutes(app);
-  console.log(`[doc-ai] Mounted ${mounted.length} zdocs API handlers`);
-  // zdocs features that don't exist locally (billing, mini-apps, integrations, ...)
-  app.all("/api/*", (c) => c.json({ error: `Not available in doc-ai: ${c.req.path}` }, 404));
-  // MCP folder tools go through the routes above, so directory sync applies to them too
+  // MCP folder tools and uiTx folder methods go through the app's own routes,
+  // so directory sync applies to them too
   const api = async (route: string, body: unknown) => {
     const res = await app.request(route, {
       method: "POST",
@@ -66,6 +60,16 @@ async function main() {
     if (!res.ok) throw new Error(json?.error ?? `${route} failed (${res.status})`);
     return json;
   };
+  app.route("/api/local", createApi({ onEnqueued, onWatchDirChanged: restartWatcher }));
+  mountLocalRoutes(app, { onEnqueued });
+  // Before the zdocs routes: wraps their folder/document handlers with directory sync
+  mountFolderSyncRoutes(app);
+  // Before the zdocs /api/ui-tx route: answers listFolders and moveDocuments
+  mountUiTxFolderRoutes(app, api);
+  const mounted = await mountZdocsRoutes(app);
+  console.log(`[doc-ai] Mounted ${mounted.length} zdocs API handlers`);
+  // zdocs features that don't exist locally (billing, mini-apps, integrations, ...)
+  app.all("/api/*", (c) => c.json({ error: `Not available in doc-ai: ${c.req.path}` }, 404));
   app.all("/mcp", (c) => handleMcpRequest(c.req.raw, { onEnqueued, api }));
 
   const webRoot = path.relative(process.cwd(), webDist);
