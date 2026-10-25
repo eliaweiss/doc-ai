@@ -45,6 +45,7 @@ async function runJob(job: QueueJob): Promise<void> {
 
 export function startWorker() {
   let running = 0;
+  let drained: (() => void) | null = null;
   let timer: NodeJS.Timeout | null = null;
   let stopped = false;
 
@@ -61,6 +62,7 @@ export function startWorker() {
             .catch((error) => console.error(`[Worker] Job ${job.id} failed:`, error))
             .finally(() => {
               running--;
+              if (running === 0) drained?.();
               kick();
             });
         }
@@ -91,9 +93,11 @@ export function startWorker() {
 
   return {
     kick,
-    stop() {
+    /** Stop claiming jobs; resolves once the running ones have finished */
+    stop(): Promise<void> {
       stopped = true;
       if (timer) clearTimeout(timer);
+      return running === 0 ? Promise.resolve() : new Promise((resolve) => (drained = resolve));
     },
   };
 }

@@ -2,6 +2,7 @@
  * Local processing settings for the Settings page (GET/POST /api/local/settings).
  * The API key is never returned, only whether one is set and its last 4 characters.
  */
+import { execFile } from "child_process";
 import { constants as fsConstants, promises as fs } from "fs";
 import path from "path";
 import { generateText } from "ai";
@@ -157,6 +158,39 @@ export async function saveSettings(input: Record<string, unknown>): Promise<{ wa
     writeConfiguredDataDir(nextDataDir === path.resolve(expandHome(DEFAULT_DATA_DIR)) ? null : nextDataDir);
   }
   return { watchDirChanged: getConfig().watchDir !== before.watchDir };
+}
+
+/** Folder picker command for this OS: prints the chosen path, fails on cancel */
+function pickerCommand(prompt: string, start: string | null): [string, string[]] | null {
+  if (process.platform === "darwin") {
+    const at = start ? ` default location (POSIX file ${JSON.stringify(start)})` : "";
+    // `activate` brings the dialog in front of the browser
+    return ["osascript", ["-e", "activate", "-e", `POSIX path of (choose folder with prompt ${JSON.stringify(prompt)}${at})`]];
+  }
+  if (process.platform === "linux") {
+    return ["zenity", ["--file-selection", "--directory", `--title=${prompt}`, ...(start ? [`--filename=${start}/`] : [])]];
+  }
+  return null;
+}
+
+/**
+ * Open the OS folder dialog on this machine (the server only listens on
+ * 127.0.0.1, so it's the user's own desktop) and return the chosen folder.
+ */
+export async function pickFolder(): Promise<{ path: string | null; supported: boolean }> {
+  const command = pickerCommand("Choose the folder doc-ai should watch", getConfig().watchDir);
+  if (!command) return { path: null, supported: false };
+  return new Promise((resolve) => {
+    execFile(command[0], command[1], { timeout: 10 * 60_000 }, (error, stdout) => {
+      if (error) {
+        // ENOENT: no zenity installed; anything else is a cancel
+        resolve({ path: null, supported: (error as NodeJS.ErrnoException).code !== "ENOENT" });
+        return;
+      }
+      const chosen = stdout.trim().replace(/(.)\/$/, "$1");
+      resolve({ path: chosen || null, supported: true });
+    });
+  });
 }
 
 /** One tiny model call with the current settings (classification model). */

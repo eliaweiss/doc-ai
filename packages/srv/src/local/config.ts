@@ -7,7 +7,8 @@
  * port can only be set through the environment.
  *
  * DOC_AI_WATCH_DIR   folder to watch for documents (required to run the watcher)
- * DOC_AI_DATA_DIR    where the PGlite DB, caches and settings.json live (overrides the Settings page)
+ * DOC_AI_DATA_DIR    where settings.json and the per-watch-folder workspaces (PGlite DB,
+ *                    caches) live (overrides the Settings page)
  * DOC_AI_PROVIDER    "gateway" (Vercel AI Gateway, default) | "ollama"
  * AI_GATEWAY_API_KEY Vercel AI Gateway key (gateway provider)
  * OLLAMA_BASE_URL    default http://localhost:11434
@@ -16,13 +17,16 @@
  */
 import fs from "fs";
 import path from "path";
-import { expandHome, getDataDir } from "@zdocs/db-schema/data-dir";
+import { getOpenWorkspaceDir } from "@zdocs/db-schema";
+import { expandHome, getDataDir, getWorkspaceDir } from "@zdocs/db-schema/data-dir";
 
 export type ProviderKind = "gateway" | "ollama";
 
 export interface DocAiConfig {
   watchDir: string | null;
   dataDir: string;
+  /** This watch folder's DB, caches and trash (see data-dir.ts) */
+  workspaceDir: string;
   provider: ProviderKind;
   gatewayApiKey: string | null;
   ollamaBaseUrl: string;
@@ -69,9 +73,12 @@ export function getConfig(): DocAiConfig {
   const saved = readSettings();
   const watchDir = saved.watchDir !== undefined ? saved.watchDir : env.DOC_AI_WATCH_DIR;
   const provider = saved.provider ?? env.DOC_AI_PROVIDER;
+  const resolvedWatchDir = watchDir ? path.resolve(expandHome(watchDir)) : null;
   return {
-    watchDir: watchDir ? path.resolve(expandHome(watchDir)) : null,
+    watchDir: resolvedWatchDir,
     dataDir: getDataDir(),
+    // The open database's workspace, so caches follow the DB during a switch
+    workspaceDir: getOpenWorkspaceDir() ?? getWorkspaceDir(resolvedWatchDir),
     provider: provider === "ollama" ? "ollama" : "gateway",
     gatewayApiKey: saved.gatewayApiKey || env.AI_GATEWAY_API_KEY || null,
     ollamaBaseUrl: saved.ollamaBaseUrl || env.OLLAMA_BASE_URL || "http://localhost:11434",

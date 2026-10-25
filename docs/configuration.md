@@ -28,7 +28,7 @@ The resolution logic is `getConfig()` in [packages/srv/src/local/config.ts](../p
 
 The Processing section of the settings page ([ProcessingSection.tsx](../packages/client/src/pages/app/org-admin/components/ProcessingSection.tsx)) talks to `GET/POST /api/local/settings` and `POST /api/local/settings/test`, implemented in [apps/server/src/settings.ts](../apps/server/src/settings.ts). It lets you change:
 
-- **Watch folder.** Must be an existing directory. Saving restarts the watcher immediately, without a server restart.
+- **Watch folder.** Chosen with **Choose…**, which opens the native folder dialog on the machine running doc-ai (`POST /api/local/settings/pick-folder`: `osascript` on macOS, `zenity` on Linux). Where no dialog is available, the path can be typed instead. Each watch folder has its own workspace (database, caches, trash; see [Data model](data-model.md#files-on-disk)). Saving a different folder switches workspaces right away, without a server restart: the watcher and worker stop (running jobs finish first), that folder's database is opened, and both start again. Switching back to a folder brings back its data. A folder used for the first time starts with the models chosen so far.
 - **Data folder.** Takes effect on the next restart. It can't be changed here if `DOC_AI_DATA_DIR` is set. When it changes, the current `settings.json` is copied into the new folder unless one already exists there. An empty value goes back to `~/.doc-ai`.
 - **Provider**: Gateway or Ollama.
 - **Gateway API key.** The key is never sent back to the browser; the page only sees whether one is set, its last four characters and whether it came from Settings or `.env`. Saving an empty value keeps the current key; clearing it falls back to `.env`.

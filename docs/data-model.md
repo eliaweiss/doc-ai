@@ -4,7 +4,7 @@
 
 doc-ai uses **PGlite**, a WebAssembly build of Postgres that runs inside the Node process ([packages/db-schema/src/db.ts](../packages/db-schema/src/db.ts)). It replaces zdocs' hosted Neon / postgres-js connection; the rest of zdocs' Drizzle query layer runs on it unchanged.
 
-- Stored in `<data folder>/pgdata`. One instance per process, so only one doc-ai process can use a data folder at a time.
+- Stored in `<data folder>/workspaces/<watch folder name>-<hash>/pgdata`: each watch folder has its own database. One instance is open at a time, and only one doc-ai process can use a data folder at a time.
 - Extensions: `pg_trgm` (trigram similarity for fuzzy search) and `vector` (enabled for future vector search; not used yet).
 - `DOC_AI_DB_IN_MEMORY=1` switches to an in-memory database.
 - Schema: Drizzle table definitions in [packages/db-schema/src/schemas](../packages/db-schema/src/schemas), exported from [schemas/index.ts](../packages/db-schema/src/schemas/index.ts).
@@ -54,15 +54,20 @@ Everything doc-ai writes lives in the **data folder** (default `~/.doc-ai`), exc
 
 | Path | Contents |
 |---|---|
-| `pgdata/` | The PGlite database. |
-| `settings.json` | Settings saved from the UI (mode 600; may contain the Gateway key). |
+| `settings.json` | Settings saved from the UI (mode 600; may contain the Gateway key), including the current watch folder. |
 | `data-dir.json` | Only in `~/.doc-ai`: pointer to a different data folder chosen on the Settings page. |
-| `cache/classification/<hash>/<prompt hash>.json` | Cached classification responses. |
-| `cache/extraction/<hash>/<schema hash>/…` | Cached extraction results, including per-page and per-chunk results. |
-| `cache/converted/<hash>.csv` | XLS/XLSX/XLSM files converted to CSV. |
-| `cache/categories-prompt/<document id>.json` | Category lists used in extraction prompts, when present. |
-| `cache/eye/` | The Eye model download and `results.json`, the per-photo classification cache. |
+| `scans/` | Saved Import-from-folder scans. |
+| `workspaces/<name>-<hash>/` | One per watch folder (`<name>` is the folder's name, `<hash>` part of the SHA-1 of its path; `no-watch-folder/` when none is set). Holds the entries below and a `workspace.json` naming the watch folder. |
+| `…/pgdata/` | That folder's PGlite database. |
+| `…/trash/` | Files and directories deleted from the UI. |
+| `…/cache/classification/<hash>/<prompt hash>.json` | Cached classification responses. |
+| `…/cache/extraction/<hash>/<schema hash>/…` | Cached extraction results, including per-page and per-chunk results. |
+| `…/cache/converted/<hash>.csv` | XLS/XLSX/XLSM files converted to CSV. |
+| `…/cache/categories-prompt/<document id>.json` | Category lists used in extraction prompts, when present. |
+| `…/cache/eye/` | The Eye model download and `results.json`, the per-photo classification cache. |
 
-The cache is a filesystem replacement for zdocs' S3 cache with the same API ([packages/srv/src/extraction/s3-cache.ts](../packages/srv/src/extraction/s3-cache.ts)). Deleting `cache/` is safe: entries are recreated on demand, at the cost of new model calls. Deleting `pgdata/` resets doc-ai entirely; on the next start every file in the watch folder is ingested again.
+Data folders from before workspaces kept `pgdata/`, `cache/` and `trash/` at the top level. On start they are moved into the workspace of the watch folder set at that time.
+
+The cache is a filesystem replacement for zdocs' S3 cache with the same API ([packages/srv/src/extraction/s3-cache.ts](../packages/srv/src/extraction/s3-cache.ts)). Deleting `cache/` is safe: entries are recreated on demand, at the cost of new model calls. Deleting a workspace's `pgdata/` resets doc-ai for that watch folder; on the next start every file in it is ingested again.
 
 The watch folder itself is only read, except for uploads and imports from the UI (see [Ingestion](ingestion.md)).

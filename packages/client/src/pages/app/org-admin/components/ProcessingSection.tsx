@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { FolderOpen, Loader2 } from "lucide-react";
 import {
   Button,
   Input,
@@ -53,6 +53,9 @@ export function ProcessingSection() {
   const [ollamaModel, setOllamaModel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [isPicking, setIsPicking] = useState(false);
+  // Typing a path is only offered when the server can't open a folder dialog
+  const [pickerSupported, setPickerSupported] = useState(true);
 
   const apply = useCallback((s: LocalSettings) => {
     setSettings(s);
@@ -84,6 +87,23 @@ export function ProcessingSection() {
       toast.error(error instanceof Error ? error.message : String(error));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const pickWatchDir = async () => {
+    setIsPicking(true);
+    try {
+      const result = await zFetch("/api/local/settings/pick-folder", { method: "POST" });
+      if (!result.supported) {
+        setPickerSupported(false);
+        toast.error(t("watchDirPickerUnsupported"));
+      } else if (result.path) {
+        setWatchDir(result.path);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsPicking(false);
     }
   };
 
@@ -127,14 +147,30 @@ export function ProcessingSection() {
 
       <div className="space-y-2">
         <Label htmlFor="watch-dir">{t("watchDir")}</Label>
-        <Input
-          id="watch-dir"
-          value={watchDir}
-          onChange={(e) => setWatchDir(e.target.value)}
-          placeholder="~/Documents/doc-ai/docs"
-          className="font-mono text-sm"
-          data-testid="watch-dir-input"
-        />
+        <div className="flex gap-2">
+          <Input
+            id="watch-dir"
+            value={watchDir}
+            onChange={(e) => setWatchDir(e.target.value)}
+            onClick={() => pickerSupported && !isPicking && pickWatchDir()}
+            readOnly={pickerSupported}
+            placeholder={pickerSupported ? t("watchDirNone") : "~/Documents/doc-ai/docs"}
+            className={`font-mono text-sm ${pickerSupported ? "cursor-pointer" : ""}`}
+            data-testid="watch-dir-input"
+          />
+          {pickerSupported && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={pickWatchDir}
+              disabled={isPicking}
+              data-testid="watch-dir-pick-btn"
+            >
+              {isPicking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderOpen className="mr-2 h-4 w-4" />}
+              {t("watchDirChoose")}
+            </Button>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">{t("watchDirHint")}</p>
       </div>
 

@@ -210,7 +210,9 @@ export function startWatcher(opts: WatcherOptions) {
 
   // Serialize ingestion so hash-dedupe checks and folder creation don't race each other
   let chain = Promise.resolve();
+  let closed = false;
   const serial = (label: string, fn: () => Promise<unknown>) => {
+    if (closed) return;
     chain = chain
       .then(fn)
       .then(() => undefined)
@@ -236,5 +238,13 @@ export function startWatcher(opts: WatcherOptions) {
   watcher.on("ready", () => console.log(`[Watcher] Watching ${opts.watchDir}`));
   watcher.on("error", (error) => console.error("[Watcher] Error:", error));
 
-  return watcher;
+  // Closing also waits for queued ingestion, so the database can be switched after it
+  const closeWatcher = watcher.close.bind(watcher);
+  return Object.assign(watcher, {
+    close: async () => {
+      closed = true;
+      await closeWatcher();
+      await chain;
+    },
+  });
 }

@@ -215,7 +215,7 @@ export async function moveToTrash(rel: string): Promise<string | null> {
   const src = path.join(watchDir, rel);
   if (!rel || !(await exists(src))) return null;
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const dst = path.join(getConfig().dataDir, "trash", stamp, rel);
+  const dst = path.join(getConfig().workspaceDir, "trash", stamp, rel);
   await fs.mkdir(path.dirname(dst), { recursive: true });
   await fs.rename(src, dst).catch(async (error: NodeJS.ErrnoException) => {
     if (error.code !== "EXDEV") throw error;

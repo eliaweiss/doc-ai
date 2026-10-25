@@ -13,7 +13,7 @@ import {
   listDocumentTypes,
   reprocessDocument,
 } from "./services";
-import { SettingsError, getPublicSettings, saveSettings, testConnection } from "./settings";
+import { SettingsError, getPublicSettings, pickFolder, saveSettings, testConnection } from "./settings";
 import { createPhotoSortApi } from "./photo-sort/routes";
 
 export function createApi(opts: { onEnqueued?: () => void; onWatchDirChanged?: () => Promise<void> }) {
@@ -33,6 +33,9 @@ export function createApi(opts: { onEnqueued?: () => void; onWatchDirChanged?: (
   });
 
   api.post("/settings/test", async (c) => c.json(await testConnection()));
+
+  // Native folder dialog for the watch folder (browsers can't return a folder's path)
+  api.post("/settings/pick-folder", async (c) => c.json(await pickFolder()));
 
   api.get("/status", async (c) => c.json(await getStatus()));
 

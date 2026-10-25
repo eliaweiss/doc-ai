@@ -34,6 +34,7 @@ export async function getStatus() {
   return {
     watchDir: config.watchDir,
     dataDir: config.dataDir,
+    workspaceDir: config.workspaceDir,
     provider: config.provider,
     model:
       config.provider === "ollama"

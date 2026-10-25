@@ -8,7 +8,7 @@ import { promises as fs } from "fs";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { closeDatabase } from "@zdocs/db-schema";
+import { LOCAL_ORG_ID, closeDatabase, getAiModelSelectionsForOrg, setAiModelSelectionsForOrg } from "@zdocs/db-schema";
 import { getConfig } from "@zdocs/srv";
 import { initDatabase } from "./db";
 import { startWatcher } from "./watcher";
@@ -27,25 +27,38 @@ async function main() {
   const config = getConfig();
   await fs.mkdir(config.dataDir, { recursive: true });
 
-  await initDatabase();
-  console.log(`[doc-ai] Database ready at ${config.dataDir}`);
+  const { workspaceDir } = await initDatabase();
+  console.log(`[doc-ai] Database ready at ${workspaceDir}`);
 
   if (config.provider === "gateway" && !config.gatewayApiKey) {
     console.warn("[doc-ai] AI_GATEWAY_API_KEY is not set: documents will wait with KEY_ERROR until it is.");
   }
 
-  const worker = startWorker();
+  let worker = startWorker();
   const onEnqueued = () => worker.kick();
 
-  // The watch folder can be changed from the Settings page, so the watcher restarts
   let watcher: ReturnType<typeof startWatcher> | null = null;
-  const restartWatcher = async () => {
-    await watcher?.close();
+  const startWatching = () => {
     const { watchDir } = getConfig();
     watcher = watchDir ? startWatcher({ watchDir, onEnqueued }) : null;
     if (!watcher) console.warn("[doc-ai] No watch folder set: folder watching is off.");
   };
-  await restartWatcher();
+  startWatching();
+
+  // The watch folder can be changed from the Settings page. Each folder has its
+  // own database, so stop everything that uses the current one and open the other.
+  const switchWorkspace = async () => {
+    await watcher?.close();
+    watcher = null;
+    await worker.stop();
+    const models = await getAiModelSelectionsForOrg(LOCAL_ORG_ID);
+    const next = await initDatabase();
+    // A folder seen for the first time starts with the models chosen so far
+    if (next.isNewWorkspace) await setAiModelSelectionsForOrg(LOCAL_ORG_ID, models);
+    console.log(`[doc-ai] Switched to ${next.workspaceDir}`);
+    worker = startWorker();
+    startWatching();
+  };
 
   const app = new Hono();
   // MCP folder tools and uiTx folder methods go through the app's own routes,
@@ -60,7 +73,7 @@ async function main() {
     if (!res.ok) throw new Error(json?.error ?? `${route} failed (${res.status})`);
     return json;
   };
-  app.route("/api/local", createApi({ onEnqueued, onWatchDirChanged: restartWatcher }));
+  app.route("/api/local", createApi({ onEnqueued, onWatchDirChanged: switchWorkspace }));
   mountLocalRoutes(app, { onEnqueued });
   // Before the zdocs routes: wraps their folder/document handlers with directory sync
   mountFolderSyncRoutes(app);
@@ -94,8 +107,8 @@ async function main() {
 
   const shutdown = async () => {
     console.log("[doc-ai] Shutting down");
-    worker.stop();
     await watcher?.close();
+    await worker.stop();
     server.close();
     await closeDatabase();
     process.exit(0);

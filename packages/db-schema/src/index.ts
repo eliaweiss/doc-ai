@@ -11,6 +11,8 @@ export {
   zdocsDb,
   pgliteClient,
   closeDatabase,
+  openDatabase,
+  getOpenWorkspaceDir,
   runTransaction,
   extractRows,
   extractRowCount,

@@ -2,7 +2,7 @@ import path from "path";
 import { getConfig } from "./config";
 
 export function getCacheDir(): string {
-  return path.join(getConfig().dataDir, "cache");
+  return path.join(getConfig().workspaceDir, "cache");
 }
 
 /**
