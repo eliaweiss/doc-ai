@@ -1,0 +1,29 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+        "paths": {
+            "@zdocs/util": [
+                "./packages/util/src"
+            ],
+            "@zdocs/types": [
+                "./packages/types/src"
+            ],
+            "@zdocs/client-component": [
+                "./packages/client-component/src"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.json",
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

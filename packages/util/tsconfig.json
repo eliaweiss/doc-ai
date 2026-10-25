@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "lib": [
+            "esnext",
+            "dom"
+        ],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "outDir": "dist",
+        "rootDir": "src",
+        "declaration": true,
+        "declarationMap": true,
+        "skipLibCheck": true,
+        "noEmit": false,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "strict": false,
+        "isolatedModules": true,
+        "paths": {
+            "@zdocs/types": [
+                "./packages/types/src"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Layout sizing variables (shadcn-style) */
+    --header-height: 3.5rem;
+    --sidebar-width: 18rem;
+
+    /* Light mode theme colors - matching auth page design */
+    --background: 0 20% 97.3%;
+    /* #F8F8F8 */
+    --foreground: 0 0% 20%;
+    /* #333333 */
+    --card: 0 0% 100%;
+    /* #FFFFFF */
+    --card-foreground: 0 0% 20%;
+    /* #333333 */
+    --popover: 0 0% 100%;
+    /* #FFFFFF */
+    --popover-foreground: 0 0% 20%;
+    /* #333333 */
+    --primary: 214 22% 30%;
+    /* #3C4B5F - dark blue-grey */
+    --primary-foreground: 0 0% 100%;
+    /* #FFFFFF */
+    --secondary: 0 0% 90.3%;
+    /* #F8F8F8 */
+    --secondary-foreground: 0 0% 20%;
+    /* #333333 */
+    --muted: 0 0% 92.3%;
+    /* #F8F8F8 */
+    --muted-foreground: 0 0% 40%;
+    /* #666666 */
+    --accent: 165 25% 82%;
+    --accent-foreground: 165 30% 15%;
+    /* #333333 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 86.7%;
+    /* #DDDDDD */
+    --input: 0 0% 86.7%;
+    /* #DDDDDD */
+    --ring: 12 82% 61%;
+    /* #EF6F4B - orange accent */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 165 20% 17.9%;
+    --accent-foreground: 165 30% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  html {
+    font-size: 17px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .custom-scrollbar {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+
+  .custom-scrollbar:hover {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.5) transparent;
+  }
+
+  /* Duplicate row styling in SchemaGrid (AG Grid) when "hide duplicates" is OFF */
+  .ag-row.schema-grid-duplicate-row .ag-cell {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+}

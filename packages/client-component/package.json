@@ -1,0 +1,15 @@
+{
+    "name": "@zdocs/client-component",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "src/index.ts",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@zdocs/types": "*",
+        "@zdocs/util": "*"
+    },
+    "description": "Copied from zdocs. Third-party dependencies are declared in apps/web/package.json."
+}

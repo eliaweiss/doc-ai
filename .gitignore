@@ -1,0 +1,7 @@
+node_modules
+.env
+.doc-ai-data
+*.log
+.DS_Store
+apps/web/dist
+*.tsbuildinfo

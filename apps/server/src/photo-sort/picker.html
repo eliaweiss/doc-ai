@@ -1,0 +1,335 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>doc-ai import picker</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: var(--color-background-primary, Canvas);
+    --bg2: var(--color-background-secondary, color-mix(in srgb, CanvasText 5%, Canvas));
+    --fg: var(--color-text-primary, CanvasText);
+    --fg2: var(--color-text-secondary, color-mix(in srgb, CanvasText 60%, Canvas));
+    --border: var(--color-border-primary, color-mix(in srgb, CanvasText 15%, Canvas));
+    --accent: var(--color-ring-primary, #2f6feb);
+    --danger: var(--color-text-danger, #c62828);
+    --success: var(--color-text-success, #2e7d32);
+    --radius: var(--border-radius-md, 8px);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 12px;
+    font: 13px/1.4 var(--font-sans, system-ui, -apple-system, sans-serif);
+    color: var(--fg);
+    background: transparent;
+  }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 10px; }
+  header .title { font-weight: 600; }
+  header .muted { color: var(--fg2); }
+  .muted { color: var(--fg2); }
+  label.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    max-height: 460px;
+    overflow-y: auto;
+    padding: 2px;
+  }
+  .card {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg2);
+    opacity: 0.6;
+  }
+  .card.on { opacity: 1; outline: 2px solid var(--accent); outline-offset: -1px; }
+  .card .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--bg2); }
+  .card .box { position: absolute; top: 6px; left: 6px; }
+  .card .badge {
+    position: absolute; top: 6px; right: 6px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: .03em;
+    padding: 1px 5px; border-radius: 4px;
+    background: color-mix(in srgb, var(--bg) 90%, transparent); border: 1px solid var(--border);
+  }
+  .card .name { padding: 4px 6px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .note { padding: 0 6px 4px; font-size: 10px; color: var(--fg2); }
+  footer { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 10px; }
+  select, button {
+    font: inherit; color: var(--fg); background: var(--bg);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 10px;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  progress { width: 100%; height: 6px; }
+  .msg { margin-top: 8px; }
+  .msg.ok { color: var(--success); }
+  .msg.err { color: var(--danger); }
+</style>
+</head>
+<body>
+<div id="root"><p class="muted">Waiting for scan results…</p></div>
+
+<script type="module">
+/*__MCP_APPS_BUNDLE__*/
+const { App, applyDocumentTheme, applyHostStyleVariables, applyHostFonts } = globalThis.__mcpApps;
+
+const LABELS = { receipt: "Receipt", document: "Document", screenshot: "Screenshot", other: "Photo" };
+const THUMB_BATCH = 12;
+
+const root = document.getElementById("root");
+const state = {
+  scan: null,          // scan view from find_documents_in_folder / get_folder_scan
+  folders: [],         // doc-ai folders to import into
+  selected: new Set(),
+  thumbs: new Map(),   // path → data URL
+  targetId: "",
+  importing: false,
+  message: null,       // { kind: "ok" | "err", text }
+  done: false,
+};
+
+const app = new App({ name: "doc-ai import picker", version: "0.1.0" }, {}, { autoResize: true });
+
+function applyContext(ctx) {
+  if (!ctx) return;
+  if (ctx.theme) applyDocumentTheme(ctx.theme);
+  if (ctx.styles?.variables) applyHostStyleVariables(ctx.styles.variables);
+  if (ctx.styles?.css?.fonts) applyHostFonts(ctx.styles.css.fonts);
+}
+app.onhostcontextchanged = applyContext;
+
+app.ontoolresult = (params) => {
+  const data = params.structuredContent;
+  if (!data || !data.scan) {
+    const text = params.content?.find((c) => c.type === "text")?.text;
+    root.innerHTML = "";
+    const p = el("p", "msg err", text || "No scan result.");
+    root.append(p);
+    return;
+  }
+  receive(data);
+};
+
+function receive(data) {
+  state.scan = data.scan;
+  if (data.folders) state.folders = data.folders;
+  if (!state.targetId) state.targetId = data.defaultFolderId || state.folders.find((f) => f.isRoot)?.id || "";
+  if (state.scan.status === "done") {
+    // All selected by default, except photos already in doc-ai
+    state.selected = new Set(state.scan.items.filter((it) => !it.existingDocumentId && !it.error).map((it) => it.path));
+    loadThumbs();
+  } else if (state.scan.status === "running") {
+    setTimeout(pollScan, 1000);
+  }
+  render();
+}
+
+async function pollScan() {
+  try {
+    const res = await app.callServerTool({ name: "get_folder_scan", arguments: { scanId: state.scan.scanId } });
+    if (res.isError) throw new Error(textOf(res));
+    receive(res.structuredContent);
+  } catch (error) {
+    state.message = { kind: "err", text: String(error.message || error) };
+    render();
+  }
+}
+
+async function loadThumbs() {
+  const missing = state.scan.items.map((it) => it.path).filter((p) => !state.thumbs.has(p));
+  for (let i = 0; i < missing.length; i += THUMB_BATCH) {
+    try {
+      const res = await app.callServerTool({
+        name: "get_photo_thumbnails",
+        arguments: { scanId: state.scan.scanId, paths: missing.slice(i, i + THUMB_BATCH) },
+      });
+      for (const t of res.structuredContent?.thumbnails ?? []) {
+        state.thumbs.set(t.path, `data:image/jpeg;base64,${t.data}`);
+        const img = document.querySelector(`img[data-path="${CSS.escape(t.path)}"]`);
+        if (img) img.src = state.thumbs.get(t.path);
+      }
+    } catch {
+      // thumbnails are optional; the list still works without them
+    }
+  }
+}
+
+function textOf(res) {
+  return res.content?.find((c) => c.type === "text")?.text ?? "Error";
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+function selectable() {
+  return state.scan.items.filter((it) => !it.error);
+}
+
+function render() {
+  root.innerHTML = "";
+  const scan = state.scan;
+  if (!scan) return;
+
+  const header = el("header");
+  header.append(el("span", "title", scan.folder));
+
+  if (scan.status === "running") {
+    header.append(el("span", "muted", scan.total ? `Sorting photos: ${scan.done} of ${scan.total}` : "Looking for photos…"));
+    root.append(header);
+    const bar = el("progress");
+    bar.max = scan.total || 1;
+    bar.value = scan.done;
+    root.append(bar);
+    return;
+  }
+  if (scan.status === "error") {
+    root.append(header, el("p", "msg err", scan.error || "Scan failed"));
+    return;
+  }
+
+  const items = scan.items;
+  const sel = selectable();
+  const count = sel.filter((it) => state.selected.has(it.path)).length;
+  const all = sel.length > 0 && count === sel.length;
+
+  header.append(
+    el("span", "muted",
+      `${scan.total} photos: ${scan.counts.receipt} receipts, ${scan.counts.document} documents` +
+      (scan.counts.screenshot ? `, ${scan.counts.screenshot} screenshots` : ""))
+  );
+  root.append(header);
+
+  if (!items.length) {
+    root.append(el("p", "muted", "No receipts or documents found in this folder."));
+    return;
+  }
+
+  const toolbar = el("header");
+  const allLabel = el("label", "check");
+  const allBox = el("input");
+  allBox.type = "checkbox";
+  allBox.checked = all;
+  allBox.indeterminate = count > 0 && !all;
+  allBox.disabled = state.done;
+  allBox.onchange = () => {
+    state.selected = allBox.checked ? new Set(sel.map((it) => it.path)) : new Set();
+    render();
+  };
+  allLabel.append(allBox, document.createTextNode(all ? "Unselect all" : "Select all"));
+  toolbar.append(allLabel, el("span", "muted", `${count} of ${sel.length} selected`));
+  root.append(toolbar);
+
+  const grid = el("div", "grid");
+  for (const it of items) {
+    const on = state.selected.has(it.path);
+    const card = el("div", `card${on ? " on" : ""}`);
+    card.title = it.relPath;
+    const img = el("img", "thumb");
+    img.alt = it.relPath;
+    img.dataset.path = it.path;
+    if (state.thumbs.has(it.path)) img.src = state.thumbs.get(it.path);
+    const box = el("input", "box");
+    box.type = "checkbox";
+    box.checked = on;
+    box.disabled = Boolean(it.error) || state.done;
+    const toggle = () => {
+      if (it.error || state.done) return;
+      if (state.selected.has(it.path)) state.selected.delete(it.path);
+      else state.selected.add(it.path);
+      render();
+    };
+    box.onclick = (e) => { e.stopPropagation(); toggle(); };
+    card.onclick = toggle;
+    card.append(img, box, el("span", "badge", `${LABELS[it.category] ?? it.category} · ${Math.round(it.confidence * 100)}%`));
+    card.append(el("div", "name", it.relPath));
+    if (it.existingDocumentId) card.append(el("div", "note", "Already in doc-ai"));
+    if (it.error) card.append(el("div", "note", it.error));
+    grid.append(card);
+  }
+  root.append(grid);
+
+  const footer = el("footer");
+  const target = el("label", "check");
+  target.append(document.createTextNode("Import into "));
+  const select = el("select");
+  for (const { folder, depth } of flattenFolders(state.folders)) {
+    const opt = el("option", null, `${"  ".repeat(depth)}${folder.name}`);
+    opt.value = folder.id;
+    opt.selected = folder.id === state.targetId;
+    select.append(opt);
+  }
+  select.disabled = state.done;
+  select.onchange = () => { state.targetId = select.value; };
+  target.append(select);
+  const button = el("button", "primary", state.importing ? "Importing…" : state.done ? "Imported" : `Import ${count}`);
+  button.disabled = state.importing || state.done || count === 0;
+  button.onclick = runImport;
+  footer.append(target, button);
+  root.append(footer);
+
+  if (state.message) root.append(el("p", `msg ${state.message.kind}`, state.message.text));
+}
+
+function flattenFolders(folders) {
+  const byParent = new Map();
+  for (const f of folders) byParent.set(f.parentId, [...(byParent.get(f.parentId) ?? []), f]);
+  const out = [];
+  const visit = (parentId, depth) => {
+    for (const f of byParent.get(parentId) ?? []) {
+      out.push({ folder: f, depth });
+      visit(f.id, depth + 1);
+    }
+  };
+  for (const r of folders.filter((f) => f.isRoot)) {
+    out.push({ folder: r, depth: 0 });
+    visit(r.id, 1);
+  }
+  return out;
+}
+
+async function runImport() {
+  const paths = selectable().filter((it) => state.selected.has(it.path)).map((it) => it.path);
+  if (!paths.length) return;
+  state.importing = true;
+  state.message = null;
+  render();
+  try {
+    const res = await app.callServerTool({
+      name: "import_photos",
+      arguments: { paths, folderId: state.targetId || undefined },
+    });
+    if (res.isError) throw new Error(textOf(res));
+    const r = res.structuredContent;
+    state.done = true;
+    const text =
+      `Imported ${r.imported.length} into "${r.folder.name}"` +
+      (r.skipped.length ? `, ${r.skipped.length} already in doc-ai` : "") +
+      (r.failed.length ? `, ${r.failed.length} failed` : "") +
+      ". They are being classified and extracted now.";
+    state.message = { kind: r.failed.length ? "err" : "ok", text };
+    // Let the model know what the user did in the picker
+    app.updateModelContext?.({ content: [{ type: "text", text: `User imported photos with the picker: ${text}` }] })
+      ?.catch?.(() => undefined);
+  } catch (error) {
+    state.message = { kind: "err", text: String(error.message || error) };
+  } finally {
+    state.importing = false;
+    render();
+  }
+}
+
+await app.connect();
+applyContext(app.getHostContext());
+</script>
+</body>
+</html>
