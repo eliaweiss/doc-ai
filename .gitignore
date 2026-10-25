@@ -11,3 +11,4 @@ apps/web/dist.old
 # Local-only data migration scripts (zdocs/1flow export + import)
 apps/server/scripts/export-from-zdocs.cjs
 apps/server/scripts/import-zdocs-export.ts
+apps/server/scripts/sync-back-to-zdocs.cjs
