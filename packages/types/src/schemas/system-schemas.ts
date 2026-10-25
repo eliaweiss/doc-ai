@@ -1848,6 +1848,14 @@ export const REMITTANCE_HEADER_SCHEMA: FieldDefinition[] = [
     displayName: "Status",
     enumValues: ["PENDING", "COMPLETED", "FAILED", "CANCELLED"],
   },
+  {
+    name: "description",
+    type: "text",
+    displayName: "Description",
+    description:
+      "Who was paid or what the payment was for (e.g. the payee or merchant / statement name)",
+    searchable: true,
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2277,7 +2285,8 @@ export const SYSTEM_DOCUMENT_TYPES: SystemDocumentType[] = [
   {
     name: "CREDIT_CARD_STATEMENT",
     displayName: "Credit Card Statement",
-    description: "Monthly credit card activity report",
+    description:
+      "Monthly credit card activity report from the card issuer, listing many transactions over a billing period. A single-purchase notice (e.g. Google Pay \"Virtual card ... replaced your card details for this purchase\") is NOT a statement; classify it as REMITTANCE",
     headerSchema: CREDIT_CARD_STATEMENT_HEADER_SCHEMA,
     lineItemSchemas: {
       cards: {
@@ -2472,7 +2481,8 @@ export const SYSTEM_DOCUMENT_TYPES: SystemDocumentType[] = [
   {
     name: "REMITTANCE",
     displayName: "Remittance",
-    description: "Wire transfer, ACH, or payment notification",
+    description:
+      "Wire transfer, ACH, or payment notification, including a single card-payment confirmation from a wallet app (e.g. Google Pay text \"Virtual card Maestro ••1234 replaced your card details for this purchase\" or \"These details help you keep track of your purchases, but don't replace your original receipt\")",
     headerSchema: REMITTANCE_HEADER_SCHEMA,
     lineItemSchemas: null, // Remittances typically don't have line items
     defaultFolderName: "Remittances",
