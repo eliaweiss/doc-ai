@@ -72,6 +72,16 @@ async function main() {
   app.use("/*", serveStatic({ root: webRoot }));
   // Client-side routes (/folder, /document/:id, ...) fall back to the SPA
   app.get("*", serveStatic({ root: webRoot, path: "index.html" }));
+  // No UI build at all: say so instead of a bare 404
+  app.get("*", (c) =>
+    c.html(
+      `<!doctype html><meta charset="utf-8"><title>doc-ai</title>` +
+        `<body style="font-family:system-ui;padding:2rem"><h1>doc-ai UI is not built</h1>` +
+        `<p>Run <code>npm run build</code> in the doc-ai folder, then reload. ` +
+        `The API (<code>/api</code>) and MCP (<code>/mcp</code>) are running.</p></body>`,
+      503
+    )
+  );
 
   const server = serve({ fetch: app.fetch, port: config.port, hostname: "127.0.0.1" }, (info) => {
     console.log(`[doc-ai] UI   http://localhost:${info.port}`);
