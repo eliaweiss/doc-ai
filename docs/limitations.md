@@ -38,7 +38,7 @@ Tested end to end on the Gateway provider with a synthetic one-page invoice PDF:
 ## Planned
 
 - **Schema registry**: a format for public or downloadable schemas. Not designed yet.
-- **Reconciliation ledger trace**: the workbench is ported; the ledger trace page (`/reconciliation/ledger`) and its saved-session routes aren't. The uiTx reconciliation methods still answer `UNSUPPORTED`.
+- **Reconciliation ledger trace**: the workbench is ported; the ledger trace page (`/reconciliation/ledger`) and its saved-session routes aren't.
 - PDF rasterization for Ollama and for Import from folder.
 - Backoff for `KEY_ERROR` retries.
 - Handling of in-place edits and deletions.

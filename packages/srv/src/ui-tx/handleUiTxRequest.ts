@@ -2,7 +2,7 @@
  * Main request router for uiTx SDK
  *
  * doc-ai: used by /api/ui-tx (mini apps); the MCP server calls the handlers
- * directly. Reconciliation methods are v2 and removed.
+ * directly.
  */
 
 import type { UiTxRequest, UiTxResponse, UiTxError } from "@zdocs/types";
@@ -12,6 +12,10 @@ import { handleGetEntity } from "./handlers/getEntity";
 import { handleListDocuments } from "./handlers/listDocuments";
 import { handleAggregate } from "./handlers/aggregate";
 import { handleUpdateEntityFields } from "./handlers/updateEntityFields";
+import { handleCreateReconciliationLink } from "./handlers/createReconciliationLink";
+import { handleDeleteReconciliationLink } from "./handlers/deleteReconciliationLink";
+import { handleListReconciliationLinks } from "./handlers/listReconciliationLinks";
+import { handleTraceReconciliation } from "./handlers/traceReconciliation";
 
 /**
  * Context for uiTx request handling
@@ -64,6 +68,22 @@ export async function handleUiTxRequest(
 
       case "updateEntityFields":
         result = await handleUpdateEntityFields(context, params);
+        break;
+
+      case "createReconciliationLink":
+        result = await handleCreateReconciliationLink(context, params);
+        break;
+
+      case "deleteReconciliationLink":
+        result = await handleDeleteReconciliationLink(context, params);
+        break;
+
+      case "listReconciliationLinks":
+        result = await handleListReconciliationLinks(context, params);
+        break;
+
+      case "traceReconciliation":
+        result = await handleTraceReconciliation(context, params);
         break;
 
       default:

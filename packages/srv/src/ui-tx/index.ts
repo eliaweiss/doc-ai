@@ -5,3 +5,7 @@ export { handleGetEntity } from "./handlers/getEntity";
 export { handleListDocuments } from "./handlers/listDocuments";
 export { handleAggregate } from "./handlers/aggregate";
 export { handleUpdateEntityFields } from "./handlers/updateEntityFields";
+export { handleTraceReconciliation } from "./handlers/traceReconciliation";
+export { handleListReconciliationLinks } from "./handlers/listReconciliationLinks";
+export { handleCreateReconciliationLink } from "./handlers/createReconciliationLink";
+export { handleDeleteReconciliationLink } from "./handlers/deleteReconciliationLink";
