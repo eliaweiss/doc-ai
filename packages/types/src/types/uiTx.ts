@@ -91,6 +91,8 @@ export interface QueryResponse {
  */
 export interface AggregateResponse {
   rows: Array<Record<string, unknown>>;
+  /** Defaults the query applied that the caller didn't ask for */
+  notes?: string[];
 }
 
 /**

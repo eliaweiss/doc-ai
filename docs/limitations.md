@@ -7,7 +7,7 @@ doc-ai is at v1. This page lists what is known not to work yet and what is plann
 Tested end to end on the Gateway provider with a synthetic one-page invoice PDF:
 
 - A file dropped into the folder is classified as `INVOICE`, its header fields and three line items are extracted and it's indexed; the UI shows the data next to a file preview.
-- Over MCP: `search_entities` (for example "toner"), `aggregate` (sum per schema type), `list_searchable_entities` and `get_status`.
+- Over MCP: `search_entities` (for example "toner"), `aggregate` (for example total per vendor), `list_searchable_entities` and `get_status`.
 - Moving or renaming a file updates the document's path without creating a duplicate.
 - `create_document_type` rejects schemas with `code` fields.
 

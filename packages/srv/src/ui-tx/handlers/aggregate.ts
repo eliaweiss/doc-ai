@@ -16,6 +16,7 @@ interface AggregateParams {
     op: "=" | "in" | ">" | ">=" | "<" | "<=" | "contains";
     value: unknown;
   }>;
+  schemaType?: string;
   dateFrom?: string;
   dateTo?: string;
   limit?: number;
@@ -42,6 +43,7 @@ export async function handleAggregate(
     metrics: params.metrics,
     groupBy: params.groupBy,
     where: params.where,
+    schemaType: params.schemaType,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
     limit: params.limit,

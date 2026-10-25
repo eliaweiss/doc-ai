@@ -43,6 +43,19 @@ export function applySchemaSpecificFilters(
 }
 
 /**
+ * `(v1, v2, ...)` for an IN clause. drizzle expands an array param into a
+ * parenthesized list, so `= ANY(${array})` renders as `= ANY(($1, $2))`,
+ * which Postgres rejects.
+ */
+function inList(values: unknown[]): SQL {
+  if (values.length === 0) return sql`(null)`;
+  return sql`(${sql.join(
+    values.map((v) => sql`${String(v)}`),
+    sql`, `
+  )})`;
+}
+
+/**
  * Apply filter for HEADER entity (headerData JSONB field)
  */
 function applyHeaderFilter(
@@ -60,9 +73,8 @@ function applyHeaderFilter(
       break;
     case "in":
       if (Array.isArray(clause.value)) {
-        const values = clause.value.map((v) => String(v));
         conditions.push(
-          and(schemaTypeCondition, sql`${jsonbPath} = ANY(${values})`)!
+          and(schemaTypeCondition, sql`${jsonbPath} in ${inList(clause.value)}`)!
         );
       }
       break;
@@ -141,11 +153,10 @@ function applyLineItemFilter(
       break;
     case "in":
       if (Array.isArray(clause.value)) {
-        const values = clause.value.map((v) => String(v));
         conditions.push(
           and(
             schemaTypeCondition,
-            sql`EXISTS (SELECT 1 FROM jsonb_array_elements(${lineItemsArray}) AS elem WHERE elem->>${fieldName} = ANY(${values}))`
+            sql`EXISTS (SELECT 1 FROM jsonb_array_elements(${lineItemsArray}) AS elem WHERE elem->>${fieldName} in ${inList(clause.value)})`
           )!
         );
       }

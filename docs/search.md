@@ -44,6 +44,12 @@ A multi-query variant ([searchByEntityMultiQuery.ts](../packages/db-schema/src/q
 
 [aggregateEntitiesForOrg.ts](../packages/db-schema/src/queries/search/aggregateEntitiesForOrg.ts) computes `count`, `sum` and `avg` metrics over entities with optional `groupBy` fields, where filters and a date range, for questions like "total spend per vendor" or "sum per schema type". It's exposed as the `aggregate` MCP tool through [handlers/aggregate.ts](../packages/srv/src/ui-tx/handlers/aggregate.ts). Only entity aggregation is implemented; document-level aggregation is a TODO.
 
+- **Index fields** work on any entity: group by `docType`, `entityType`, `schemaType`, `collectionKey`, `currency`, `isDataset`, `isDuplicate` or the `date` / `month` / `year` buckets; sum or average `amount`; filter on those plus `entityId`, `documentId`, `date`, `amount` and `description`.
+- **Schema fields**: with `schemaType` set (one schema type), the fields of that schema can also be grouped, filtered and, for `number`, `currency` and `sum` fields, summed or averaged. They're read from `document_data` (`headerData` for headers; for line items, the item at the entity ID's index in `lineItems[collectionKey]`). Values that aren't numbers count as null in sums and numeric comparisons; text fields (including ISO dates) compare as text.
+- **Errors, not silent skips**: an unknown field, a sum over a non-numeric field or an unknown schema type throws with the allowed names.
+- **Defaults**, listed in the result's `notes`: without `schemaType` or a `where` / `groupBy` on `entityType`, `schemaType`, `collectionKey` or `entityId`, only headers are aggregated (otherwise line items are counted on top of their documents); a sum or average of `amount` without a `currency = X` filter is also grouped by `currency`.
+- Grouped rows are ordered by the first metric, largest first, or by the time bucket when grouping by `date`, `month` or `year`, so `limit` keeps the top groups.
+
 ## Saved queries
 
 The search page can save, rename and delete queries ([queries/search](../packages/db-schema/src/queries/search), routes under [zdocs-api/org/[orgId]/saved-queries](../apps/server/src/zdocs-api/org/[orgId]/saved-queries)).
