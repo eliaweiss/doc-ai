@@ -184,3 +184,25 @@ export async function listDocumentsInFoldersForOrg(
     );
   return rows as Document[];
 }
+
+/**
+ * Live documents that came from a file in the watch folder, with that file's
+ * path (metadata.sourcePath). Pass a path to get only the documents at it.
+ */
+export async function listDocumentSourcePathsForOrg(
+  orgId: string,
+  sourcePath?: string
+): Promise<{ id: string; sourcePath: string }[]> {
+  const pathExpr = sql<string>`${documentTbl.metadata}->>'sourcePath'`;
+  const rows = await zdocsDb
+    .select({ id: documentTbl.id, sourcePath: pathExpr })
+    .from(documentTbl)
+    .where(
+      and(
+        eq(documentTbl.orgId, orgId),
+        isNull(documentTbl.deletedAt),
+        sourcePath === undefined ? sql`${pathExpr} is not null` : sql`${pathExpr} = ${sourcePath}`
+      )
+    );
+  return rows;
+}

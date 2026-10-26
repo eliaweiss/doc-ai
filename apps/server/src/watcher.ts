@@ -8,7 +8,9 @@
  * - The directory tree is the folder tree: a file's folder is its directory
  *   (missing folders are created), new directories become folders, and
  *   directories removed on disk drop their folder once it's empty.
- * - File deletions are only logged for now (documents are kept).
+ * - A file removed on disk soft-deletes its document, after a short wait so a
+ *   rename / move (unlink + add) is recognized first. Files removed while
+ *   doc-ai was off are swept once the initial scan has settled.
  */
 import { createHash } from "crypto";
 import { promises as fs } from "fs";
@@ -17,7 +19,9 @@ import chokidar from "chokidar";
 import {
   LOCAL_ORG_ID,
   createDocumentForOrg,
+  deleteDocument,
   deleteFolder,
+  listDocumentSourcePathsForOrg,
   getFoldersByOrgId,
   listDocumentsInFoldersForOrg,
   updateDocumentForOrg,
@@ -200,6 +204,24 @@ async function dropFolderIfGone(watchDir: string, relDir: string): Promise<void>
   }
 }
 
+/**
+ * Soft-delete the live documents whose file is gone. A rename/move has
+ * already pointed its document at the new path by now, so it isn't matched.
+ */
+async function dropDocumentsIfGone(watchDir: string, rel?: string): Promise<void> {
+  // Watch folder itself missing (unmounted drive, sync client off): not a deletion
+  if (!(await exists(watchDir))) return;
+  for (const doc of await listDocumentSourcePathsForOrg(LOCAL_ORG_ID, rel)) {
+    if (await exists(path.join(watchDir, doc.sourcePath))) continue;
+    if (await deleteDocument(doc.id, LOCAL_ORG_ID)) {
+      console.log(`[Watcher] ${doc.sourcePath} removed on disk: document ${doc.id} deleted`);
+    }
+  }
+}
+
+/** Wait this long after an unlink before deleting, and after the last initial add before sweeping */
+const REMOVAL_GRACE_MS = 10_000;
+
 export function startWatcher(opts: WatcherOptions) {
   const cacheDir = getCacheDir();
   const watcher = chokidar.watch(opts.watchDir, {
@@ -221,7 +243,23 @@ export function startWatcher(opts: WatcherOptions) {
   const enqueue = (p: string) => serial(p, () => ingestFile(p, opts));
   const rel = (p: string) => path.relative(opts.watchDir, p).normalize("NFC");
 
-  watcher.on("add", enqueue);
+  // Files removed while doc-ai was off: sweep once the initial scan is ready and
+  // its (write-settling, hence delayed) add events have gone quiet, so files
+  // moved meanwhile get their new path first instead of being deleted
+  let ready = false;
+  let sweepTimer: NodeJS.Timeout | null = null;
+  const scheduleSweep = () => {
+    if (sweepTimer) clearTimeout(sweepTimer);
+    sweepTimer = setTimeout(() => {
+      sweepTimer = null;
+      serial("removed-files sweep", () => dropDocumentsIfGone(opts.watchDir));
+    }, REMOVAL_GRACE_MS);
+  };
+
+  watcher.on("add", (p) => {
+    if (ready && sweepTimer) scheduleSweep();
+    enqueue(p);
+  });
   watcher.on("change", enqueue);
   watcher.on("addDir", (p) => {
     if (rel(p)) serial(p, () => ensureFolderForRelDir(rel(p)));
@@ -232,10 +270,14 @@ export function startWatcher(opts: WatcherOptions) {
     if (!rel(p)) return;
     setTimeout(() => serial(p, () => dropFolderIfGone(opts.watchDir, rel(p))), 5000);
   });
-  watcher.on("unlink", (p) =>
-    console.log(`[Watcher] ${path.relative(opts.watchDir, p)} removed (document kept)`)
-  );
-  watcher.on("ready", () => console.log(`[Watcher] Watching ${opts.watchDir}`));
+  watcher.on("unlink", (p) => {
+    setTimeout(() => serial(p, () => dropDocumentsIfGone(opts.watchDir, rel(p))), REMOVAL_GRACE_MS);
+  });
+  watcher.on("ready", () => {
+    ready = true;
+    scheduleSweep();
+    console.log(`[Watcher] Watching ${opts.watchDir}`);
+  });
   watcher.on("error", (error) => console.error("[Watcher] Error:", error));
 
   // Closing also waits for queued ingestion, so the database can be switched after it
@@ -243,6 +285,7 @@ export function startWatcher(opts: WatcherOptions) {
   return Object.assign(watcher, {
     close: async () => {
       closed = true;
+      if (sweepTimer) clearTimeout(sweepTimer);
       await closeWatcher();
       await chain;
     },
