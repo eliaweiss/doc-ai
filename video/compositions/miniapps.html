@@ -1,42 +1,152 @@
 <template>
-  <div data-hf-id="hf-4ygb" id="miniapps-root" class="scene" data-composition-id="miniapps" data-width="1920" data-height="1080">
+  <!--
+    Mini apps as an illustrated slideshow, like the intro and "Why": one
+    picture per sentence, the narration as a caption underneath. The closing
+    line is its own scene (outro.html), so it stays last.
+  -->
+  <div id="miniapps-root" class="scene" data-composition-id="miniapps" data-width="1920" data-height="1080">
     <style>
       #miniapps-root { position: absolute; inset: 0; }
-      #ma-title { top: 380px; font-size: 130px; }
-      #ma-sub { top: 560px; }
-      #ma-names { top: 100px; display: flex; justify-content: center; gap: 22px; }
-      #ma-shot { left: 410px; top: 230px; width: 1100px; height: 688px; }
-      #ma-shot-zoom { position: absolute; inset: 0; transform-origin: 50% 0; }
-      #ma-shot-zoom img { width: 1100px; }
-      #ma-once { top: 360px; }
-      #ma-runs { top: 500px; }
-      #ma-four { top: 470px; display: flex; justify-content: center; gap: 70px; }
-      #ma-four .serif { font-size: 96px; }
-      #ma-offline { top: 420px; }
-      #ma-offline-sub { top: 560px; }
-      #ma-end-name { top: 330px; }
-      #ma-end-line { top: 610px; }
+      #miniapps-root .slide { position: absolute; inset: 0; }
+      .ma-card { position: absolute; border-radius: 22px; background: var(--paper); overflow: hidden;
+                 box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); font-family: var(--font-ui); }
+      .ma-tile { position: absolute; width: 170px; height: 170px; border-radius: 34px; background: var(--paper);
+                 box-shadow: 0 18px 40px rgba(40, 35, 70, 0.22); display: flex; align-items: center; justify-content: center; }
+      .ma-tile svg { width: 96px; height: 96px; }
+      .ma-badge { position: absolute; width: 104px; height: 104px; border-radius: 50%; background: var(--ink); color: #fff;
+                  display: flex; align-items: center; justify-content: center; font-family: var(--font-ui); font-size: 36px; font-weight: 800; }
+
+      /* 0: tools on top of your data */
+      #ma-data { left: 460px; top: 440px; width: 1000px; height: 300px; }
+      #ma-data .top { height: 64px; background: #2e2d3d; color: #fff; display: flex; align-items: center; padding: 0 30px; font-size: 26px; font-weight: 700; }
+      .ma-row { height: 58px; border-bottom: 1px solid rgba(27,26,31,0.08); display: flex; align-items: center; gap: 30px; padding: 0 30px; }
+      .ma-row i { height: 14px; border-radius: 4px; background: rgba(27,26,31,0.22); display: block; }
+      #ma-t1 { left: 560px; top: 266px; } #ma-t2 { left: 875px; top: 266px; } #ma-t3 { left: 1190px; top: 266px; }
+
+      /* 1: the three apps */
+      .ma-shot { top: 250px; width: 540px; height: 338px; }
+      .ma-shot img { width: 100%; display: block; }
+      #ma-s1 { left: 120px; } #ma-s2 { left: 690px; } #ma-s3 { left: 1260px; }
+      .ma-name { position: absolute; top: 180px; width: 540px; text-align: center; }
+      #ma-n1 { left: 120px; } #ma-n2 { left: 690px; } #ma-n3 { left: 1260px; }
+
+      /* 2: built once */
+      #ma-code { left: 560px; top: 170px; width: 800px; height: 520px; background: #1f1e24; }
+      #ma-code .bar { height: 54px; background: #2b2a31; display: flex; align-items: center; gap: 12px; padding-left: 24px; }
+      #ma-code .bar i { width: 16px; height: 16px; border-radius: 50%; background: #55535c; display: inline-block; }
+      #ma-code .bar span { margin-left: 18px; color: #a8a5b3; font-size: 22px; font-weight: 600; }
+      .ma-line { position: absolute; left: 48px; height: 16px; border-radius: 5px; }
+      #ma-ai { left: 1300px; top: 120px; }
+      #ma-built { left: 0; right: 0; top: 730px; text-align: center; }
+      #ma-built .chip { background: #2f7d4f; color: #fff; }
+
+      /* 3: runs on its own */
+      #ma-run { left: 330px; top: 200px; width: 760px; height: 476px; }
+      #ma-run img { width: 100%; display: block; }
+      #ma-count { left: 400px; top: 130px; }
+      .ma-cnt { position: absolute; left: 0; top: 0; white-space: nowrap; }
+      #ma-ai2 { left: 1480px; top: 360px; }
+      #ma-link { left: 1090px; top: 380px; width: 390px; height: 80px; overflow: visible; }
+
+      /* 4: faster, deterministic, cheaper, private */
+      .ma-four { position: absolute; top: 300px; width: 330px; text-align: center; }
+      .ma-four .ma-tile { position: relative; margin: 0 auto 30px; }
+      .ma-four .serif { font-size: 64px; }
+      #ma-q1 { left: 150px; } #ma-q2 { left: 570px; } #ma-q3 { left: 1000px; } #ma-q4 { left: 1430px; }
+
+      /* 5: samples, then the real thing, offline */
+      .ma-mini { position: absolute; width: 96px; height: 124px; border-radius: 9px; background: var(--paper);
+                 box-shadow: 0 10px 24px rgba(40,35,70,0.18); overflow: hidden; }
+      .ma-mini .hd { height: 18px; }
+      .ma-mini .ln { position: absolute; left: 12px; right: 12px; top: 30px; bottom: 20px;
+                     background: repeating-linear-gradient(to bottom, rgba(27,26,31,0.14) 0 5px, transparent 5px 13px); }
+      .ma-arrow { position: absolute; width: 150px; height: 40px; overflow: visible; }
+      .ma-cap { position: absolute; width: 420px; text-align: center; font-family: var(--font-ui); font-size: 30px; font-weight: 700; }
+      #ma-app-a { left: 560px; top: 330px; } #ma-app-b { left: 1500px; top: 330px; }
+      #ma-off { left: 1610px; top: 270px; padding: 12px 22px; border-radius: 999px; background: var(--ink); color: #fff;
+                font-family: var(--font-ui); font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+      #ma-off svg { width: 30px; height: 30px; }
     </style>
-    <div data-hf-id="hf-va6q" id="ma-title" class="abs center serif">Mini apps</div>
-    <div data-hf-id="hf-jqqb" id="ma-sub" class="abs center serif h2">Custom tools, built on your data</div>
-    <div data-hf-id="hf-6pq0" id="ma-names" class="abs center">
-      <span data-hf-id="hf-mlmx" id="ma-n1" class="chip">Monthly Expenses</span>
-      <span data-hf-id="hf-400d" id="ma-n2" class="chip">Folder Suggestions</span>
-      <span data-hf-id="hf-pp7s" id="ma-n3" class="chip">Bank Reconciliation</span>
+
+    <!-- shared icons -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <symbol id="ma-i-chart" viewBox="0 0 96 96"><rect x="12" y="52" width="16" height="32" rx="4" fill="#c96442" /><rect x="40" y="30" width="16" height="54" rx="4" fill="#1b1a1f" /><rect x="68" y="14" width="16" height="70" rx="4" fill="#8c87a3" /></symbol>
+        <symbol id="ma-i-folder" viewBox="0 0 96 96"><path d="M8 24 Q8 16 16 16 L36 16 L44 26 L80 26 Q88 26 88 34 L88 76 Q88 82 82 82 L14 82 Q8 82 8 76 Z" fill="#c96442" /><path d="M36 56 L62 56 M52 46 L62 56 L52 66" stroke="#fbf9f5" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="ma-i-bank" viewBox="0 0 96 96"><path d="M48 8 L88 30 L8 30 Z" fill="#1b1a1f" /><rect x="16" y="36" width="10" height="34" fill="#1b1a1f" /><rect x="43" y="36" width="10" height="34" fill="#1b1a1f" /><rect x="70" y="36" width="10" height="34" fill="#1b1a1f" /><rect x="8" y="74" width="80" height="12" rx="3" fill="#c96442" /></symbol>
+      </defs>
+    </svg>
+
+    <!-- 0 -->
+    <div id="ma-0" class="slide">
+      <div id="ma-data" class="ma-card">
+        <div class="top">Your data · invoices, receipts, statements</div>
+        <div class="ma-row"><i style="width:220px"></i><i style="width:110px"></i><i style="width:90px; margin-left:auto"></i></div>
+        <div class="ma-row"><i style="width:180px"></i><i style="width:130px"></i><i style="width:70px; margin-left:auto"></i></div>
+        <div class="ma-row"><i style="width:240px"></i><i style="width:100px"></i><i style="width:100px; margin-left:auto"></i></div>
+        <div class="ma-row"><i style="width:160px"></i><i style="width:120px"></i><i style="width:80px; margin-left:auto"></i></div>
+      </div>
+      <div id="ma-t1" class="ma-tile"><svg><use href="#ma-i-chart" /></svg></div>
+      <div id="ma-t2" class="ma-tile"><svg><use href="#ma-i-folder" /></svg></div>
+      <div id="ma-t3" class="ma-tile"><svg><use href="#ma-i-bank" /></svg></div>
     </div>
-    <div data-hf-id="hf-vor3" id="ma-shot" class="abs card"><div data-hf-id="hf-nffs" id="ma-shot-zoom"><img data-hf-id="hf-qdoe" src="assets/screens/expenses.png" alt="" /></div></div>
-    <div data-hf-id="hf-4y2q" id="ma-once" class="abs center serif h1">The AI builds it <span data-hf-id="hf-7yfm" class="accent">once</span>.</div>
-    <div data-hf-id="hf-ae8a" id="ma-runs" class="abs center serif h1">Then it runs without AI.</div>
-    <div data-hf-id="hf-xq2k" id="ma-four" class="abs center">
-      <span data-hf-id="hf-3vnv" id="ma-f1" class="serif">Faster</span>
-      <span data-hf-id="hf-90vx" id="ma-f2" class="serif">Deterministic</span>
-      <span data-hf-id="hf-6c58" id="ma-f3" class="serif">Cheaper</span>
-      <span data-hf-id="hf-xx3o" id="ma-f4" class="serif accent">Private</span>
+
+    <!-- 1 -->
+    <div id="ma-1" class="slide">
+      <div id="ma-n1" class="ma-name"><span class="chip">Monthly Expenses</span></div>
+      <div id="ma-n2" class="ma-name"><span class="chip">Folder Suggestions</span></div>
+      <div id="ma-n3" class="ma-name"><span class="chip">Bank Reconciliation</span></div>
+      <div id="ma-s1" class="ma-card ma-shot"><img src="assets/screens/expenses.png" alt="" /></div>
+      <div id="ma-s2" class="ma-card ma-shot"><img src="assets/screens/folders.jpg" alt="" /></div>
+      <div id="ma-s3" class="ma-card ma-shot"><img src="assets/screens/reconciliation.png" alt="" /></div>
     </div>
-    <div data-hf-id="hf-omv2" id="ma-offline" class="abs center serif h1">Build on samples. Run <span data-hf-id="hf-ro3a" class="accent">offline</span>.</div>
-    <div data-hf-id="hf-skul" id="ma-offline-sub" class="abs center kicker">No document leaves your computer</div>
-    <div data-hf-id="hf-7ypt" id="ma-end-name" class="abs center serif huge">DocAI</div>
-    <div data-hf-id="hf-qzfu" id="ma-end-line" class="abs center serif h2">Your money, finally in <span data-hf-id="hf-1xjy" class="accent">one place</span>.</div>
+
+    <!-- 2 -->
+    <div id="ma-2" class="slide">
+      <div id="ma-code" class="ma-card"><div class="bar"><i></i><i></i><i></i><span>monthly-expenses.html</span></div></div>
+      <div id="ma-ai" class="ma-badge">AI</div>
+      <div id="ma-built"><span class="chip">✓ Built once</span></div>
+    </div>
+
+    <!-- 3 -->
+    <div id="ma-3" class="slide">
+      <div id="ma-run" class="ma-card"><img src="assets/screens/expenses.png" alt="" /></div>
+      <div id="ma-count" class="abs">
+        <span id="ma-c1" class="chip ma-cnt">Run 1</span>
+        <span id="ma-c2" class="chip ma-cnt">Run 2</span>
+        <span id="ma-c3" class="chip ma-cnt">Run 3</span>
+        <span id="ma-c4" class="chip ma-cnt">Run 100</span>
+      </div>
+      <svg id="ma-link" class="abs" viewBox="0 0 390 80">
+        <path d="M0 40 L390 40" stroke="rgba(27,26,31,0.4)" stroke-width="6" stroke-dasharray="14 14" />
+        <g id="ma-cut"><line x1="175" y1="18" x2="215" y2="62" stroke="#b0381c" stroke-width="10" stroke-linecap="round" />
+          <line x1="215" y1="18" x2="175" y2="62" stroke="#b0381c" stroke-width="10" stroke-linecap="round" /></g>
+      </svg>
+      <div id="ma-ai2" class="ma-badge">AI</div>
+    </div>
+
+    <!-- 4 -->
+    <div id="ma-4" class="slide">
+      <div id="ma-q1" class="ma-four"><div class="ma-tile"><svg viewBox="0 0 96 96"><path d="M54 6 L18 54 L44 54 L38 90 L78 38 L52 38 Z" fill="#c96442" /></svg></div><div class="serif">Faster</div></div>
+      <div id="ma-q2" class="ma-four"><div class="ma-tile"><svg viewBox="0 0 96 96"><rect x="14" y="30" width="68" height="12" rx="6" fill="#1b1a1f" /><rect x="14" y="54" width="68" height="12" rx="6" fill="#1b1a1f" /></svg></div><div class="serif">Deterministic</div></div>
+      <div id="ma-q3" class="ma-four"><div class="ma-tile"><svg viewBox="0 0 96 96"><circle cx="48" cy="48" r="36" fill="none" stroke="#1b1a1f" stroke-width="9" /><text x="48" y="62" text-anchor="middle" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#c96442">0</text></svg></div><div class="serif">Cheaper</div></div>
+      <div id="ma-q4" class="ma-four"><div class="ma-tile"><svg viewBox="0 0 96 96"><path d="M28 44 L28 30 Q28 12 48 12 Q68 12 68 30 L68 44" fill="none" stroke="#1b1a1f" stroke-width="9" stroke-linecap="round" /><rect x="16" y="42" width="64" height="44" rx="10" fill="#c96442" /><circle cx="48" cy="63" r="7" fill="#fbf9f5" /></svg></div><div class="serif accent">Private</div></div>
+    </div>
+
+    <!-- 5 -->
+    <div id="ma-5" class="slide">
+      <div id="ma-sa" class="abs"></div>
+      <svg id="ma-arr-a" class="ma-arrow" style="left:380px; top:395px" viewBox="0 0 150 40"><path d="M6 20 L130 20 M114 6 L134 20 L114 34" stroke="#c96442" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <div id="ma-app-a" class="ma-tile"><svg><use href="#ma-i-chart" /></svg></div>
+      <div id="ma-cap-a" class="ma-cap" style="left:220px; top:560px">A few samples</div>
+      <div id="ma-sb" class="abs"></div>
+      <svg id="ma-arr-b" class="ma-arrow" style="left:1320px; top:395px" viewBox="0 0 150 40"><path d="M6 20 L130 20 M114 6 L134 20 L114 34" stroke="#c96442" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <div id="ma-app-b" class="ma-tile"><svg><use href="#ma-i-chart" /></svg></div>
+      <div id="ma-cap-b" class="ma-cap" style="left:1040px; top:560px">All your real documents</div>
+      <div id="ma-off" class="abs"><svg viewBox="0 0 30 30"><path d="M3 11 Q15 1 27 11 M7 16 Q15 9 23 16 M11 21 Q15 18 19 21" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" /><line x1="4" y1="4" x2="26" y2="26" stroke="#e0866a" stroke-width="3.5" stroke-linecap="round" /></svg>Offline</div>
+    </div>
+
+    <div id="ma-caps" class="caps"></div>
   </div>
   <script>
     (function () {
@@ -44,47 +154,99 @@
       const $ = (s) => document.querySelector(s);
       const tl = gsap.timeline({ paused: true });
       const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      const when = (i, w) => D.when(id, i, w);
+      const fadeIn = (el, t, o) => D.blurIn(tl, typeof el === "string" ? $(el) : el, t, o);
+      const fadeOut = (el, t, o) => D.blurOut(tl, typeof el === "string" ? $(el) : el, t, o);
 
-      // "Mini apps are custom tools built on top of your data."
-      D.blurIn(tl, $("#ma-title"), at(0) - 0.2, { blur: 14, duration: 0.6 });
-      D.blurIn(tl, $("#ma-sub"), at(0) + 0.5, { duration: 0.5 });
-      D.words(tl, $("#ma-sub"), at(0) + 0.5, to(0) - 0.2);
-      D.blurOut(tl, $("#ma-title"), at(1) - 0.3, { y: -40 });
-      D.blurOut(tl, $("#ma-sub"), at(1) - 0.3, { y: -40 });
+      D.captions(tl, $("#ma-caps"), id, 0);
 
-      // "A monthly expense report, a folder organizer, a bank reconciliation."
-      const s1 = at(1), e1 = to(1);
-      [1, 2, 3].forEach((k) => D.blurIn(tl, $("#ma-n" + k), s1 + ((e1 - s1) * (k - 1)) / 3, { y: 24, duration: 0.5 }));
-      D.blurIn(tl, $("#ma-shot"), s1 + 0.1, { y: 120, blur: 6, duration: 1.0 });
-      // Scroll down the expense report while it is on screen
-      tl.fromTo($("#ma-shot-zoom"), { y: 0, scale: 1 }, { y: -40, scale: 1.12, duration: at(2) - s1, ease: "power1.inOut" }, s1 + 0.4);
-      [1, 2, 3].forEach((k) => D.blurOut(tl, $("#ma-n" + k), at(2) - 0.32 + k * 0.03));
-      D.blurOut(tl, $("#ma-shot"), at(2) - 0.3, { y: -40, scale: 0.96 });
+      // ---- 0: "Mini apps are custom tools built on top of your data." ----
+      fadeIn("#ma-data", at(0) - 0.1, { y: 60, duration: 0.8, blur: 6 });
+      const tools = when(0, "tools");
+      [1, 2, 3].forEach((k) => {
+        tl.fromTo("#ma-t" + k, { opacity: 0, y: -260, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.3)" }, tools - 0.1 + (k - 1) * 0.18);
+      });
+      fadeOut("#ma-data", at(1) - 0.3, { y: 40 });
 
-      // "The AI builds the app once." "After that, it runs on its own, without calling an AI model."
-      D.blurIn(tl, $("#ma-once"), at(2) - 0.05, { duration: 0.5 });
-      D.speak(tl, $("#ma-once"), id, 2);
-      D.blurIn(tl, $("#ma-runs"), at(3) - 0.05, { duration: 0.5 });
-      D.words(tl, $("#ma-runs"), at(3), to(3) - 0.3);
-      D.blurOut(tl, $("#ma-once"), at(4) - 0.3);
-      D.blurOut(tl, $("#ma-runs"), at(4) - 0.28);
+      // ---- 1: "A monthly expense report, a folder organizer, a bank reconciliation." ----
+      // Each tile grows into its app, on its words
+      ["monthly", "folder", "bank"].forEach((w, k) => {
+        const t0 = when(1, w) - 0.15;
+        fadeOut("#ma-t" + (k + 1), t0, { scale: 1.6, duration: 0.3 });
+        fadeIn("#ma-s" + (k + 1), t0 + 0.05, { scale: 0.7, y: 40, duration: 0.6, blur: 8 });
+        fadeIn("#ma-n" + (k + 1), t0 + 0.2, { y: 16, duration: 0.45 });
+      });
+      fadeOut("#ma-1", at(2) - 0.3, { y: -30 });
 
-      // "That makes it faster, deterministic, cheaper, and private."
-      const s4 = at(4), e4 = to(4);
-      [1, 2, 3, 4].forEach((k) => D.blurIn(tl, $("#ma-f" + k), s4 + (e4 - s4) * (0.28 + (k - 1) * 0.19), { y: 30, duration: 0.5 }));
-      [1, 2, 3, 4].forEach((k) => D.blurOut(tl, $("#ma-f" + k), at(5) - 0.32 + k * 0.03));
+      // ---- 2: "The AI builds the app once." ----
+      const code = $("#ma-code");
+      const colors = ["#e0866a", "#a8a5b3", "#7fb594", "#a8a5b3", "#c9b8f0", "#a8a5b3", "#e0866a", "#7fb594", "#a8a5b3"];
+      const lines = colors.map((c, k) => {
+        const line = document.createElement("i");
+        line.className = "ma-line";
+        line.style.top = 90 + k * 44 + "px";
+        line.style.width = 160 + ((k * 137) % 420) + "px";
+        line.style.marginLeft = (k % 3) * 36 + "px";
+        line.style.background = c;
+        code.appendChild(line);
+        return line;
+      });
+      fadeIn("#ma-code", at(2) - 0.15, { y: 60, duration: 0.7, blur: 6 });
+      tl.fromTo("#ma-ai", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, at(2) + 0.1);
+      lines.forEach((line, k) => tl.fromTo(line, { scaleX: 0, transformOrigin: "0 50%" }, { scaleX: 1, duration: 0.18, ease: "power2.out" }, at(2) + 0.35 + k * 0.13));
+      fadeIn("#ma-built", when(2, "once") - 0.05, { scale: 0.8, duration: 0.45, ease: "back.out(1.8)" });
+      fadeOut("#ma-2", at(3) - 0.3, { y: -30 });
 
-      // "You can even build a mini app on a few sample documents, then run it on your real ones completely offline."
-      D.blurIn(tl, $("#ma-offline"), at(5) - 0.05, { duration: 0.5 });
-      D.words(tl, $("#ma-offline"), at(5) + 0.4, to(5) - 0.2);
-      D.blurIn(tl, $("#ma-offline-sub"), to(5) - 2.0, { duration: 0.5 });
-      D.blurOut(tl, $("#ma-offline"), at(6) - 0.3);
-      D.blurOut(tl, $("#ma-offline-sub"), at(6) - 0.3);
+      // ---- 3: "After that, it runs on its own, without calling an AI model." ----
+      fadeIn("#ma-run", at(3) - 0.15, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#ma-ai2", at(3) + 0.2, { duration: 0.4 });
+      tl.fromTo("#ma-link", { opacity: 0 }, { opacity: 1, duration: 0.3 }, at(3) + 0.3);
+      const runs = when(3, "runs");
+      [1, 2, 3, 4].forEach((k) => {
+        const t = runs + (k - 1) * 0.55;
+        tl.fromTo("#ma-c" + k, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.2, ease: "power3.out" }, t);
+        if (k < 4) tl.to("#ma-c" + k, { opacity: 0, y: -16, duration: 0.15, ease: "power3.in" }, t + 0.5);
+      });
+      const without = when(3, "without");
+      tl.fromTo("#ma-cut", { opacity: 0, scale: 1.8, svgOrigin: "195 40" }, { opacity: 1, scale: 1, svgOrigin: "195 40", duration: 0.3, ease: "power4.in" }, without);
+      tl.fromTo("#ma-ai2", { opacity: 1 }, { opacity: 0.35, duration: 0.4, immediateRender: false }, without + 0.3);
+      fadeOut("#ma-3", at(4) - 0.3, { y: -30 });
 
-      // "DocAI. Your money, finally in one place."
-      D.blurIn(tl, $("#ma-end-name"), at(6) - 0.1, { blur: 16, duration: 0.8 });
-      D.blurIn(tl, $("#ma-end-line"), at(6) + 0.6, { duration: 0.6 });
-      D.words(tl, $("#ma-end-line"), at(6) + 0.7, to(6) - 0.1);
+      // ---- 4: "That makes it faster, deterministic, cheaper, and private." ----
+      ["faster", "deterministic", "cheaper", "private"].forEach((w, k) => fadeIn("#ma-q" + (k + 1), when(4, w) - 0.12, { y: 40, duration: 0.55 }));
+      fadeOut("#ma-4", at(5) - 0.3, { y: -30 });
+
+      // ---- 5: "...build a mini app on a few sample documents, then run it on your real ones completely offline." ----
+      const fan = (host, n, x0, y0, seed) => {
+        const els = [];
+        for (let k = 0; k < n; k++) {
+          const d = document.createElement("div");
+          d.className = "ma-mini";
+          d.innerHTML = '<div class="hd"></div><div class="ln"></div>';
+          d.querySelector(".hd").style.background = ["#c96442", "#2e2d3d", "#3f8a63", "#8c87a3"][(k + seed) % 4];
+          const col = k % 4, row = Math.floor(k / 4);
+          d.style.left = x0 + col * 44 + row * 16 + "px";
+          d.style.top = y0 + row * 40 - col * 6 + "px";
+          d.style.transform = "rotate(" + (((k * 37 + seed * 11) % 15) - 7) + "deg)";
+          $(host).appendChild(d);
+          els.push(d);
+        }
+        return els;
+      };
+      const few = fan("#ma-sa", 3, 230, 340, 0);
+      const many = fan("#ma-sb", 16, 1060, 250, 1);
+      const sample = when(5, "sample");
+      few.forEach((d, k) => tl.fromTo(d, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, at(5) - 0.1 + k * 0.1));
+      fadeIn("#ma-cap-a", sample - 0.2, { duration: 0.4 });
+      tl.fromTo("#ma-arr-a", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35 }, sample);
+      tl.fromTo("#ma-app-a", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, sample + 0.2);
+      const real = when(5, "real");
+      many.forEach((d, k) => tl.fromTo(d, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, real - 0.3 + k * 0.04));
+      fadeIn("#ma-cap-b", real, { duration: 0.4 });
+      tl.fromTo("#ma-arr-b", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35 }, real + 0.4);
+      tl.fromTo("#ma-app-b", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, real + 0.6);
+      tl.fromTo("#ma-off", { opacity: 0, scale: 0.6, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: "back.out(1.8)" }, when(5, "offline") - 0.1);
+      fadeOut("#ma-5", end - 0.45, { y: -30 });
 
       window.__timelines = window.__timelines || {};
       window.__timelines[id] = tl;

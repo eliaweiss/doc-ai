@@ -1,0 +1,34 @@
+<template>
+  <!--
+    The closing line, always the last scene: "DocAI. Your money, finally in
+    one place." over the money-flow graph (world.html forms it as this
+    scene starts).
+  -->
+  <div id="outro-root" class="scene" data-composition-id="outro" data-width="1920" data-height="1080">
+    <style>
+      #outro-root { position: absolute; inset: 0; }
+      #outro-name { top: 330px; }
+      #outro-line { top: 610px; }
+    </style>
+    <div id="outro-name" class="abs center serif huge">DocAI</div>
+    <div id="outro-line" class="abs center serif h2">Your money, finally in <span class="accent">one place</span>.</div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "outro";
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = D.at(id, 0), to = D.end(id, 0);
+      const line = D.when(id, 0, "your");
+
+      // "DocAI."
+      D.blurIn(tl, $("#outro-name"), at - 0.1, { blur: 16, duration: 0.8 });
+      // "Your money, finally in one place." (held to the end of the film)
+      D.blurIn(tl, $("#outro-line"), line - 0.2, { duration: 0.6 });
+      D.words(tl, $("#outro-line"), line - 0.1, to - 0.1);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

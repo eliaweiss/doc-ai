@@ -1,5 +1,5 @@
 {
-  "_comment": "Narration for the README walkthrough, one sentence per entry (Pocket TTS reads single sentences best). 'say' is what the voice reads when it differs from the on-screen text. Scenes follow README.md up to the Mini apps section.",
+  "_comment": "Narration for the README walkthrough, one sentence per entry (Pocket TTS reads single sentences best). 'say' is what the voice reads when it differs from the on-screen text. Scenes follow README.md up to the Mini apps section; the outro (closing line) always stays last.",
   "pauseAfterSentence": 0.35,
   "pauseAfterScene": 0.8,
   "scenes": [
@@ -75,7 +75,13 @@
         { "text": "The AI builds the app once." },
         { "text": "After that, it runs on its own, without calling an AI model." },
         { "text": "That makes it faster, deterministic, cheaper, and private." },
-        { "text": "You can even build a mini app on a few sample documents, then run it on your real ones completely offline." },
+        { "text": "You can even build a mini app on a few sample documents, then run it on your real ones completely offline." }
+      ]
+    },
+    {
+      "id": "outro",
+      "title": "DocAI",
+      "sentences": [
         { "text": "DocAI. Your money, finally in one place.", "say": "Doc A I. Your money, finally in one place." }
       ]
     }
