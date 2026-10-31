@@ -1,8 +1,34 @@
 # doc-ai
 
-Local, single-user document intelligence. Point it at a folder (for example a Google Drive folder in "mirror files" mode). New files are classified, then extracted against a document-type schema (header fields and line-item tables) and stored in a local database. You can browse and edit them in the zdocs web UI (drive, document viewer, schema editor, search) or query them from Claude Desktop, Cursor and other clients over **MCP**.
+Think of doc-ai as Google Drive for your financial documents, except it runs on your own computer, keeps your files private and is open source. It's built for invoices, receipts, bank statements and transactions.
 
-doc-ai is the open-source, local version of zdocs. Most of the code is copied from zdocs unchanged. See [How it reuses zdocs](#how-it-reuses-zdocs).
+## How it works
+
+1. **Connect a folder.** Any folder works, including a Google Drive folder synced to your computer.
+2. **Data is extracted automatically.** Every document in the folder is recognized (invoice, receipt, bank statement…) and its data is pulled into a structured schema: vendor, date, totals, line items, transactions. doc-ai ships with schemas for common documents, and you can create your own.
+3. **Work with your data.** Browse & Search in a Drive-like web UI, and match payments to invoices with the built-in reconciliation tool.
+
+## Even better: connect an AI assistant
+
+doc-ai is also an MCP server, so you can connect Claude (or another AI assistant) and simply ask it to:
+
+- Sort your documents
+- Arrange them in folders
+- Search them ("how much did I spend on software in March?")
+- Reconcile payments with invoices
+- Build custom mini apps
+
+## Mini apps: no AI needed to run them
+
+A mini app is a small tool built on top of your data, such as a monthly expense report, a VAT summary or a vendor dashboard. The AI helps you *build* it once; after that, it runs on its own without calling an AI model. That makes mini apps:
+
+- **Faster**: no waiting for a model to answer
+- **Deterministic**: the same input always gives the same result
+- **Cheaper**: no tokens spent each time you run them
+
+They are also the way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
+
+doc-ai is the open-source, local version of [zdocs](#how-it-reuses-zdocs). The rest of this README covers setup and technical details.
 
 ## Quick start
 
@@ -58,19 +84,6 @@ From a local checkout, use `/plugin marketplace add ./path/to/doc-ai` instead. S
 
 Tools: `get_status`, `list_document_types`, `get_document_type`, `create_document_type`, `list_documents`, `get_document`, `list_searchable_entities`, `search_entities`, `get_entity`, `aggregate`, `update_entity_fields`, `reprocess_document`, `list_reconciliation_links`, `trace_reconciliation`, `create_reconciliation_link`, `delete_reconciliation_link`, `list_folders`, `create_folder`, `rename_folder`, `move_folder`, `delete_folder`, `move_documents`, `get_mini_app_guide`, `list_mini_apps`, `get_mini_app`, `create_mini_app`, `update_mini_app`, `find_documents_in_folder`, `get_folder_scan`, `import_photos` (plus `get_photo_thumbnails`, which only the picker UI calls). They cover everything mini apps can do through the uiTx SDK, so one-off changes can be asked for in chat; see [MCP server](docs/mcp-server.md#mcp-tools-and-the-mini-app-sdk). `move_documents` and `update_entity_fields` also take a filter (`select`) with a dry run, for changing many records in one call ([Bulk changes](docs/mcp-server.md#bulk-changes)).
 
-## Scan a photo folder + import (Eye, experimental)
-
-Search a folder elsewhere on the computer (Pictures, Downloads, a phone backup) for photos of receipts, invoices and other financial documents that might be relevant, and import them into a doc-ai folder. In the UI, open **New → Scan Photo Folder + Import**, type or browse to a folder and click **Scan**. Every receipt and document found is selected (except ones already in doc-ai). Unselect what you don't want, pick a doc-ai folder and click **Import**. Files are copied into the watch folder and processed like uploads; the source folder is never changed.
-
-From Claude, ask something like "find the receipts in ~/Pictures/2025 and import them". `find_documents_in_folder` returns the list as text and, in hosts that support [MCP Apps](https://github.com/modelcontextprotocol/ext-apps), an inline picker with thumbnails, select/unselect all and an Import button. Claude can also import directly with `import_photos`.
-
-- Sorting uses [Eye](https://desertant.com/models/eye/) from Desert Ant Labs (the model behind `eye-photo-sorter`), through its **native Node core** (Core ML on macOS, LiteRT on Linux), in the server process. Photos never leave the machine. Only the "photo" part runs (photo type), at about 40 ms per photo.
-- The model is loaded once per process. The first load downloads it to `<data dir>/cache/eye` (about 35 s); after that it loads in under 100 ms. Results are cached per file (path, size, mtime) in `cache/eye/results.json`, so scanning a folder again is fast.
-- Every finished scan is saved to `<data dir>/scans/<sha1 of folder path>.json` (the latest per folder). Scanning a folder that has a saved scan first asks whether to **use the saved scan** or **scan again**, in the UI, in the MCP picker and through `find_documents_in_folder`'s `reuse` argument. A reused scan drops photos deleted since and re-checks which ones are already in doc-ai.
-- Categories, as in eye-photo-sorter: **receipt**; **document** (`document`, `whiteboard`, `id_card`); **screenshot** (listed only when asked).
-- Photos only for now (JPG, PNG, WebP, GIF, TIFF). PDFs will come later, rasterized to images first. HEIC is not supported yet.
-- Code: `apps/server/src/photo-sort/` (`eye.ts` model + cache, `scan.ts` background scans, `import.ts`, `routes.ts` for `/api/local/photo-sort/*`, `mcp-tools.ts` + `picker.html` for MCP). UI: `packages/client/src/pages/drive/components/ImportFromFolderModal.tsx`.
-- Eye is under the Desert Ant Labs Source-Available License (free below 100k monthly active devices; it asks for credit) and sends usage telemetry to Desert Ant's license server.
 
 ## Architecture
 
