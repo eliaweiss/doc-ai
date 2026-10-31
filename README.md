@@ -1,16 +1,16 @@
-# doc-ai
+# DocAI
 
-Think of doc-ai as Google Drive for your financial documents, except it runs on your own computer, keeps your files private and is open source. It's built for invoices, receipts, bank statements and transactions.
+Think of DocAI as Google Drive for your financial documents, except it runs on your own computer, keeps your files private and is open source. It's built for invoices, receipts, bank statements and transactions.
 
 ## How it works
 
 1. **Connect a folder.** Any folder works, including a Google Drive folder synced to your computer.
-2. **Data is extracted automatically.** Every document in the folder is recognized (invoice, receipt, bank statement…) and its data is pulled into a structured schema: vendor, date, totals, line items, transactions. doc-ai ships with schemas for common documents, and you can create your own.
+2. **Data is extracted automatically.** Every document in the folder is recognized (invoice, receipt, bank statement…) and its data is pulled into a structured schema: vendor, date, totals, line items, transactions. DocAI ships with schemas for common documents, and you can create your own.
 3. **Work with your data.** Browse & Search in a Drive-like web UI, and match payments to invoices with the built-in reconciliation tool.
 
 ## Even better: connect an AI assistant
 
-doc-ai is also an MCP server, so you can connect Claude (or another AI assistant) and simply ask it to:
+DocAI is also an MCP server, so you can connect Claude (or another AI assistant) and simply ask it to:
 
 - Sort your documents
 - Arrange them in folders
@@ -28,7 +28,7 @@ A mini app is a small tool built on top of your data, such as a monthly expense 
 
 They are also the way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
 
-doc-ai is the open-source, local version of [zdocs](#how-it-reuses-zdocs). The rest of this README covers setup and technical details.
+DocAI is the open-source, local version of [zdocs](#how-it-reuses-zdocs). The rest of this README covers setup and technical details.
 
 ## Quick start
 
@@ -80,7 +80,7 @@ This repository is also a Claude Code plugin marketplace. The `doc-ai` plugin ([
 /plugin install doc-ai@doc-ai
 ```
 
-From a local checkout, use `/plugin marketplace add ./path/to/doc-ai` instead. Set `DOC_AI_MCP_URL` if the server isn't at `http://localhost:4310/mcp`. If you already added doc-ai as an MCP server by hand, remove that entry (`claude mcp remove doc-ai`) so the tools aren't listed twice.
+From a local checkout, use `/plugin marketplace add ./path/to/doc-ai` instead. Set `DOC_AI_MCP_URL` if the server isn't at `http://localhost:4310/mcp`. If you already added DocAI as an MCP server by hand, remove that entry (`claude mcp remove doc-ai`) so the tools aren't listed twice.
 
 Tools: `get_status`, `list_document_types`, `get_document_type`, `create_document_type`, `list_documents`, `get_document`, `list_searchable_entities`, `search_entities`, `get_entity`, `aggregate`, `update_entity_fields`, `reprocess_document`, `list_reconciliation_links`, `trace_reconciliation`, `create_reconciliation_link`, `delete_reconciliation_link`, `list_folders`, `create_folder`, `rename_folder`, `move_folder`, `delete_folder`, `move_documents`, `get_mini_app_guide`, `list_mini_apps`, `get_mini_app`, `create_mini_app`, `update_mini_app`, `find_documents_in_folder`, `get_folder_scan`, `import_photos` (plus `get_photo_thumbnails`, which only the picker UI calls). They cover everything mini apps can do through the uiTx SDK, so one-off changes can be asked for in chat; see [MCP server](docs/mcp-server.md#mcp-tools-and-the-mini-app-sdk). `move_documents` and `update_entity_fields` also take a filter (`select`) with a dry run, for changing many records in one call ([Bulk changes](docs/mcp-server.md#bulk-changes)).
 
@@ -107,7 +107,7 @@ HTTP :4310  ├─ /        zdocs client, built with Vite (apps/web)
 
 The watch folder's directory tree is the folder tree; the root folder is the watch folder itself. Sync runs both ways (`apps/server/src/folder-sync.ts`, `folder-routes.ts`, `watcher.ts`):
 
-| You do this | doc-ai does this |
+| You do this | DocAI does this |
 |---|---|
 | Add a file in a subdirectory | Document goes into the matching folder; missing folders are created |
 | Create a directory on disk | Folder created |
