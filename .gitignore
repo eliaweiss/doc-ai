@@ -12,3 +12,4 @@ apps/web/dist.old
 apps/server/scripts/export-from-zdocs.cjs
 apps/server/scripts/import-zdocs-export.ts
 apps/server/scripts/sync-back-to-zdocs.cjs
+.claude/skills/push-to-1flow/
