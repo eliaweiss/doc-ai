@@ -1,0 +1,100 @@
+<template>
+  <div data-hf-id="hf-cuod" id="use-root" class="scene" data-composition-id="use" data-width="1920" data-height="1080">
+    <style>
+      #use-root { position: absolute; inset: 0; }
+      #use-title { top: 420px; font-size: 120px; }
+
+      /* The receipt's trip: phone photo -> Google Drive -> DocAI */
+      #use-phone { left: 260px; top: 200px; width: 380px; height: 760px; border-radius: 56px; background: #1b1a1f;
+                   padding: 16px; box-shadow: 0 30px 80px rgba(40, 35, 70, 0.3); }
+      #use-phone-screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; background: #f4f2ee;
+                          display: flex; align-items: center; justify-content: center; }
+      #use-phone-screen img { width: 92%; border-radius: 10px; box-shadow: 0 8px 22px rgba(0,0,0,0.18); }
+      #use-cap-1 { left: 200px; width: 500px; top: 120px; text-align: center; }
+      .use-node { top: 490px; }
+      #use-drive { left: 820px; }
+      #use-docai { left: 1360px; }
+      .use-node .chip { font-size: 40px; padding: 26px 46px; }
+      .use-line { top: 500px; height: 4px; background: var(--clay); transform-origin: 0 50%; border-radius: 2px; }
+      #use-line-1 { left: 650px; width: 160px; }
+      #use-line-2 { left: 1215px; width: 135px; }
+      #use-cap-2 { left: 1220px; width: 600px; top: 600px; text-align: center; font-family: var(--font-ui); font-size: 30px; color: rgba(27,26,31,0.65); }
+
+      /* Claude Code */
+      #use-cc-title { top: 150px; }
+      #use-term { left: 410px; top: 300px; width: 1100px; height: 520px; border-radius: 22px; background: #1f1e24;
+                  box-shadow: 0 30px 80px rgba(40, 35, 70, 0.35); padding: 0; overflow: hidden; }
+      #use-term-bar { height: 54px; background: #2b2a31; display: flex; align-items: center; gap: 12px; padding-left: 24px; }
+      #use-term-bar i { width: 16px; height: 16px; border-radius: 50%; background: #55535c; display: inline-block; }
+      #use-term-body { padding: 44px 56px; font-family: "JetBrains Mono", monospace; font-size: 34px; line-height: 1.9; color: #ece9f2; }
+      #use-term-body .p { color: #e0866a; }
+      .use-cmd { white-space: nowrap; overflow: hidden; }
+    </style>
+
+    <div data-hf-id="hf-wphp" id="use-title" class="abs center serif">How I use it</div>
+
+    <div data-hf-id="hf-4nbf" id="use-cap-1" class="abs serif h3">Snap a photo</div>
+    <div data-hf-id="hf-u8f8" id="use-phone" class="abs"><div data-hf-id="hf-oe8q" id="use-phone-screen"><img data-hf-id="hf-dozm" src="assets/images/sample-invoice.png" alt="" /></div></div>
+    <div data-hf-id="hf-vrz8" id="use-line-1" class="abs use-line"></div>
+    <div data-hf-id="hf-lv96" id="use-drive" class="abs use-node"><span data-hf-id="hf-sekg" class="chip">Google Drive</span></div>
+    <div data-hf-id="hf-6ngv" id="use-line-2" class="abs use-line"></div>
+    <div data-hf-id="hf-v0ly" id="use-docai" class="abs use-node"><span data-hf-id="hf-y8wf" class="chip" style="background:var(--clay); color:#fff">DocAI</span></div>
+    <div data-hf-id="hf-n1qt" id="use-cap-2" class="abs">picks it up and extracts the data</div>
+
+    <div data-hf-id="hf-2ot5" id="use-cc-title" class="abs center serif h2">Then I ask <span data-hf-id="hf-95b2" class="accent">Claude Code</span> to</div>
+    <div data-hf-id="hf-1n6e" id="use-term" class="abs">
+      <div data-hf-id="hf-jl89" id="use-term-bar"><i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i></div>
+      <div data-hf-id="hf-oogi" id="use-term-body">
+        <div data-hf-id="hf-7ohz" id="use-cmd-1" class="use-cmd"><span data-hf-id="hf-vat7" class="p">&gt;</span> organize my documents</div>
+        <div data-hf-id="hf-imi1" id="use-cmd-2" class="use-cmd"><span data-hf-id="hf-c27v" class="p">&gt;</span> create a monthly report</div>
+        <div data-hf-id="hf-zh26" id="use-cmd-3" class="use-cmd"><span data-hf-id="hf-bnwu" class="p">&gt;</span> link my income to my tax payments</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "use", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+
+      // "Here's how I use it every day."
+      D.blurIn(tl, $("#use-title"), at(0) - 0.2, { blur: 14, duration: 0.6 });
+      D.speak(tl, $("#use-title"), id, 0);
+      D.blurOut(tl, $("#use-title"), at(1) - 0.3, { y: -40 });
+
+      // "Whenever I get a receipt, I snap a photo and save it to Google Drive."
+      const s1 = at(1), e1 = to(1);
+      D.blurIn(tl, $("#use-phone"), s1 - 0.05, { y: 140, blur: 6, duration: 0.9 });
+      D.blurIn(tl, $("#use-cap-1"), s1 + (e1 - s1) * 0.35, { duration: 0.4 });
+      tl.fromTo("#use-line-1", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.inOut" }, s1 + (e1 - s1) * 0.72);
+      D.blurIn(tl, $("#use-drive"), s1 + (e1 - s1) * 0.78, { scale: 0.85, duration: 0.5 });
+
+      // "Once it syncs, DocAI picks it up and extracts the data."
+      const s2 = at(2), e2 = to(2);
+      tl.fromTo("#use-line-2", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.inOut" }, s2 + 0.2);
+      D.blurIn(tl, $("#use-docai"), s2 + (e2 - s2) * 0.3, { scale: 0.85, duration: 0.5 });
+      D.blurIn(tl, $("#use-cap-2"), s2 + (e2 - s2) * 0.45, { duration: 0.4 });
+      D.words(tl, $("#use-cap-2"), s2 + (e2 - s2) * 0.45, e2 - 0.1);
+
+      // "Then I connect Claude Code, and use it to organize ..., create reports, and link ..."
+      const s3 = at(3), e3 = to(3);
+      ["#use-phone", "#use-cap-1", "#use-line-1", "#use-drive", "#use-line-2", "#use-docai", "#use-cap-2"].forEach((sel, k) =>
+        D.blurOut(tl, $(sel), s3 - 0.35 + k * 0.025, { y: -30 }));
+      D.blurIn(tl, $("#use-cc-title"), s3 - 0.05, { duration: 0.5 });
+      D.words(tl, $("#use-cc-title"), s3, s3 + (e3 - s3) * 0.28);
+      D.blurIn(tl, $("#use-term"), s3 + 0.2, { y: 100, blur: 6, duration: 0.9 });
+      // Each command types out as the voice names it
+      [0.42, 0.6, 0.78].forEach((f, k) => {
+        tl.fromTo("#use-cmd-" + (k + 1), { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+          { opacity: 1, clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "steps(24)" }, s3 + (e3 - s3) * f - 0.2);
+      });
+
+      D.blurOut(tl, $("#use-cc-title"), end - 0.45);
+      D.blurOut(tl, $("#use-term"), end - 0.45, { scale: 1.04 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

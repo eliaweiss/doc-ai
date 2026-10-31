@@ -1,0 +1,90 @@
+<template>
+  <div data-hf-id="hf-i0ih" id="why-root" class="scene" data-composition-id="why" data-width="1920" data-height="1080">
+    <style>
+      #why-root { position: absolute; inset: 0; }
+      #why-title { top: 440px; }
+      #why-there { top: 470px; }
+      #why-diff { top: 300px; }
+      #why-diff div { margin: 6px 0; }
+      #why-excel { top: 460px; }
+      #why-answers { top: 470px; }
+      .why-q { top: 455px; font-style: italic; }
+      #why-place { top: 410px; }
+      #why-place-sub { top: 560px; }
+      #why-docai { top: 400px; }
+    </style>
+    <div data-hf-id="hf-wp5u" id="why-title" class="abs center serif huge" style="font-size:150px; top:400px">Why <span data-hf-id="hf-3j5p" class="accent">DocAI</span>?</div>
+    <div data-hf-id="hf-tizq" id="why-there" class="abs center serif h1">The data is all there.</div>
+    <div data-hf-id="hf-zfbt" id="why-diff" class="abs center serif h1">
+      <div data-hf-id="hf-i0l0" id="why-diff-1">Different formats.</div>
+      <div data-hf-id="hf-bar5" id="why-diff-2">Different sources.</div>
+      <div data-hf-id="hf-9dtd" id="why-diff-3">Different days of the month.</div>
+    </div>
+    <div data-hf-id="hf-mazb" id="why-excel" class="abs center serif h1">In Excel, it's a <span data-hf-id="hf-0u3r" class="accent">full-time job</span>.</div>
+    <div data-hf-id="hf-tous" id="why-answers" class="abs center serif h1">Then one day, you need answers.</div>
+    <div data-hf-id="hf-ixtv" id="why-q1" class="abs center serif h1 why-q">How did I miss a tax payment?</div>
+    <div data-hf-id="hf-aet6" id="why-q2" class="abs center serif h1 why-q">Did I get paid for this job?</div>
+    <div data-hf-id="hf-pxqr" id="why-q3" class="abs center serif h1 why-q">What is this expense?</div>
+    <div data-hf-id="hf-8cth" id="why-place" class="abs center serif h1">One place for <span data-hf-id="hf-gmfk" class="accent">all of it</span>.</div>
+    <div data-hf-id="hf-dq16" id="why-place-sub" class="abs center kicker">Drop it in · AI does the first pass · Simple tools</div>
+    <div data-hf-id="hf-tko9" id="why-docai" class="abs center serif huge">That's <span data-hf-id="hf-7zdd" class="accent">DocAI</span>.</div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "why", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+
+      // "Why DocAI?"
+      D.blurIn(tl, $("#why-title"), at(0) - 0.2, { blur: 14, duration: 0.7 });
+      D.speak(tl, $("#why-title"), id, 0);
+      D.blurOut(tl, $("#why-title"), at(1) - 0.3, { scale: 1.06 });
+
+      // "The data about your money is all there."
+      D.blurIn(tl, $("#why-there"), at(1) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#why-there"), at(1), to(1) - 0.2);
+      D.blurOut(tl, $("#why-there"), at(2) - 0.25);
+
+      // "...a different format, from a different source, at a different time of the month."
+      const s2 = at(2), e2 = to(2), span2 = e2 - s2;
+      [1, 2, 3].forEach((k) => {
+        D.blurIn(tl, $("#why-diff-" + k), s2 + span2 * (0.22 + (k - 1) * 0.26), { y: 24, duration: 0.55 });
+      });
+      D.blurOut(tl, $("#why-diff"), at(3) - 0.25);
+
+      // "Organizing it in Excel is a full-time job, so most of us just give up."
+      D.blurIn(tl, $("#why-excel"), at(3) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#why-excel"), at(3), at(3) + (to(3) - at(3)) * 0.55);
+      D.blurOut(tl, $("#why-excel"), at(4) - 0.25);
+
+      // "Then one day you need answers, and you waste days digging..."
+      D.blurIn(tl, $("#why-answers"), at(4) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#why-answers"), at(4), at(4) + (to(4) - at(4)) * 0.45);
+      D.blurOut(tl, $("#why-answers"), at(5) - 0.25);
+
+      // The three questions, one at a time
+      [5, 6, 7].forEach((i, k) => {
+        const el = $("#why-q" + (k + 1));
+        D.blurIn(tl, el, at(i) - 0.1, { duration: 0.45, blur: 8 });
+        D.speak(tl, el, id, i);
+        D.blurOut(tl, el, at(i + 1) - 0.22);
+      });
+
+      // "You need one place to drop all your documents, let AI do the first pass..."
+      D.blurIn(tl, $("#why-place"), at(8) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#why-place"), at(8), at(8) + (to(8) - at(8)) * 0.4);
+      D.blurIn(tl, $("#why-place-sub"), at(8) + (to(8) - at(8)) * 0.45, { duration: 0.5 });
+      D.blurOut(tl, $("#why-place"), at(9) - 0.25);
+      D.blurOut(tl, $("#why-place-sub"), at(9) - 0.25);
+
+      // "That's DocAI."
+      D.blurIn(tl, $("#why-docai"), at(9) - 0.1, { blur: 14, duration: 0.6, scale: 0.96 });
+      D.speak(tl, $("#why-docai"), id, 9);
+      D.blurOut(tl, $("#why-docai"), end - 0.45, { scale: 1.1 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

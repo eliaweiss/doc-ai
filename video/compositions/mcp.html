@@ -1,0 +1,59 @@
+<template>
+  <div data-hf-id="hf-h7fp" id="mcp-root" class="scene" data-composition-id="mcp" data-width="1920" data-height="1080">
+    <style>
+      #mcp-root { position: absolute; inset: 0; }
+      #mcp-title { top: 380px; font-size: 110px; }
+      #mcp-sub { top: 540px; }
+      /* The chat: bubbles stack from the bottom; the stack slides up as each arrives */
+      #mcp-chat { left: 460px; width: 1000px; top: 0; height: 1080px; }
+      #mcp-stack { position: absolute; left: 0; right: 0; top: 0; }
+      .mcp-row { position: absolute; right: 0; text-align: right; }
+      #mcp-label { left: 460px; top: 120px; }
+    </style>
+    <div data-hf-id="hf-swf2" id="mcp-title" class="abs center serif">DocAI is an <span data-hf-id="hf-cc1g" class="accent">MCP server</span></div>
+    <div data-hf-id="hf-jim4" id="mcp-sub" class="abs center serif h2">Connect Claude, or any AI assistant</div>
+    <div data-hf-id="hf-o2co" id="mcp-label" class="abs kicker">You ask</div>
+    <div data-hf-id="hf-lnd9" id="mcp-chat" class="abs">
+      <div data-hf-id="hf-pgls" id="mcp-stack">
+        <div data-hf-id="hf-m6yg" id="mcp-b1" class="mcp-row" style="top:880px"><span data-hf-id="hf-qn4p" class="bubble">Sort my documents</span></div>
+        <div data-hf-id="hf-pshd" id="mcp-b2" class="mcp-row" style="top:1010px"><span data-hf-id="hf-sq8p" class="bubble">Arrange them in folders</span></div>
+        <div data-hf-id="hf-9x5o" id="mcp-b3" class="mcp-row" style="top:1140px"><span data-hf-id="hf-tljt" class="bubble">How much did I spend on software in March?</span></div>
+        <div data-hf-id="hf-kmgn" id="mcp-b4" class="mcp-row" style="top:1270px"><span data-hf-id="hf-uap9" class="bubble">Reconcile these payments with their invoices</span></div>
+        <div data-hf-id="hf-2jlf" id="mcp-b5" class="mcp-row" style="top:1400px"><span data-hf-id="hf-z42m" class="bubble">Build me a <b data-hf-id="hf-pqn9">mini app</b></span></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "mcp", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+
+      // "DocAI is also an MCP server."
+      D.blurIn(tl, $("#mcp-title"), at(0) - 0.2, { blur: 14, duration: 0.6 });
+      D.speak(tl, $("#mcp-title"), id, 0);
+      // "So you can connect Claude, or any AI assistant, and simply ask."
+      D.blurIn(tl, $("#mcp-sub"), at(1) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#mcp-sub"), at(1), at(1) + (to(1) - at(1)) * 0.6);
+      D.blurOut(tl, $("#mcp-title"), at(2) - 0.35, { y: -60 });
+      D.blurOut(tl, $("#mcp-sub"), at(2) - 0.32, { y: -60 });
+      D.blurIn(tl, $("#mcp-label"), at(2) - 0.2, { duration: 0.4 });
+
+      // Each question pops in as it is asked; the stack moves up one row (130 px) each time
+      tl.set("#mcp-stack", { y: 0 }, 0);
+      [2, 3, 4, 5, 6].forEach((i, k) => {
+        const row = $("#mcp-b" + (k + 1));
+        tl.fromTo(row, { opacity: 0, scale: 0.86, filter: "blur(6px)", transformOrigin: "100% 100%" },
+          { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "back.out(1.4)" }, at(i) - 0.08);
+        if (k > 0) tl.to("#mcp-stack", { y: -130 * k, duration: 0.45, ease: "power3.out" }, at(i) - 0.12);
+      });
+
+      D.blurOut(tl, $("#mcp-label"), end - 0.45);
+      D.blurOut(tl, $("#mcp-chat"), end - 0.45, { y: -40 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

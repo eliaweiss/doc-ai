@@ -1,0 +1,76 @@
+<template>
+  <div data-hf-id="hf-h1ll" id="intro-root" class="scene" data-composition-id="intro" data-width="1920" data-height="1080">
+    <style>
+      #intro-root { position: absolute; inset: 0; }
+      #intro-name { top: 330px; }
+      #intro-tag { top: 470px; }
+      #intro-chips { top: 700px; display: flex; justify-content: center; gap: 26px; }
+      #intro-private { top: 92px; }
+      #intro-shot { left: 330px; top: 230px; width: 1260px; }
+      #intro-flow { top: 400px; }
+      #intro-flow-sub { top: 560px; }
+    </style>
+    <div data-hf-id="hf-w2sj" id="intro-name" class="abs center serif huge">DocAI</div>
+    <div data-hf-id="hf-kllx" id="intro-tag" class="abs center serif h2">
+      <div data-hf-id="hf-jh33" id="intro-tag-1">A free, local, open-source Google Drive</div>
+      <div data-hf-id="hf-aop5" id="intro-tag-2">for your <span data-hf-id="hf-fnc8" class="accent">financial documents</span></div>
+    </div>
+    <div data-hf-id="hf-5orn" id="intro-chips" class="abs center">
+      <span data-hf-id="hf-03ny" id="intro-chip-1" class="chip">Invoices</span>
+      <span data-hf-id="hf-0eos" id="intro-chip-2" class="chip">Receipts</span>
+      <span data-hf-id="hf-p2v4" id="intro-chip-3" class="chip">Bank statements</span>
+      <span data-hf-id="hf-yu46" id="intro-chip-4" class="chip">Transactions</span>
+    </div>
+    <div data-hf-id="hf-l2k1" id="intro-private" class="abs center serif h3">Runs on <span data-hf-id="hf-sa6c" class="accent">your</span> computer. Your files stay private.</div>
+    <div data-hf-id="hf-z78n" id="intro-shot" class="abs card"><img data-hf-id="hf-q0jp" src="assets/screens/drive.png" alt="" /></div>
+    <div data-hf-id="hf-4ru2" id="intro-flow" class="abs center serif h1">One picture of your <span data-hf-id="hf-jqxf" class="accent">money flow</span></div>
+    <div data-hf-id="hf-1a6v" id="intro-flow-sub" class="abs center sans kicker">Every document, extracted and connected</div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "intro", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+
+      // "This is DocAI."
+      D.blurIn(tl, $("#intro-name"), D.at(id, 0) - 0.15, { blur: 14, duration: 0.7 });
+      // The name moves up to make room for what it is
+      tl.fromTo($("#intro-name"), { y: 0, scale: 1 }, { y: -190, scale: 0.6, duration: 0.9, ease: "power3.inOut" }, D.at(id, 1) - 0.3);
+
+      // "Think of it as a free, local, open-source Google Drive, built for your financial documents."
+      D.blurIn(tl, $("#intro-tag"), D.at(id, 1) - 0.1, { blur: 6, duration: 0.3 });
+      const s1 = D.at(id, 1), e1 = D.end(id, 1);
+      D.words(tl, $("#intro-tag-1"), s1, s1 + (e1 - s1) * 0.62);
+      D.words(tl, $("#intro-tag-2"), s1 + (e1 - s1) * 0.7, e1 - 0.1);
+
+      // "Invoices, receipts, bank statements and transactions."
+      const s2 = D.at(id, 2), e2 = D.end(id, 2);
+      [1, 2, 3, 4].forEach((k) => D.blurIn(tl, $("#intro-chip-" + k), s2 + ((e2 - s2) * (k - 1)) / 4, { y: 30, duration: 0.6 }));
+
+      // "It runs on your own computer, and keeps your files private."
+      const s3 = D.at(id, 3);
+      D.blurOut(tl, $("#intro-name"), s3 - 0.35);
+      D.blurOut(tl, $("#intro-tag"), s3 - 0.32);
+      [1, 2, 3, 4].forEach((k) => D.blurOut(tl, $("#intro-chip-" + k), s3 - 0.3 + k * 0.03, { y: 20 }));
+      D.blurIn(tl, $("#intro-private"), s3, { duration: 0.6 });
+      D.words(tl, $("#intro-private"), s3, D.end(id, 3) - 0.1);
+      D.blurIn(tl, $("#intro-shot"), s3 + 0.2, { y: 140, blur: 6, duration: 1.1 });
+      // A slow push into the folder list
+      tl.fromTo($("#intro-shot"), { scale: 1 }, { scale: 1.06, duration: D.at(id, 4) - s3, ease: "power1.inOut" }, s3 + 0.2);
+
+      // "AI extracts the data ... into a complete picture of your money flow."
+      const s4 = D.at(id, 4);
+      D.blurOut(tl, $("#intro-private"), s4 - 0.3);
+      D.blurOut(tl, $("#intro-shot"), s4 - 0.25, { y: -60, scale: 0.94, blur: 14, duration: 0.4 });
+      D.blurIn(tl, $("#intro-flow"), s4 + 0.9, { duration: 0.6 });
+      D.words(tl, $("#intro-flow"), s4 + 0.9, D.end(id, 4) - 0.2);
+      D.blurIn(tl, $("#intro-flow-sub"), s4 + 0.4, { duration: 0.5 });
+
+      D.blurOut(tl, $("#intro-flow"), end - 0.45, { scale: 1.08 });
+      D.blurOut(tl, $("#intro-flow-sub"), end - 0.45);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

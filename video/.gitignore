@@ -1,0 +1,10 @@
+# Regenerated locally; not needed in the repo
+node_modules/
+renders/
+snapshots/
+# Per-sentence TTS clips (scripts/tts.py)
+.cache/
+# HyperFrames state, snapshots and Studio caches
+.hyperframes/
+.thumbnails/
+.waveform-cache/

@@ -1,0 +1,105 @@
+<template>
+  <div data-hf-id="hf-4srt" id="how-root" class="scene" data-composition-id="how" data-width="1920" data-height="1080">
+    <style>
+      #how-root { position: absolute; inset: 0; }
+      #how-title { top: 440px; }
+      .how-step { top: 72px; left: 0; right: 0; text-align: center; }
+      .how-step .n { font-family: var(--font-ui); font-weight: 700; color: var(--clay); font-size: 40px;
+                     display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%;
+                     background: var(--paper); margin-right: 22px; vertical-align: 14px; text-align: center; }
+      .how-sub { top: 168px; font-family: var(--font-ui); font-size: 30px; color: rgba(27, 26, 31, 0.62); }
+      .how-frame { left: 370px; top: 240px; width: 1180px; height: 738px; }
+      .how-zoom { position: absolute; inset: 0; transform-origin: 0 0; }
+      .how-zoom img { width: 1180px; }
+
+      /* Step 2: the invoice and what DocAI read from it */
+      #how-invoice { left: 300px; top: 236px; width: 600px; height: 776px; }
+      #how-fields { left: 1040px; top: 250px; width: 640px; height: 640px; }
+      #how-fields .how-crop { position: absolute; left: 0; top: -100px; width: 1305px; }
+      .how-hl { position: absolute; left: 6px; width: 628px; height: 40px; border-radius: 10px;
+                border: 4px solid var(--clay); background: rgba(201, 100, 66, 0.08); }
+      #how-arrow { left: 900px; top: 520px; width: 150px; height: 60px; overflow: visible; }
+    </style>
+
+    <div data-hf-id="hf-1w6j" id="how-title" class="abs center serif h1" style="font-size:120px; top:420px">How it works</div>
+
+    <!-- 1 -->
+    <div data-hf-id="hf-ckn2" id="how-s1" class="abs serif h2 how-step"><span data-hf-id="hf-e3y0" class="n">1</span>Connect a folder</div>
+    <div data-hf-id="hf-wodn" id="how-s1-sub" class="abs center how-sub">Any folder. Even a Google Drive folder on your computer.</div>
+    <div data-hf-id="hf-u2rf" id="how-drive" class="abs card how-frame"><div data-hf-id="hf-791n" id="how-drive-zoom" class="how-zoom"><img data-hf-id="hf-q0jp" src="assets/screens/drive.png" alt="" /></div></div>
+
+    <!-- 2 -->
+    <div data-hf-id="hf-qt9d" id="how-s2" class="abs serif h2 how-step"><span data-hf-id="hf-cx0x" class="n">2</span>The data is extracted</div>
+    <div data-hf-id="hf-agpo" id="how-invoice" class="abs card"><img data-hf-id="hf-dozm" src="assets/images/sample-invoice.png" alt="" /></div>
+    <svg data-hf-id="hf-m5xc" id="how-arrow" class="abs" viewBox="0 0 150 60">
+      <path data-hf-id="hf-xg5a" id="how-arrow-path" d="M6 30 C 50 6, 100 6, 140 30" fill="none" stroke="#c96442" stroke-width="5" stroke-linecap="round" />
+      <path data-hf-id="hf-0hf1" id="how-arrow-head" d="M124 16 L142 31 L122 42" fill="none" stroke="#c96442" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <div data-hf-id="hf-4umg" id="how-fields" class="abs card">
+      <img data-hf-id="hf-npnv" class="how-crop" src="assets/screens/sample-fields.png" alt="" />
+      <div data-hf-id="hf-swx0" id="how-hl-1" class="how-hl" style="top:335px"></div>
+      <div data-hf-id="hf-ac1c" id="how-hl-2" class="how-hl" style="top:422px"></div>
+      <div data-hf-id="hf-xtq9" id="how-hl-3" class="how-hl" style="top:596px"></div>
+    </div>
+
+    <!-- 3 -->
+    <div data-hf-id="hf-jjtr" id="how-s3" class="abs serif h2 how-step"><span data-hf-id="hf-dbby" class="n">3</span>Work with your data</div>
+    <div data-hf-id="hf-dw9u" id="how-s3-sub" class="abs center how-sub">Browse, search, and match payments to invoices.</div>
+    <div data-hf-id="hf-5lgi" id="how-recon" class="abs card how-frame"><div data-hf-id="hf-p8w0" id="how-recon-zoom" class="how-zoom"><img data-hf-id="hf-cb3i" src="assets/screens/reconciliation.png" alt="" /></div></div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "how", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+
+      // "Here's how it works."
+      D.blurIn(tl, $("#how-title"), at(0) - 0.2, { blur: 14, duration: 0.6 });
+      D.speak(tl, $("#how-title"), id, 0);
+      D.blurOut(tl, $("#how-title"), at(1) - 0.3, { y: -40 });
+
+      // 1. "First, connect a folder." "Any folder works, even a Google Drive folder..."
+      D.blurIn(tl, $("#how-s1"), at(1) - 0.05, { y: 20, duration: 0.5 });
+      D.blurIn(tl, $("#how-drive"), at(1) + 0.25, { y: 120, blur: 6, duration: 1.0 });
+      D.blurIn(tl, $("#how-s1-sub"), at(2) - 0.05, { duration: 0.4 });
+      D.words(tl, $("#how-s1-sub"), at(2), to(2) - 0.2);
+      // Push into the folder tree as the voice says "a folder synced to your computer"
+      tl.fromTo($("#how-drive-zoom"), { scale: 1, x: 0, y: 0 }, { scale: 1.9, x: 0, y: -60, duration: 1.6, ease: "power2.inOut" }, at(2) + 0.3);
+      D.blurOut(tl, $("#how-s1"), at(3) - 0.3);
+      D.blurOut(tl, $("#how-s1-sub"), at(3) - 0.3);
+      D.blurOut(tl, $("#how-drive"), at(3) - 0.3, { y: -40, scale: 0.96, duration: 0.35 });
+
+      // 2. "Second, the data is extracted automatically." The worked example.
+      D.blurIn(tl, $("#how-s2"), at(3) - 0.05, { y: 20, duration: 0.5 });
+      D.blurIn(tl, $("#how-invoice"), at(3) + 0.15, { y: 100, blur: 6, duration: 0.9 });
+      tl.fromTo("#how-arrow-path", { strokeDasharray: 160, strokeDashoffset: 160 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, at(3) + 1.1);
+      tl.fromTo("#how-arrow-head", { opacity: 0 }, { opacity: 1, duration: 0.15 }, at(3) + 1.6);
+      D.blurIn(tl, $("#how-fields"), at(3) + 1.4, { y: 60, blur: 6, duration: 0.8 });
+      // "...its vendor, dates, totals and line items..."
+      const s4 = at(4), e4 = to(4);
+      [1, 2, 3].forEach((k) => {
+        tl.fromTo("#how-hl-" + k, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, s4 + (e4 - s4) * (0.32 + (k - 1) * 0.14));
+      });
+      D.blurOut(tl, $("#how-s2"), at(5) - 0.3);
+      D.blurOut(tl, $("#how-invoice"), at(5) - 0.3, { x: -60, duration: 0.3 });
+      D.blurOut(tl, $("#how-arrow"), at(5) - 0.3);
+      D.blurOut(tl, $("#how-fields"), at(5) - 0.28, { x: 60, duration: 0.3 });
+
+      // 3. "Third, work with your data." "Browse and search ... reconciliation tool."
+      D.blurIn(tl, $("#how-s3"), at(5) - 0.05, { y: 20, duration: 0.5 });
+      D.blurIn(tl, $("#how-recon"), at(5) + 0.25, { y: 120, blur: 6, duration: 1.0 });
+      D.blurIn(tl, $("#how-s3-sub"), at(6) - 0.05, { duration: 0.4 });
+      D.words(tl, $("#how-s3-sub"), at(6), to(6) - 0.3);
+      // Push into the reconciled transactions as it says "match payments to invoices"
+      tl.fromTo($("#how-recon-zoom"), { scale: 1, x: 0, y: 0 }, { scale: 1.45, x: -150, y: -250, duration: 1.8, ease: "power2.inOut" }, at(6) + (to(6) - at(6)) * 0.45);
+
+      D.blurOut(tl, $("#how-s3"), end - 0.45);
+      D.blurOut(tl, $("#how-s3-sub"), end - 0.45);
+      D.blurOut(tl, $("#how-recon"), end - 0.45, { scale: 1.04 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

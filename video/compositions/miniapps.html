@@ -1,0 +1,93 @@
+<template>
+  <div data-hf-id="hf-4ygb" id="miniapps-root" class="scene" data-composition-id="miniapps" data-width="1920" data-height="1080">
+    <style>
+      #miniapps-root { position: absolute; inset: 0; }
+      #ma-title { top: 380px; font-size: 130px; }
+      #ma-sub { top: 560px; }
+      #ma-names { top: 100px; display: flex; justify-content: center; gap: 22px; }
+      #ma-shot { left: 410px; top: 230px; width: 1100px; height: 688px; }
+      #ma-shot-zoom { position: absolute; inset: 0; transform-origin: 50% 0; }
+      #ma-shot-zoom img { width: 1100px; }
+      #ma-once { top: 360px; }
+      #ma-runs { top: 500px; }
+      #ma-four { top: 470px; display: flex; justify-content: center; gap: 70px; }
+      #ma-four .serif { font-size: 96px; }
+      #ma-offline { top: 420px; }
+      #ma-offline-sub { top: 560px; }
+      #ma-end-name { top: 330px; }
+      #ma-end-line { top: 610px; }
+    </style>
+    <div data-hf-id="hf-va6q" id="ma-title" class="abs center serif">Mini apps</div>
+    <div data-hf-id="hf-jqqb" id="ma-sub" class="abs center serif h2">Custom tools, built on your data</div>
+    <div data-hf-id="hf-6pq0" id="ma-names" class="abs center">
+      <span data-hf-id="hf-mlmx" id="ma-n1" class="chip">Monthly Expenses</span>
+      <span data-hf-id="hf-400d" id="ma-n2" class="chip">Folder Suggestions</span>
+      <span data-hf-id="hf-pp7s" id="ma-n3" class="chip">Bank Reconciliation</span>
+    </div>
+    <div data-hf-id="hf-vor3" id="ma-shot" class="abs card"><div data-hf-id="hf-nffs" id="ma-shot-zoom"><img data-hf-id="hf-qdoe" src="assets/screens/expenses.png" alt="" /></div></div>
+    <div data-hf-id="hf-4y2q" id="ma-once" class="abs center serif h1">The AI builds it <span data-hf-id="hf-7yfm" class="accent">once</span>.</div>
+    <div data-hf-id="hf-ae8a" id="ma-runs" class="abs center serif h1">Then it runs without AI.</div>
+    <div data-hf-id="hf-xq2k" id="ma-four" class="abs center">
+      <span data-hf-id="hf-3vnv" id="ma-f1" class="serif">Faster</span>
+      <span data-hf-id="hf-90vx" id="ma-f2" class="serif">Deterministic</span>
+      <span data-hf-id="hf-6c58" id="ma-f3" class="serif">Cheaper</span>
+      <span data-hf-id="hf-xx3o" id="ma-f4" class="serif accent">Private</span>
+    </div>
+    <div data-hf-id="hf-omv2" id="ma-offline" class="abs center serif h1">Build on samples. Run <span data-hf-id="hf-ro3a" class="accent">offline</span>.</div>
+    <div data-hf-id="hf-skul" id="ma-offline-sub" class="abs center kicker">No document leaves your computer</div>
+    <div data-hf-id="hf-7ypt" id="ma-end-name" class="abs center serif huge">DocAI</div>
+    <div data-hf-id="hf-qzfu" id="ma-end-line" class="abs center serif h2">Your money, finally in <span data-hf-id="hf-1xjy" class="accent">one place</span>.</div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "miniapps", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+
+      // "Mini apps are custom tools built on top of your data."
+      D.blurIn(tl, $("#ma-title"), at(0) - 0.2, { blur: 14, duration: 0.6 });
+      D.blurIn(tl, $("#ma-sub"), at(0) + 0.5, { duration: 0.5 });
+      D.words(tl, $("#ma-sub"), at(0) + 0.5, to(0) - 0.2);
+      D.blurOut(tl, $("#ma-title"), at(1) - 0.3, { y: -40 });
+      D.blurOut(tl, $("#ma-sub"), at(1) - 0.3, { y: -40 });
+
+      // "A monthly expense report, a folder organizer, a bank reconciliation."
+      const s1 = at(1), e1 = to(1);
+      [1, 2, 3].forEach((k) => D.blurIn(tl, $("#ma-n" + k), s1 + ((e1 - s1) * (k - 1)) / 3, { y: 24, duration: 0.5 }));
+      D.blurIn(tl, $("#ma-shot"), s1 + 0.1, { y: 120, blur: 6, duration: 1.0 });
+      // Scroll down the expense report while it is on screen
+      tl.fromTo($("#ma-shot-zoom"), { y: 0, scale: 1 }, { y: -40, scale: 1.12, duration: at(2) - s1, ease: "power1.inOut" }, s1 + 0.4);
+      [1, 2, 3].forEach((k) => D.blurOut(tl, $("#ma-n" + k), at(2) - 0.32 + k * 0.03));
+      D.blurOut(tl, $("#ma-shot"), at(2) - 0.3, { y: -40, scale: 0.96 });
+
+      // "The AI builds the app once." "After that, it runs on its own, without calling an AI model."
+      D.blurIn(tl, $("#ma-once"), at(2) - 0.05, { duration: 0.5 });
+      D.speak(tl, $("#ma-once"), id, 2);
+      D.blurIn(tl, $("#ma-runs"), at(3) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#ma-runs"), at(3), to(3) - 0.3);
+      D.blurOut(tl, $("#ma-once"), at(4) - 0.3);
+      D.blurOut(tl, $("#ma-runs"), at(4) - 0.28);
+
+      // "That makes it faster, deterministic, cheaper, and private."
+      const s4 = at(4), e4 = to(4);
+      [1, 2, 3, 4].forEach((k) => D.blurIn(tl, $("#ma-f" + k), s4 + (e4 - s4) * (0.28 + (k - 1) * 0.19), { y: 30, duration: 0.5 }));
+      [1, 2, 3, 4].forEach((k) => D.blurOut(tl, $("#ma-f" + k), at(5) - 0.32 + k * 0.03));
+
+      // "You can even build a mini app on a few sample documents, then run it on your real ones completely offline."
+      D.blurIn(tl, $("#ma-offline"), at(5) - 0.05, { duration: 0.5 });
+      D.words(tl, $("#ma-offline"), at(5) + 0.4, to(5) - 0.2);
+      D.blurIn(tl, $("#ma-offline-sub"), to(5) - 2.0, { duration: 0.5 });
+      D.blurOut(tl, $("#ma-offline"), at(6) - 0.3);
+      D.blurOut(tl, $("#ma-offline-sub"), at(6) - 0.3);
+
+      // "DocAI. Your money, finally in one place."
+      D.blurIn(tl, $("#ma-end-name"), at(6) - 0.1, { blur: 16, duration: 0.8 });
+      D.blurIn(tl, $("#ma-end-line"), at(6) + 0.6, { duration: 0.6 });
+      D.words(tl, $("#ma-end-line"), at(6) + 0.7, to(6) - 0.1);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

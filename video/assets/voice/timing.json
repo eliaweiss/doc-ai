@@ -1,0 +1,253 @@
+{
+  "pauseAfterScene": 0.8,
+  "scenes": [
+    {
+      "id": "intro",
+      "title": "DocAI",
+      "audio": "assets/voice/intro.mp3",
+      "duration": 21.865,
+      "sentences": [
+        {
+          "text": "This is DocAI.",
+          "start": 0.0,
+          "end": 1.324
+        },
+        {
+          "text": "Think of it as a free, local, open-source Google Drive, built for your financial documents.",
+          "start": 1.674,
+          "end": 7.401
+        },
+        {
+          "text": "Invoices, receipts, bank statements and transactions.",
+          "start": 7.751,
+          "end": 11.455
+        },
+        {
+          "text": "It runs on your own computer, and keeps your files private.",
+          "start": 11.805,
+          "end": 14.658
+        },
+        {
+          "text": "AI extracts the data from every document, organizes it in one database, and connects it into a complete picture of your money flow.",
+          "start": 15.008,
+          "end": 21.515
+        }
+      ]
+    },
+    {
+      "id": "why",
+      "title": "Why DocAI?",
+      "audio": "assets/voice/why.mp3",
+      "duration": 31.253,
+      "sentences": [
+        {
+          "text": "Why DocAI?",
+          "start": 0.0,
+          "end": 1.391
+        },
+        {
+          "text": "The data about your money is all there.",
+          "start": 1.741,
+          "end": 3.667
+        },
+        {
+          "text": "But every document comes in a different format, from a different source, at a different time of the month.",
+          "start": 4.017,
+          "end": 8.893
+        },
+        {
+          "text": "Organizing it in Excel is a full-time job, so most of us just give up.",
+          "start": 9.243,
+          "end": 12.923
+        },
+        {
+          "text": "Then one day you need answers, and you waste days digging through emails and accounts.",
+          "start": 13.273,
+          "end": 17.57
+        },
+        {
+          "text": "How did I miss a tax payment?",
+          "start": 17.92,
+          "end": 19.486
+        },
+        {
+          "text": "Did I get paid for this job?",
+          "start": 19.836,
+          "end": 21.184
+        },
+        {
+          "text": "What is this expense I don't remember making?",
+          "start": 21.534,
+          "end": 23.592
+        },
+        {
+          "text": "You need one place to drop all your documents, let AI do the first pass, and manage it with simple tools.",
+          "start": 23.942,
+          "end": 29.259
+        },
+        {
+          "text": "That's DocAI.",
+          "start": 29.609,
+          "end": 30.903
+        }
+      ]
+    },
+    {
+      "id": "how",
+      "title": "How it works",
+      "audio": "assets/voice/how.mp3",
+      "duration": 25.756,
+      "sentences": [
+        {
+          "text": "Here's how it works.",
+          "start": 0.0,
+          "end": 1.023
+        },
+        {
+          "text": "First, connect a folder.",
+          "start": 1.373,
+          "end": 3.062
+        },
+        {
+          "text": "Any folder works, even a Google Drive folder synced to your computer.",
+          "start": 3.412,
+          "end": 7.374
+        },
+        {
+          "text": "Second, the data is extracted automatically.",
+          "start": 7.724,
+          "end": 10.534
+        },
+        {
+          "text": "Every document is recognized, and its vendor, dates, totals and line items land in a structured schema.",
+          "start": 10.884,
+          "end": 16.888
+        },
+        {
+          "text": "Third, work with your data.",
+          "start": 17.238,
+          "end": 19.152
+        },
+        {
+          "text": "Browse and search in a Drive-like interface, and match payments to invoices with the built-in reconciliation tool.",
+          "start": 19.502,
+          "end": 25.406
+        }
+      ]
+    },
+    {
+      "id": "use",
+      "title": "How I use it",
+      "audio": "assets/voice/use.mp3",
+      "duration": 16.729,
+      "sentences": [
+        {
+          "text": "Here's how I use it every day.",
+          "start": 0.0,
+          "end": 1.404
+        },
+        {
+          "text": "Whenever I get a receipt, I snap a photo and save it to Google Drive.",
+          "start": 1.754,
+          "end": 5.282
+        },
+        {
+          "text": "Once it syncs, DocAI picks it up and extracts the data.",
+          "start": 5.632,
+          "end": 9.167
+        },
+        {
+          "text": "Then I connect Claude Code, and use it to organize my documents, create reports, and link my income to my tax payments.",
+          "start": 9.517,
+          "end": 16.379
+        }
+      ]
+    },
+    {
+      "id": "mcp",
+      "title": "Connect any AI assistant",
+      "audio": "assets/voice/mcp.mp3",
+      "duration": 18.042,
+      "sentences": [
+        {
+          "text": "DocAI is also an MCP server.",
+          "start": 0.0,
+          "end": 2.747
+        },
+        {
+          "text": "So you can connect Claude, or any AI assistant, and simply ask.",
+          "start": 3.097,
+          "end": 7.311
+        },
+        {
+          "text": "Sort my documents.",
+          "start": 7.661,
+          "end": 8.843
+        },
+        {
+          "text": "Arrange them in folders.",
+          "start": 9.193,
+          "end": 10.531
+        },
+        {
+          "text": "How much did I spend on software in March?",
+          "start": 10.881,
+          "end": 13.033
+        },
+        {
+          "text": "Reconcile these payments with their invoices.",
+          "start": 13.383,
+          "end": 15.8
+        },
+        {
+          "text": "Or build me a mini app.",
+          "start": 16.151,
+          "end": 17.692
+        }
+      ]
+    },
+    {
+      "id": "miniapps",
+      "title": "Mini apps",
+      "audio": "assets/voice/miniapps.mp3",
+      "duration": 27.878,
+      "sentences": [
+        {
+          "text": "Mini apps are custom tools built on top of your data.",
+          "start": 0.0,
+          "end": 2.97
+        },
+        {
+          "text": "A monthly expense report, a folder organizer, a bank reconciliation.",
+          "start": 3.32,
+          "end": 7.598
+        },
+        {
+          "text": "The AI builds the app once.",
+          "start": 7.948,
+          "end": 10.061
+        },
+        {
+          "text": "After that, it runs on its own, without calling an AI model.",
+          "start": 10.411,
+          "end": 14.256
+        },
+        {
+          "text": "That makes it faster, deterministic, cheaper, and private.",
+          "start": 14.606,
+          "end": 17.853
+        },
+        {
+          "text": "You can even build a mini app on a few sample documents, then run it on your real ones completely offline.",
+          "start": 18.203,
+          "end": 23.926
+        },
+        {
+          "text": "DocAI. Your money, finally in one place.",
+          "start": 24.276,
+          "end": 27.528
+        }
+      ]
+    }
+  ]
+}
