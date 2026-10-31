@@ -67,7 +67,8 @@
     const sceneIds = Object.keys(S);
     const cuts = sceneIds.slice(1).map((id) => S[id].start); // camera flights
     const T = {
-      graphIn: at("intro", 4),            // "...a complete picture of your money flow"
+      graphIn: S.intro.start + window.DOC.when("intro", 4, "connects") - 0.2, // "...connects it into a complete picture"
+      dimIntroIn: at("intro", 1) - 0.4,   // the intro's illustrations
       graphOut: S.why.start - 0.2,
       chaosIn: at("why", 2),              // "different format, different source..."
       chaosOut: at("why", 8),
@@ -191,7 +192,8 @@
       const chaos = window_(t, T.chaosIn, T.chaosOut, 2.0);
       const gather = window_(t, T.gatherIn, T.gatherOut, 1.8);
       const dim = (1 - 0.55 * Math.max(window_(t, T.dimHowIn, T.dimHowOut, 1.0), window_(t, T.dimAppsIn, T.dimAppsOut, 1.0)))
-        * (1 - 0.8 * window_(t, T.dimWhyIn, T.dimWhyOut, 0.8)); // the Why slides carry their own pictures
+        * (1 - 0.8 * window_(t, T.dimWhyIn, T.dimWhyOut, 0.8)) // the Why slides carry their own pictures
+        * (1 - 0.8 * window_(t, T.dimIntroIn, T.graphIn, 0.8)); // and so do the intro's
       // Fade the world in at the very start
       const intro = rise(t, 0.0, 1.6);
 

@@ -44,6 +44,17 @@
                 background: var(--peach); font-family: var(--font-ui); font-size: 40px; font-weight: 500;
                 color: var(--ink); box-shadow: 0 12px 34px rgba(40, 35, 70, 0.14); }
       .num { font-family: var(--font-ui); font-weight: 700; color: var(--clay); }
+      /* Captions: the narration under an illustration (DOC.captions) */
+      .caps { position: absolute; left: 260px; right: 260px; top: 850px; }
+      .cap { position: absolute; left: 0; right: 0; top: 0; text-align: center;
+             font-family: var(--font-display); font-size: 50px; line-height: 1.15; letter-spacing: -0.01em; }
+      /* Paper documents for illustrations */
+      .ill-doc { position: absolute; width: 230px; height: 300px; border-radius: 16px; background: var(--paper);
+                 box-shadow: 0 22px 50px rgba(40, 35, 70, 0.22), 0 0 0 1px rgba(27, 26, 31, 0.06); overflow: hidden; }
+      .ill-doc .hd { height: 46px; }
+      .ill-doc .ln { position: absolute; left: 24px; right: 24px; top: 70px; bottom: 60px;
+                     background: repeating-linear-gradient(to bottom, rgba(27,26,31,0.14) 0 9px, transparent 9px 26px); }
+      .ill-doc .tot { position: absolute; right: 24px; bottom: 24px; width: 80px; height: 14px; border-radius: 4px; background: rgba(27,26,31,0.4); }
     </style>
     <script>
       // Narration timing, in each scene's own time (seconds from the scene's start).
@@ -116,6 +127,32 @@
           const n = window.DOC.split(el).length;
           const step = n > 1 ? (t1 - t0) / (n - 1) : 0;
           window.DOC.darken(tl, el, Array.from({ length: n }, (_, k) => t0 + k * step));
+        },
+        /** When word w (matched by its first letters) of sentence i is spoken. */
+        when(scene, i, w) {
+          const words = window.VO.scenes[scene].sentences[i].text.split(/\s+/);
+          const times = window.DOC.wordTimes(scene, i, words);
+          const k = words.findIndex((x) => x.toLowerCase().startsWith(w));
+          return times[Math.max(0, k)];
+        },
+        /**
+         * The narration as captions in container: sentences first..last of the
+         * scene, each shown while it is spoken, its words darkening as they are.
+         */
+        captions(tl, container, scene, first = 0, last) {
+          const sentences = window.VO.scenes[scene].sentences;
+          const end = window.VO.scenes[scene].duration;
+          last = last ?? sentences.length - 1;
+          for (let i = first; i <= last; i++) {
+            const cap = document.createElement("div");
+            cap.className = "cap";
+            cap.id = scene + "-cap-" + i;
+            cap.textContent = sentences[i].text;
+            container.appendChild(cap);
+            window.DOC.blurIn(tl, cap, sentences[i].start - 0.15, { duration: 0.35, blur: 6 });
+            window.DOC.speak(tl, cap, scene, i);
+            window.DOC.blurOut(tl, cap, i < last ? sentences[i + 1].start - 0.2 : end - 0.45, { duration: 0.18 });
+          }
         },
         /** Arrive: opacity 0 -> 1 with the blur clearing (and an optional rise). */
         blurIn(tl, el, t, o = {}) {

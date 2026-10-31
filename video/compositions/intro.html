@@ -1,73 +1,213 @@
 <template>
-  <div data-hf-id="hf-h1ll" id="intro-root" class="scene" data-composition-id="intro" data-width="1920" data-height="1080">
+  <!--
+    The intro as an illustrated slideshow, like "Why": one picture per
+    sentence, the narration as a caption underneath. The Drive window of
+    sentence 1 keeps growing through sentences 2 and 3 (it ends up inside
+    a laptop); sentence 4 is the extraction pipeline, ending on the 3D
+    money-flow graph (compositions/world.html).
+  -->
+  <div id="intro-root" class="scene" data-composition-id="intro" data-width="1920" data-height="1080">
     <style>
       #intro-root { position: absolute; inset: 0; }
-      #intro-name { top: 330px; }
-      #intro-tag { top: 470px; }
-      #intro-chips { top: 700px; display: flex; justify-content: center; gap: 26px; }
-      #intro-private { top: 92px; }
-      #intro-shot { left: 330px; top: 230px; width: 1260px; }
-      #intro-flow { top: 400px; }
-      #intro-flow-sub { top: 560px; }
+
+      /* 0: the name */
+      #intro-folder { left: 810px; top: 230px; width: 300px; height: 248px; }
+      #intro-name { top: 520px; }
+
+      /* 1-3: the Drive window */
+      #intro-win { position: absolute; left: 360px; top: 150px; width: 1200px; height: 620px; border-radius: 24px; background: var(--paper); overflow: hidden;
+                   box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); font-family: var(--font-ui); }
+      #intro-win .bar { height: 58px; background: #e9e6ef; display: flex; align-items: center; padding-left: 26px; gap: 10px; }
+      #intro-win .bar i { width: 14px; height: 14px; border-radius: 50%; background: #b9b5c6; }
+      #intro-win .bar span { margin-left: 22px; font-size: 24px; font-weight: 700; color: rgba(27,26,31,0.55); }
+      #intro-side { position: absolute; left: 0; top: 58px; bottom: 0; width: 290px; background: #f3f1f6; padding: 28px 22px; }
+      .intro-fold { display: flex; align-items: center; gap: 16px; height: 62px; padding: 0 16px; border-radius: 14px;
+                    font-size: 27px; font-weight: 600; color: rgba(27,26,31,0.75); }
+      .intro-fold svg { width: 34px; height: 28px; flex: none; }
+      .intro-fold-hl { position: absolute; left: 22px; width: 246px; height: 62px; border-radius: 14px; background: rgba(201, 100, 66, 0.16); }
+      #intro-files { position: absolute; left: 330px; top: 100px; right: 40px; bottom: 30px; }
+      .intro-tile { position: absolute; width: 180px; height: 220px; }
+      .intro-tile .pg { position: absolute; left: 0; top: 0; width: 180px; height: 190px; border-radius: 12px; background: #fff;
+                        box-shadow: 0 8px 22px rgba(40, 35, 70, 0.14), 0 0 0 1px rgba(27, 26, 31, 0.06); overflow: hidden; }
+      .intro-tile .pg .hd { height: 34px; background: #e2dfe9; }
+      .intro-tile .pg .hc { position: absolute; left: 0; right: 0; top: 0; height: 34px; }
+      .intro-tile .pg .ln { position: absolute; left: 18px; right: 18px; top: 52px; bottom: 24px;
+                            background: repeating-linear-gradient(to bottom, rgba(27,26,31,0.12) 0 7px, transparent 7px 20px); }
+      .intro-tile .lb { position: absolute; left: -20px; right: -20px; top: 198px; text-align: center; font-size: 22px; font-weight: 700; color: var(--ink); opacity: 0; }
+      #intro-tags { left: 0; right: 0; top: 70px; display: flex; justify-content: center; gap: 22px; }
+
+      /* 3: on your own computer */
+      #intro-laptop { left: 410px; top: 110px; width: 1100px; height: 700px; }
+      #intro-lock { left: 1400px; top: 210px; width: 130px; height: 150px; }
+      #intro-cloud { left: 1600px; top: 120px; width: 220px; height: 150px; }
+      #intro-cloud-line { left: 1440px; top: 170px; width: 190px; height: 90px; overflow: visible; }
+
+      /* 4: extract, organize, connect */
+      #intro-src { left: 250px; top: 220px; width: 300px; height: 390px; }
+      #intro-src .hd { height: 56px; background: #c96442; }
+      #intro-ai { left: 500px; top: 180px; width: 100px; height: 100px; border-radius: 50%; background: var(--ink); color: #fff;
+                  display: flex; align-items: center; justify-content: center; font-family: var(--font-ui); font-size: 34px; font-weight: 800; }
+      .intro-field { position: absolute; left: 620px; padding: 16px 26px; border-radius: 14px; background: var(--paper);
+                     font-family: var(--font-ui); font-size: 28px; box-shadow: 0 10px 24px rgba(40, 35, 70, 0.16); white-space: nowrap; }
+      .intro-field b { color: rgba(27,26,31,0.5); font-weight: 600; margin-right: 10px; }
+      #intro-db { left: 1150px; top: 190px; width: 620px; height: 460px; border-radius: 22px; background: var(--paper); overflow: hidden;
+                  box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); font-family: var(--font-ui); }
+      #intro-db .top { height: 66px; background: #2e2d3d; color: #fff; display: flex; align-items: center; padding: 0 30px; font-size: 26px; font-weight: 700; }
+      .intro-row { height: 64px; display: grid; grid-template-columns: 1.4fr 1fr 0.9fr; align-items: center; padding: 0 30px;
+                   border-bottom: 1px solid rgba(27,26,31,0.08); font-size: 24px; color: rgba(27,26,31,0.75); }
+      .intro-row.h { font-weight: 700; color: rgba(27,26,31,0.45); font-size: 21px; }
+      .intro-row .r { text-align: right; }
+      #intro-row-new { background: rgba(201, 100, 66, 0.12); color: var(--ink); font-weight: 700; }
     </style>
-    <div data-hf-id="hf-w2sj" id="intro-name" class="abs center serif huge">DocAI</div>
-    <div data-hf-id="hf-kllx" id="intro-tag" class="abs center serif h2">
-      <div data-hf-id="hf-jh33" id="intro-tag-1">A free, local, open-source Google Drive</div>
-      <div data-hf-id="hf-aop5" id="intro-tag-2">for your <span data-hf-id="hf-fnc8" class="accent">financial documents</span></div>
+
+    <!-- 0 -->
+    <svg id="intro-folder" class="abs" viewBox="0 0 400 330">
+      <path d="M18 60 Q18 34 44 34 L150 34 Q164 34 172 46 L188 66 L356 66 Q382 66 382 92 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#b5532f" />
+      <path d="M18 110 Q18 92 40 92 L360 92 Q382 92 382 114 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#c96442" />
+    </svg>
+    <div id="intro-name" class="abs center serif huge">DocAI</div>
+
+    <!-- 1-2: the Drive window (3 puts it inside the laptop) -->
+    <div id="intro-tags" class="abs">
+      <span id="intro-tag-1" class="chip">Free</span><span id="intro-tag-2" class="chip">Local</span><span id="intro-tag-3" class="chip">Open source</span>
     </div>
-    <div data-hf-id="hf-5orn" id="intro-chips" class="abs center">
-      <span data-hf-id="hf-03ny" id="intro-chip-1" class="chip">Invoices</span>
-      <span data-hf-id="hf-0eos" id="intro-chip-2" class="chip">Receipts</span>
-      <span data-hf-id="hf-p2v4" id="intro-chip-3" class="chip">Bank statements</span>
-      <span data-hf-id="hf-yu46" id="intro-chip-4" class="chip">Transactions</span>
+    <svg id="intro-laptop" class="abs" viewBox="0 0 1100 700">
+      <rect x="110" y="20" width="880" height="560" rx="34" fill="#1b1a1f" />
+      <path d="M40 600 L1060 600 L1010 668 Q1000 680 980 680 L120 680 Q100 680 90 668 Z" fill="#2c2b33" />
+      <rect x="470" y="600" width="160" height="16" rx="8" fill="#45434d" />
+    </svg>
+    <div id="intro-win">
+      <div class="bar"><i></i><i></i><i></i><span>DocAI · My Drive</span></div>
+      <div id="intro-side">
+        <div id="intro-hl" class="intro-fold-hl" style="top:28px"></div>
+        <div class="intro-fold" style="position:relative"><svg viewBox="0 0 34 28"><path d="M2 5 Q2 2 5 2 L13 2 L16 6 L29 6 Q32 6 32 9 L32 25 Q32 27 29 27 L5 27 Q2 27 2 25 Z" fill="#c96442" /></svg>Invoices</div>
+        <div class="intro-fold" style="position:relative"><svg viewBox="0 0 34 28"><path d="M2 5 Q2 2 5 2 L13 2 L16 6 L29 6 Q32 6 32 9 L32 25 Q32 27 29 27 L5 27 Q2 27 2 25 Z" fill="#8c87a3" /></svg>Receipts</div>
+        <div class="intro-fold" style="position:relative"><svg viewBox="0 0 34 28"><path d="M2 5 Q2 2 5 2 L13 2 L16 6 L29 6 Q32 6 32 9 L32 25 Q32 27 29 27 L5 27 Q2 27 2 25 Z" fill="#2e2d3d" /></svg>Bank</div>
+        <div class="intro-fold" style="position:relative"><svg viewBox="0 0 34 28"><path d="M2 5 Q2 2 5 2 L13 2 L16 6 L29 6 Q32 6 32 9 L32 25 Q32 27 29 27 L5 27 Q2 27 2 25 Z" fill="#3f8a63" /></svg>Transactions</div>
+      </div>
+      <div id="intro-files"></div>
     </div>
-    <div data-hf-id="hf-l2k1" id="intro-private" class="abs center serif h3">Runs on <span data-hf-id="hf-sa6c" class="accent">your</span> computer. Your files stay private.</div>
-    <div data-hf-id="hf-z78n" id="intro-shot" class="abs card"><img data-hf-id="hf-q0jp" src="assets/screens/drive.png" alt="" /></div>
-    <div data-hf-id="hf-4ru2" id="intro-flow" class="abs center serif h1">One picture of your <span data-hf-id="hf-jqxf" class="accent">money flow</span></div>
-    <div data-hf-id="hf-1a6v" id="intro-flow-sub" class="abs center sans kicker">Every document, extracted and connected</div>
+    <svg id="intro-lock" class="abs" viewBox="0 0 130 150">
+      <path d="M32 66 L32 44 Q32 12 65 12 Q98 12 98 44 L98 66" fill="none" stroke="#1b1a1f" stroke-width="14" stroke-linecap="round" />
+      <rect x="10" y="62" width="110" height="82" rx="18" fill="#c96442" />
+      <circle cx="65" cy="98" r="11" fill="#fbf9f5" />
+    </svg>
+    <svg id="intro-cloud" class="abs" viewBox="0 0 220 150">
+      <path d="M58 128 Q14 128 14 92 Q14 58 50 56 Q58 18 102 18 Q146 18 156 58 Q206 58 206 94 Q206 128 166 128 Z" fill="#fbf9f5" stroke="rgba(27,26,31,0.25)" stroke-width="4" />
+    </svg>
+    <svg id="intro-cloud-line" class="abs" viewBox="0 0 190 90">
+      <path d="M0 80 Q90 80 180 10" fill="none" stroke="rgba(27,26,31,0.35)" stroke-width="5" stroke-dasharray="10 12" />
+      <g id="intro-cross"><line x1="72" y1="28" x2="112" y2="68" stroke="#b0381c" stroke-width="9" stroke-linecap="round" />
+        <line x1="112" y1="28" x2="72" y2="68" stroke="#b0381c" stroke-width="9" stroke-linecap="round" /></g>
+    </svg>
+
+    <!-- 4: extract, organize, connect -->
+    <div id="intro-src" class="ill-doc"><div class="hd"></div><div class="ln"></div><div class="tot"></div></div>
+    <div id="intro-ai" class="abs">AI</div>
+    <div id="intro-f1" class="intro-field" style="top:250px"><b>Vendor</b>Brightline Office Supply</div>
+    <div id="intro-f2" class="intro-field" style="top:350px"><b>Date</b>Oct 14, 2026</div>
+    <div id="intro-f3" class="intro-field" style="top:450px"><b>Total</b>$645.03</div>
+    <div id="intro-db" class="abs">
+      <div class="top">Documents</div>
+      <div class="intro-row h"><span>Vendor</span><span>Date</span><span class="r">Total</span></div>
+      <div class="intro-row"><span>Mercado Dona Helena</span><span>Oct 12</span><span class="r">R$ 53.75</span></div>
+      <div class="intro-row"><span>DeliciasDoFarol</span><span>Oct 13</span><span class="r">R$ 29.00</span></div>
+      <div id="intro-row-new" class="intro-row"><span>Brightline Office</span><span>Oct 14</span><span class="r">$645.03</span></div>
+      <div class="intro-row"><span>Smart Home</span><span>Oct 24</span><span class="r">R$ 16.00</span></div>
+      <div class="intro-row"><span>Bank statement</span><span>Oct 31</span><span class="r">—</span></div>
+    </div>
+
+    <div id="intro-caps" class="caps"></div>
   </div>
   <script>
     (function () {
       const D = window.DOC, id = "intro", end = window.VO.scenes[id].duration;
       const $ = (s) => document.querySelector(s);
       const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      const when = (i, w) => D.when(id, i, w);
+      const fadeIn = (el, t, o) => D.blurIn(tl, typeof el === "string" ? $(el) : el, t, o);
+      const fadeOut = (el, t, o) => D.blurOut(tl, typeof el === "string" ? $(el) : el, t, o);
 
-      // "This is DocAI."
-      D.blurIn(tl, $("#intro-name"), D.at(id, 0) - 0.15, { blur: 14, duration: 0.7 });
-      // The name moves up to make room for what it is
-      tl.fromTo($("#intro-name"), { y: 0, scale: 1 }, { y: -190, scale: 0.6, duration: 0.9, ease: "power3.inOut" }, D.at(id, 1) - 0.3);
+      D.captions(tl, $("#intro-caps"), id, 1);
 
-      // "Think of it as a free, local, open-source Google Drive, built for your financial documents."
-      D.blurIn(tl, $("#intro-tag"), D.at(id, 1) - 0.1, { blur: 6, duration: 0.3 });
-      const s1 = D.at(id, 1), e1 = D.end(id, 1);
-      D.words(tl, $("#intro-tag-1"), s1, s1 + (e1 - s1) * 0.62);
-      D.words(tl, $("#intro-tag-2"), s1 + (e1 - s1) * 0.7, e1 - 0.1);
+      // ---- 0: "This is DocAI." ----
+      tl.fromTo("#intro-folder", { opacity: 0, scale: 0.6, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: "back.out(1.5)" }, at(0) - 0.35);
+      fadeIn("#intro-name", at(0) + 0.1, { blur: 14, duration: 0.7 });
+      D.speak(tl, $("#intro-name"), id, 0);
+      fadeOut("#intro-folder", at(1) - 0.3, { y: -30 });
+      fadeOut("#intro-name", at(1) - 0.3, { y: -30 });
 
-      // "Invoices, receipts, bank statements and transactions."
-      const s2 = D.at(id, 2), e2 = D.end(id, 2);
-      [1, 2, 3, 4].forEach((k) => D.blurIn(tl, $("#intro-chip-" + k), s2 + ((e2 - s2) * (k - 1)) / 4, { y: 30, duration: 0.6 }));
+      // ---- 1: "...a free, local, open-source Google Drive, built for your financial documents." ----
+      // The file tiles: two of each kind, in a 4 x 2 grid
+      const kinds = [
+        { color: "#c96442", label: "Invoice" }, { color: "#8c87a3", label: "Receipt" },
+        { color: "#2e2d3d", label: "Bank statement" }, { color: "#3f8a63", label: "Transaction" },
+      ];
+      const order = [0, 1, 2, 3, 1, 0, 3, 2];
+      const files = $("#intro-files");
+      const tiles = order.map((k, n) => {
+        const tile = document.createElement("div");
+        tile.className = "intro-tile";
+        tile.style.left = (n % 4) * 215 + "px";
+        tile.style.top = Math.floor(n / 4) * 255 + "px";
+        tile.innerHTML = '<div class="pg"><div class="hd"></div><div class="hc"></div><div class="ln"></div></div><div class="lb"></div>';
+        tile.querySelector(".hc").style.background = kinds[k].color;
+        tile.querySelector(".lb").textContent = kinds[k].label;
+        files.appendChild(tile);
+        return { el: tile, kind: k };
+      });
+      fadeIn("#intro-win", at(1) - 0.1, { y: 90, duration: 0.9, blur: 6 });
+      tiles.forEach((t, n) => fadeIn(t.el, at(1) + 0.3 + n * 0.06, { y: 20, duration: 0.5 }));
+      ["free", "local", "open"].forEach((w, k) => fadeIn("#intro-tag-" + (k + 1), when(1, w) - 0.1, { y: 20, scale: 0.9, duration: 0.45 }));
+      // "...financial documents": the blank pages become documents
+      const fin = when(1, "financial");
+      tiles.forEach((t, n) => tl.fromTo(t.el.querySelector(".hc"), { opacity: 0 }, { opacity: 1, duration: 0.3 }, fin + n * 0.07));
 
-      // "It runs on your own computer, and keeps your files private."
-      const s3 = D.at(id, 3);
-      D.blurOut(tl, $("#intro-name"), s3 - 0.35);
-      D.blurOut(tl, $("#intro-tag"), s3 - 0.32);
-      [1, 2, 3, 4].forEach((k) => D.blurOut(tl, $("#intro-chip-" + k), s3 - 0.3 + k * 0.03, { y: 20 }));
-      D.blurIn(tl, $("#intro-private"), s3, { duration: 0.6 });
-      D.words(tl, $("#intro-private"), s3, D.end(id, 3) - 0.1);
-      D.blurIn(tl, $("#intro-shot"), s3 + 0.2, { y: 140, blur: 6, duration: 1.1 });
-      // A slow push into the folder list
-      tl.fromTo($("#intro-shot"), { scale: 1 }, { scale: 1.06, duration: D.at(id, 4) - s3, ease: "power1.inOut" }, s3 + 0.2);
+      // ---- 2: "Invoices, receipts, bank statements and transactions." ----
+      ["#intro-tag-1", "#intro-tag-2", "#intro-tag-3"].forEach((s, k) => fadeOut(s, at(2) - 0.3 + k * 0.03));
+      ["invoices", "receipts", "bank", "transactions"].forEach((w, k) => {
+        const t0 = when(2, w) - 0.1;
+        tl.fromTo("#intro-hl", { y: (k - 1) * 62 }, { y: k * 62, duration: 0.3, ease: "power3.out", immediateRender: k === 0 }, t0);
+        tiles.filter((t) => t.kind === k).forEach((t) => {
+          tl.fromTo(t.el, { y: 0 }, { y: -14, duration: 0.3, ease: "power3.out", immediateRender: false }, t0);
+          tl.fromTo(t.el.querySelector(".lb"), { opacity: 0 }, { opacity: 1, duration: 0.25 }, t0 + 0.05);
+          if (k < 3) tl.to(t.el, { y: 0, duration: 0.35, ease: "power2.inOut" }, when(2, ["receipts", "bank", "transactions"][k]) - 0.1);
+        });
+      });
+      tl.fromTo("#intro-hl", { opacity: 0 }, { opacity: 1, duration: 0.2 }, when(2, "invoices") - 0.15);
+      tl.to(tiles.filter((t) => t.kind === 3).map((t) => t.el), { y: 0, duration: 0.35, ease: "power2.inOut" }, at(3) - 0.4);
+      tl.to("#intro-hl", { opacity: 0, duration: 0.2 }, at(3) - 0.4);
 
-      // "AI extracts the data ... into a complete picture of your money flow."
-      const s4 = D.at(id, 4);
-      D.blurOut(tl, $("#intro-private"), s4 - 0.3);
-      D.blurOut(tl, $("#intro-shot"), s4 - 0.25, { y: -60, scale: 0.94, blur: 14, duration: 0.4 });
-      D.blurIn(tl, $("#intro-flow"), s4 + 0.9, { duration: 0.6 });
-      D.words(tl, $("#intro-flow"), s4 + 0.9, D.end(id, 4) - 0.2);
-      D.blurIn(tl, $("#intro-flow-sub"), s4 + 0.4, { duration: 0.5 });
+      // ---- 3: "It runs on your own computer, and keeps your files private." ----
+      // The window shrinks into the laptop's screen (880 x 560 at 520, 130)
+      tl.fromTo("#intro-win", { x: 0, y: 0, scale: 1, borderRadius: 24 },
+        { x: 520 + 440 - 960, y: 130 + 280 - 460, scale: 0.72, borderRadius: 30, duration: 0.9, ease: "power3.inOut", immediateRender: false }, at(3) - 0.15);
+      fadeIn("#intro-laptop", at(3) - 0.05, { scale: 1.12, duration: 0.9, blur: 8 });
+      const priv = when(3, "private");
+      fadeIn("#intro-cloud", when(3, "keeps") - 0.2, { x: 30, duration: 0.5 });
+      tl.fromTo("#intro-cloud-line", { opacity: 0 }, { opacity: 1, duration: 0.3 }, when(3, "keeps"));
+      tl.fromTo("#intro-cross", { opacity: 0, scale: 1.8, svgOrigin: "92 48" }, { opacity: 1, scale: 1, svgOrigin: "92 48", duration: 0.3, ease: "power4.in" }, priv - 0.05);
+      tl.fromTo("#intro-lock", { opacity: 0, y: -60, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, priv - 0.2);
+      ["#intro-win", "#intro-laptop", "#intro-lock", "#intro-cloud", "#intro-cloud-line"].forEach((s, k) => fadeOut(s, at(4) - 0.35 + k * 0.03, { y: -30 }));
 
-      D.blurOut(tl, $("#intro-flow"), end - 0.45, { scale: 1.08 });
-      D.blurOut(tl, $("#intro-flow-sub"), end - 0.45);
+      // ---- 4: "AI extracts the data from every document, organizes it in one database,
+      //          and connects it into a complete picture of your money flow." ----
+      fadeIn("#intro-src", at(4) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      tl.fromTo("#intro-ai", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, at(4) + 0.15);
+      const ex = when(4, "extracts");
+      [1, 2, 3].forEach((k) => {
+        tl.fromTo("#intro-f" + k, { opacity: 0, x: -260, scale: 0.6 }, { opacity: 1, x: 0, scale: 1, duration: 0.6, ease: "expo.out" }, ex + 0.1 + (k - 1) * 0.15);
+      });
+      const db = when(4, "organizes");
+      fadeIn("#intro-db", db - 0.3, { x: 60, duration: 0.7, blur: 6 });
+      [1, 2, 3].forEach((k) => {
+        tl.to("#intro-f" + k, { x: 590, y: [140, 40, -60][k - 1], scale: 0.5, opacity: 0, duration: 0.6, ease: "power3.in" }, db + 0.35 + (k - 1) * 0.1);
+      });
+      tl.fromTo("#intro-row-new", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, db + 0.8);
+      // "...and connects it": the pieces step back for the graph (world.html)
+      const cn = when(4, "connects");
+      ["#intro-src", "#intro-ai", "#intro-db"].forEach((s, k) => fadeOut(s, cn + 0.25 + k * 0.05, { scale: 0.92, blur: 14, duration: 0.45 }));
 
       window.__timelines = window.__timelines || {};
       window.__timelines[id] = tl;
