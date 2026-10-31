@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * doc-ai: local processing settings (watch folder, data folder, model provider, model per step).
+ * doc-ai: local processing settings (watch folder, data folder) and the AI setup (AiSetupWizard).
  * Replaces zdocs' Billing / Invoice History sections. Saved to the doc-ai
  * server (`/api/local/settings`), which overrides the matching .env values.
  */
@@ -14,46 +14,20 @@ import {
   Input,
   Label,
   Separator,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@zdocs/client-component";
 import { zFetch } from "../../../../lib/utils";
-
-type Provider = "gateway" | "ollama";
-
-interface LocalSettings {
-  watchDir: string | null;
-  dataDir: string;
-  dataDirNext: string;
-  dataDirSource: "env" | "settings" | "default";
-  provider: Provider;
-  gatewayApiKeySet: boolean;
-  gatewayApiKeyLast4: string | null;
-  gatewayApiKeySource: "settings" | "env" | null;
-  ollamaBaseUrl: string;
-  ollamaModel: string;
-  models: { action: string; model: string; defaultModel: string }[];
-  modelOptions: string[];
-}
-
-const modelMap = (s: LocalSettings) => Object.fromEntries(s.models.map((m) => [m.action, m.model]));
+import { AiSetupWizard, type LocalSettings } from "./AiSetupWizard";
 
 export function ProcessingSection() {
   const t = useTranslations("localSettings");
+  const tSetup = useTranslations("aiSetup");
   const [settings, setSettings] = useState<LocalSettings | null>(null);
   const [watchDir, setWatchDir] = useState("");
   const [dataDir, setDataDir] = useState("");
-  const [provider, setProvider] = useState<Provider>("gateway");
-  const [models, setModels] = useState<Record<string, string>>({});
-  const [gatewayApiKey, setGatewayApiKey] = useState("");
-  const [ollamaBaseUrl, setOllamaBaseUrl] = useState("");
-  const [ollamaModel, setOllamaModel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [isPicking, setIsPicking] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
   // Typing a path is only offered when the server can't open a folder dialog
   const [pickerSupported, setPickerSupported] = useState(true);
 
@@ -61,11 +35,6 @@ export function ProcessingSection() {
     setSettings(s);
     setWatchDir(s.watchDir ?? "");
     setDataDir(s.dataDirNext);
-    setProvider(s.provider);
-    setModels(modelMap(s));
-    setGatewayApiKey("");
-    setOllamaBaseUrl(s.ollamaBaseUrl);
-    setOllamaModel(s.ollamaModel);
   }, []);
 
   useEffect(() => {
@@ -79,7 +48,7 @@ export function ProcessingSection() {
     try {
       const updated = await zFetch("/api/local/settings", {
         method: "POST",
-        body: { watchDir, dataDir, provider, models, gatewayApiKey, ollamaBaseUrl, ollamaModel },
+        body: { watchDir, dataDir },
       });
       apply(updated);
       toast.success(t("saved"));
@@ -128,15 +97,7 @@ export function ProcessingSection() {
     );
   }
 
-  const savedModels = modelMap(settings);
-  const dirty =
-    watchDir !== (settings.watchDir ?? "") ||
-    dataDir !== settings.dataDirNext ||
-    provider !== settings.provider ||
-    settings.models.some((m) => models[m.action] !== savedModels[m.action]) ||
-    gatewayApiKey.trim() !== "" ||
-    ollamaBaseUrl !== settings.ollamaBaseUrl ||
-    ollamaModel !== settings.ollamaModel;
+  const dirty = watchDir !== (settings.watchDir ?? "") || dataDir !== settings.dataDirNext;
 
   return (
     <div className="space-y-6 max-w-2xl" data-testid="processing-settings">
@@ -197,108 +158,20 @@ export function ProcessingSection() {
 
       <Separator />
 
-      <div className="space-y-2">
-        <Label htmlFor="provider">{t("provider")}</Label>
-        <Select value={provider} onValueChange={(v) => setProvider(v as Provider)}>
-          <SelectTrigger id="provider" data-testid="provider-select">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="gateway">{t("providerGateway")}</SelectItem>
-            <SelectItem value="ollama">{t("providerOllama")}</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="space-y-2" data-testid="ai-setup-summary">
+        <Label>{t("aiTitle")}</Label>
+        <p className="text-sm">
+          {settings.setupNeeded
+            ? t("aiSetupNeeded")
+            : t("aiCurrent", { setup: tSetup(`providers.${settings.provider}.name`) })}
+        </p>
+        <Button variant="outline" onClick={() => setWizardOpen(true)} data-testid="ai-setup-open-btn">
+          {t("aiChange")}
+        </Button>
+        {wizardOpen && (
+          <AiSetupWizard open={wizardOpen} onOpenChange={setWizardOpen} settings={settings} onDone={apply} />
+        )}
       </div>
-
-      {provider === "gateway" ? (
-        <>
-          <div className="space-y-2">
-            <Label>{t("models")}</Label>
-            <p className="text-xs text-muted-foreground">{t("modelsHint")}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] sm:items-center gap-x-4 gap-y-2">
-              {settings.models.map((m) => {
-                const value = models[m.action] ?? m.model;
-                // Keep a saved model selectable even if it isn't in the known list
-                const options = settings.modelOptions.includes(value)
-                  ? settings.modelOptions
-                  : [value, ...settings.modelOptions];
-                return (
-                  <div key={m.action} className="contents">
-                    <Label htmlFor={`model-${m.action}`} className="text-sm font-normal">
-                      {t(`actions.${m.action}`)}
-                    </Label>
-                    <Select
-                      value={value}
-                      onValueChange={(v) => setModels((prev) => ({ ...prev, [m.action]: v }))}
-                    >
-                      <SelectTrigger
-                        id={`model-${m.action}`}
-                        className="font-mono text-sm"
-                        data-testid={`model-select-${m.action}`}
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {options.map((option) => (
-                          <SelectItem key={option} value={option} className="font-mono text-sm">
-                            {option}
-                            {option === m.defaultModel && ` (${t("modelDefault")})`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="gateway-key">{t("gatewayKey")}</Label>
-            <Input
-              id="gateway-key"
-              type="password"
-              autoComplete="off"
-              value={gatewayApiKey}
-              onChange={(e) => setGatewayApiKey(e.target.value)}
-              placeholder={
-                settings.gatewayApiKeySet
-                  ? t("gatewayKeySet", {
-                      last4: settings.gatewayApiKeyLast4 ?? "",
-                      source: settings.gatewayApiKeySource === "env" ? ".env" : "settings",
-                    })
-                  : t("gatewayKeyMissing")
-              }
-              data-testid="gateway-key-input"
-            />
-            <p className="text-xs text-muted-foreground">{t("gatewayKeyHint")}</p>
-          </div>
-        </>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="ollama-url">{t("ollamaUrl")}</Label>
-            <Input
-              id="ollama-url"
-              value={ollamaBaseUrl}
-              onChange={(e) => setOllamaBaseUrl(e.target.value)}
-              className="font-mono text-sm"
-              data-testid="ollama-url-input"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ollama-model">{t("ollamaModel")}</Label>
-            <Input
-              id="ollama-model"
-              value={ollamaModel}
-              onChange={(e) => setOllamaModel(e.target.value)}
-              className="font-mono text-sm"
-              data-testid="ollama-model-input"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground sm:col-span-2">{t("ollamaHint")}</p>
-        </div>
-      )}
 
       <div className="flex items-center gap-2">
         <Button onClick={save} disabled={isSaving || !dirty} data-testid="processing-save-btn">

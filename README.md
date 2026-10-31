@@ -8,33 +8,32 @@ You can also connect your AI coding assistant over MCP to build custom mini apps
 
 ## Why DocAI?
 
-The reason I built it is because I couldn't agree with the fact that I have no idea what's going on with my money.
-I mean, the data is there. I get all the documents. I get all the invoices, all the receipts, all the bank transactions. But each one is a different format, a different source, a different time of the month. Organizing it into Excel is a full-time job, so most of us just drop it.
-And hope that we can trust the institution to manage our money.
-But what happen when you do need to understand your data? Then you need to dig through emails and accounts and UI that was never optimized for you to do it. And you can waste days only to answer a simple question such as:
-- How come I missed paying tax?
-- Or did I got paid for this work?
-- Or what is this expense that I don't remember making?
-But even if you don't need it urgently, you just want to have the ability to:
-- ask questions about your financial data
-- create a report
-- see your status
-- understand your spending
-It is obvious that in the age of AI, it should be pretty simple to do this. But you still need a repository where you can easily:
-- drop all your documents
-- have the AI do the initial extraction of the data
-- and some basic tool to manage it such as browse, search, and reconcile.
-So, this is what DocAI is all about. I built it primarily for myself, but I believe it can help anyone.
+I built DocAI because I couldn't accept having no idea what was going on with my money.
 
-Because since I built it, I no longer need to spend days every end of month to understand what's going on with my money. I never lose tracking a payment. I never get surprised when I pay the tax.
+The data is all there: invoices, receipts, bank transactions. But each one comes in a different format, from a different source, at a different time of the month. Organizing it all in Excel is a full-time job, so most of us give up and hope we can trust the institutions that handle our money.
 
-## How do I use it
-So, how do I use it? I basically connect a Google Drive folder to a local folder and sync them. Then, as I do my things such as buying stuff and getting receipts, I just take a screenshot and save it to Google Drive, or upload a document to the Google Drive if I get a document. The system automatically sync the Google Drive to my local folder and extract the data using AI (You can use local models, but I personally prefer to use OpenRouter), Then I connect the data using an MCP to my cloud code and use the coder to:
-- organize my data
-- move between folder
-- create report
-- and build a mini app that help me quickly match between invoices and bank statement transaction
-- and connect my incoming money with my tax payment to make sure that I didn't miss a payment and predict my next payment
+Then one day you do need to understand your data, and you end up digging through emails, accounts and interfaces that were never built for it. You can waste days answering a simple question like:
+
+- How did I miss a tax payment?
+- Did I get paid for this job?
+- What is this expense I don't remember making?
+
+And even when nothing is urgent, you want to be able to:
+
+- Ask questions about your financial data
+- Create reports
+- See where you stand
+- Understand your spending
+
+In the age of AI this should be simple. But you still need one place where you can:
+
+- Drop all your documents
+- Let AI do the first pass at extracting the data
+- Manage it with basic tools: browse, search and reconcile
+
+That's what DocAI is. I built it for myself, but I believe it can help anyone.
+
+Since I started using it, I no longer spend days at the end of every month figuring out where my money went. I never lose track of a payment, and tax time no longer brings surprises.
 
 ## How it works
 
@@ -42,18 +41,20 @@ So, how do I use it? I basically connect a Google Drive folder to a local folder
 2. **Data is extracted automatically.** Every document in the folder is recognized (invoice, receipt, bank statement…) and its data is pulled into a structured schema: vendor, date, totals, line items, transactions. DocAI ships with schemas for common documents, and you can create your own.
 3. **Work with your data.** Browse & Search in a Drive-like web UI, and match payments to invoices with the built-in reconciliation tool.
 
-## Which AI reads your documents? You choose
+## How I use it
 
-DocAI uses an AI model to recognize your documents and pull out their data. When you first open it, a short setup lets you choose where that model runs:
+I sync a Google Drive folder to a folder on my computer. Whenever I buy something and get a receipt, I take a photo or screenshot and save it to Google Drive; when I get a document, I upload it there too. Google Drive syncs it to my computer, and DocAI extracts the data with AI. (You can use a local model; I prefer OpenRouter.)
 
-- **On your own computer.** DocAI downloads and runs [Qwen 3.5 9B](https://huggingface.co/Qwen) for you, or uses it through [Ollama](https://ollama.com) if you already have it. Your documents never leave your computer. The trade-off: it's slower and less precise than the big cloud models, and it needs a strong enough machine (16 GB of memory or more, ideally a recent Mac or a PC with a good graphics card).
-- **With an AI provider you already trust.** Use your own API key for OpenAI, Claude, Gemini, OpenRouter or Vercel AI Gateway. It's fast and accurate, and your documents are sent only to the provider you choose.
+Then I connect DocAI to Claude Code over MCP and use it to:
 
-You can switch at any time in **Settings → Processing**.
+- Organize my data and move documents between folders
+- Create reports
+- Build a mini app that quickly matches invoices with bank transactions
+- Link my income to my tax payments, so I never miss one and can predict the next
 
-## Even better: connect an AI assistant
+## Connect any AI assistant
 
-DocAI is also an MCP server, so you can connect Claude (or another AI assistant) and simply ask it to:
+DocAI is also an MCP server, so I can connect Claude (or another AI assistant) and simply ask it to:
 
 - Sort your documents
 - Arrange them in folders
@@ -70,11 +71,22 @@ A mini app is a custom tool built on top of your data, such as a monthly expense
 - **Cheaper**: no tokens spent each time you run them
 - **Private**: no data is sent to the cloud
 
-Mini apps are a way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
+Mini apps are a way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. 
+
+- Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
 
 ## Your folder stays in sync
 
 DocAI's folders are the real folders on your disk, and changes go both ways. Add, move or rename a file in Finder and DocAI follows; create, rename or move a folder or document in DocAI and the files on disk change too. Nothing is ever permanently deleted: when you delete something in DocAI, the files go to a trash folder in DocAI's data directory.
+
+## Which AI reads your documents? You choose
+
+DocAI uses an AI model to recognize your documents and pull out their data. When you first open it, a short setup lets you choose where that model runs:
+
+- **On your own computer.** DocAI downloads and runs [Qwen 3.5 9B](https://huggingface.co/Qwen) for you, or uses it through [Ollama](https://ollama.com) if you already have it. Your documents never leave your computer. The trade-off: it's slower and less precise than the big cloud models, and it needs a strong enough machine (16 GB of memory or more, ideally a recent Mac or a PC with a good graphics card).
+- **With an AI provider you already trust.** Use your own API key for OpenAI, Claude, Gemini, OpenRouter or Vercel AI Gateway. It's fast and accurate, and your documents are sent only to the provider you choose.
+
+You can switch at any time in **Settings → Processing**. See [Setting up DocAI](docs/setup-wizard.md) for a step-by-step walkthrough with screenshots.
 
 ## Getting started
 
@@ -85,7 +97,7 @@ npm install
 npm start
 ```
 
-Then open http://localhost:4310. The setup asks for the folder with your documents and how the AI should run (see above).
+Then open http://localhost:4310. The setup asks for the folder with your documents and how the AI should run; [Setting up DocAI](docs/setup-wizard.md) walks you through it.
 
 Everything runs on your computer. DocAI is only reachable from your own machine and has no login.
 

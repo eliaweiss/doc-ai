@@ -21,7 +21,7 @@ export { validateDocumentUploadSize } from "./storage/file-utils";
 export { FileSizeLimitError } from "./storage/file-size-limits";
 
 export * from "./pipeline";
-export { getModelProviderForOrg, type ModelProviderResult } from "./ai/ai-key-provider";
+export { getModelProviderForOrg, getModelProviderForConfig, type ModelProviderResult } from "./ai/ai-key-provider";
 export { getContentTypeFromExtension } from "./storage/file-utils";
 export * from "./ui-tx";
 export { uiTxSearchEntitiesPrompt } from "./chat/ui-tx-prompt-docs/ui-tx-searchEntities-prompt";
@@ -30,10 +30,19 @@ export {
   getConfig,
   readSettings,
   writeSettings,
+  keySettingName,
   type DocAiConfig,
   type LocalSettings,
   type ProviderKind,
 } from "./local/config";
+export * from "./ai/providers";
+export {
+  getLocalModelStatus,
+  startLocalModelDownload,
+  cancelLocalModelDownload,
+  stopLocalModel,
+  LOCAL_MODEL_LABEL,
+} from "./local/local-model";
 export { resolveDocumentPath, getCacheDir } from "./local/paths";
 export { evaluateFormulas } from "./extraction/formula-service";
 export { enrichLineItemsWithMetadata } from "./services/document-service";

@@ -10,6 +10,7 @@ These pages describe how the project works and where each piece lives. They refe
 |---|---|
 | [Overview](overview.md) | What doc-ai does, the main concepts, and a glossary |
 | [Getting started](getting-started.md) | Installing, running, and connecting an MCP client |
+| [Setting up DocAI](setup-wizard.md) | The first-run setup wizard, step by step, with screenshots |
 | [Configuration](configuration.md) | Environment variables, the Settings page, the data folder, model selection |
 | [Architecture](architecture.md) | The single-process design, the HTTP surface, and the repository layout |
 | [Ingestion](ingestion.md) | How files enter the system: the folder watcher, UI uploads, dedupe, renames, spreadsheets |

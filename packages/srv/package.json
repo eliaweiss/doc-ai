@@ -4,16 +4,25 @@
   "private": true,
   "type": "module",
   "main": "src/index.ts",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
+    "@ai-sdk/anthropic": "2.0.53",
+    "@ai-sdk/google": "2.0.45",
     "@ai-sdk/openai": "2.0.77",
+    "@ai-sdk/openai-compatible": "1.0.28",
+    "@napi-rs/canvas": "1.0.11",
+    "@openrouter/ai-sdk-provider": "1.5.4",
     "@zdocs/db-schema": "*",
     "@zdocs/types": "*",
     "@zdocs/util": "*",
     "ai": "5.0.116",
     "drizzle-orm": "0.45.0",
+    "ollama-ai-provider-v2": "1.5.5",
     "papaparse": "5.5.3",
     "pdf-lib": "1.17.1",
+    "pdfjs-dist": "6.3.289",
     "xlsx": "0.18.5",
     "zod": "3.25.76"
   }

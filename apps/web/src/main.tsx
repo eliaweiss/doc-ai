@@ -13,6 +13,7 @@ import "./globals.css";
 import AppProvider from "@zdocs/client/src/context-providers/app-context";
 import { LocaleProvider } from "@zdocs/client/src/context-providers/LocaleContext";
 import { DynamicFavicon } from "@zdocs/client/src/components/DynamicFavicon";
+import { SetupGate } from "./SetupGate";
 import { DrivePage, DriveFolderPage, DocumentPage, SchemaRoute, SearchRoute, SettingsRoute, MiniAppsRoute, MiniAppRoute, ReconciliationWorkbenchRoute } from "./routes";
 
 function App({ children }: { children: React.ReactNode }) {
@@ -32,6 +33,7 @@ function App({ children }: { children: React.ReactNode }) {
       />
       <AppProvider>
         <DynamicFavicon />
+        <SetupGate />
         <div className="flex h-full flex-col overflow-hidden">
           <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
         </div>

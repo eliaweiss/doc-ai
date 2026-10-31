@@ -15,7 +15,7 @@ import {
   hasActiveJob,
   updateDocumentForOrg,
 } from "@zdocs/db-schema";
-import { deleteCacheByPrefix, getConfig } from "@zdocs/srv";
+import { LOCAL_MODEL_LABEL, deleteCacheByPrefix, getConfig } from "@zdocs/srv";
 import {
   EXTRACTION_STATUSES,
   type FieldDefinition,
@@ -39,7 +39,11 @@ export async function getStatus() {
     model:
       config.provider === "ollama"
         ? config.ollamaModel
-        : "AI Gateway",
+        : config.provider === "local"
+          ? LOCAL_MODEL_LABEL
+          : config.provider === "gateway"
+            ? "AI Gateway"
+            : config.cloudModels[config.provider].extract,
     documentsByStatus: counts,
     queue: await getQueueStats(LOCAL_ORG_ID),
   };

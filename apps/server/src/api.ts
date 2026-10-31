@@ -15,6 +15,15 @@ import {
 } from "./services";
 import { SettingsError, getPublicSettings, pickFolder, saveSettings, testConnection } from "./settings";
 import { createPhotoSortApi } from "./photo-sort/routes";
+import {
+  AiSetupError,
+  checkOllama,
+  getOllamaPullStatus,
+  listProviderModels,
+  startOllamaPull,
+  testAiSetup,
+} from "./ai-setup";
+import { cancelLocalModelDownload, getLocalModelStatus, startLocalModelDownload } from "@zdocs/srv";
 
 export function createApi(opts: { onEnqueued?: () => void; onWatchDirChanged?: () => Promise<void> }) {
   const api = new Hono();
@@ -36,6 +45,41 @@ export function createApi(opts: { onEnqueued?: () => void; onWatchDirChanged?: (
 
   // Native folder dialog for the watch folder (browsers can't return a folder's path)
   api.post("/settings/pick-folder", async (c) => c.json(await pickFolder()));
+
+  // AI setup wizard
+  api.post("/settings/ai/models", async (c) => {
+    const { provider, apiKey } = await c.req.json();
+    try {
+      return c.json({ models: await listProviderModels(provider, apiKey) });
+    } catch (error) {
+      if (error instanceof AiSetupError) return c.json({ error: error.message }, 400);
+      throw error;
+    }
+  });
+  api.post("/settings/ai/test", async (c) => c.json(await testAiSetup(await c.req.json())));
+  api.post("/settings/ai/ollama/check", async (c) => {
+    const { baseUrl, model } = await c.req.json();
+    return c.json(await checkOllama(String(baseUrl), String(model)));
+  });
+  api.post("/settings/ai/ollama/pull", async (c) => {
+    const { baseUrl, model } = await c.req.json();
+    startOllamaPull(String(baseUrl), String(model));
+    return c.json(getOllamaPullStatus());
+  });
+  api.get("/settings/ai/ollama/pull", (c) => c.json(getOllamaPullStatus()));
+  api.get("/settings/ai/local", (c) => c.json(getLocalModelStatus()));
+  api.post("/settings/ai/local/download", (c) => {
+    try {
+      startLocalModelDownload();
+      return c.json(getLocalModelStatus());
+    } catch (error) {
+      return c.json({ error: error instanceof Error ? error.message : String(error) }, 400);
+    }
+  });
+  api.post("/settings/ai/local/cancel", (c) => {
+    cancelLocalModelDownload();
+    return c.json(getLocalModelStatus());
+  });
 
   api.get("/status", async (c) => c.json(await getStatus()));
 
