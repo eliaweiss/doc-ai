@@ -13,25 +13,29 @@ const timing = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/voice/timing.j
 const LEAD = 0.6; // picture before the voice starts in each scene
 const TAIL = 0.6; // after the last sentence, before the next scene
 const END_HOLD = 2.4; // the last line stays on screen
-const COVER = 1.0; // the title card before the intro (compositions/cover.html), also the thumbnail
+const FIRST_LEAD = 0.5; // the voice starts this soon, over the cover
 
-let t = COVER;
+let t = 0;
 const scenes = timing.scenes.map((scene, i) => {
   const last = i === timing.scenes.length - 1;
-  const duration = +(LEAD + scene.duration + (last ? END_HOLD : TAIL)).toFixed(3);
+  const lead = i === 0 ? FIRST_LEAD : LEAD;
+  const duration = +(lead + scene.duration + (last ? END_HOLD : TAIL)).toFixed(3);
   const entry = {
     id: scene.id,
     start: +t.toFixed(3),
     duration,
-    lead: LEAD,
+    lead,
     audio: scene.audio,
     voice: scene.duration,
-    sentences: scene.sentences.map((s) => ({ text: s.text, start: +(LEAD + s.start).toFixed(3), end: +(LEAD + s.end).toFixed(3) })),
+    sentences: scene.sentences.map((s) => ({ text: s.text, start: +(lead + s.start).toFixed(3), end: +(lead + s.end).toFixed(3) })),
   };
   t += duration;
   return entry;
 });
 const total = +t.toFixed(3);
+// The cover (compositions/cover.html) is the picture for the first sentence
+// ("This is DocAI."): on screen from frame 0 until the second sentence starts.
+const COVER = +(scenes[0].sentences[1].start - 0.1).toFixed(3);
 
 const hosts = scenes
   .map(
@@ -224,10 +228,10 @@ const html = `<!doctype html>
       <div id="world" data-composition-id="world" data-composition-src="compositions/world.html"
            data-start="0" data-duration="${total}" data-track-index="1"
            data-width="1920" data-height="1080"></div>
+${hosts}
       <div id="cover" data-composition-id="cover" data-composition-src="compositions/cover.html"
            data-start="0" data-duration="${COVER}" data-track-index="2"
-           data-width="1920" data-height="1080"></div>
-${hosts}
+           data-width="1920" data-height="1080" style="z-index: 5"></div>
 ${audio}
     </div>
     <script>
