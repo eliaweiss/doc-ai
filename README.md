@@ -75,6 +75,8 @@ Mini apps are a way to stay fully private. Use Claude Code to build a mini app o
 
 - Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
 
+See [Mini app examples](docs/mini-app-examples.md) for three apps in daily use: Monthly Expenses, Folder Suggestions and Bank Reconciliation.
+
 ## Your folder stays in sync
 
 DocAI's folders are the real folders on your disk, and changes go both ways. Add, move or rename a file in Finder and DocAI follows; create, rename or move a folder or document in DocAI and the files on disk change too. Nothing is ever permanently deleted: when you delete something in DocAI, the files go to a trash folder in DocAI's data directory.

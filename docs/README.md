@@ -22,6 +22,7 @@ These pages describe how the project works and where each piece lives. They refe
 | [HTTP API](http-api.md) | Local routes, the copied zdocs routes, and the compatibility layer |
 | [Web UI](web-ui.md) | The Vite shell, routes, Next.js shims and what was hidden |
 | [Mini apps](mini-apps.md) | Running zdocs mini apps: the viewer, the uiTx bridge, storage and import |
+| [Mini app examples](mini-app-examples.md) | Three mini apps in daily use, step by step, with screenshots |
 | [Import from folder (Eye)](import-from-folder.md) | On-device photo sorting and the import picker |
 | [Relationship to zdocs](zdocs-reuse.md) | Which code was copied, what changed, and why |
 | [Security](security.md) | The trust model, code formulas, and file-access rules |
