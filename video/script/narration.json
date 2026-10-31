@@ -1,5 +1,5 @@
 {
-  "_comment": "Narration for the README walkthrough, one sentence per entry (Pocket TTS reads single sentences best). 'say' is what the voice reads when it differs from the on-screen text. Scenes follow README.md up to the Mini apps section, then docs/setup-wizard.md; the outro (closing line) always stays last.",
+  "_comment": "Narration for the README walkthrough, one sentence per entry (Pocket TTS reads single sentences best). 'say' is what the voice reads when it differs from the on-screen text; 'pauseBefore' adds that many seconds of silence before the sentence (room for a title card). Scenes follow README.md up to the Mini apps section, then docs/setup-wizard.md and docs/mini-app-examples.md; the outro (closing line) always stays last.",
   "pauseAfterSentence": 0.35,
   "pauseAfterScene": 0.8,
   "scenes": [
@@ -107,10 +107,30 @@
       ]
     },
     {
+      "id": "examples",
+      "title": "Mini app examples",
+      "sentences": [
+        { "text": "Here are three mini apps I use every day." },
+        { "text": "Monthly Expenses shows where my money went this month.", "pauseBefore": 1.6 },
+        { "text": "Every receipt and payment is grouped by category, and checked against the bank." },
+        { "text": "Click a category to see each expense, with the bank transaction it matched." },
+        { "text": "Folder Suggestions files new documents for me.", "pauseBefore": 1.6 },
+        { "text": "It looks at where similar documents already live, and suggests a folder for each one." },
+        { "text": "One click moves them all, and the files move on disk too." },
+        { "text": "Bank Reconciliation shows which transactions are explained by a document.", "pauseBefore": 1.6 },
+        { "text": "When it finds a likely match, it asks me to confirm." },
+        { "text": "Click Reconcile, and the transaction is linked to its document." },
+        { "text": "Each of these was built by asking Claude." },
+        { "text": "Describe the report you need, and Claude builds it on your data." }
+      ]
+    },
+    {
       "id": "outro",
       "title": "DocAI",
       "sentences": [
-        { "text": "DocAI. Your money, finally in one place.", "say": "Doc A I. Your money, finally in one place." }
+        { "text": "DocAI." },
+        { "text": "Free, open source, and private." },
+        { "text": "Organize your finances the way you want." }
       ]
     }
   ]

@@ -56,7 +56,77 @@ async function wizardStep(page, provider) {
   await wait(2500); // the Ollama check, the local model status
 }
 
+/** Run fn(arg) inside the mini app's iframe (the frame where it returns something truthy). */
+async function inApp(page, fn, arg) {
+  for (const frame of page.frames()) {
+    const result = await frame.evaluate(fn, arg).catch(() => null);
+    if (result) return result;
+  }
+  throw new Error("Nothing matched in the app");
+}
+/** Click the smallest element in the app whose text is exactly `text`. */
+const clickText = (page, text) =>
+  inApp(page, (t) => {
+    const hits = [...document.querySelectorAll("button, a, div, span, td, li")].filter((el) => el.textContent.trim() === t);
+    hits.sort((a, b) => a.childElementCount - b.childElementCount);
+    if (!hits.length) return false;
+    hits[0].click();
+    return true;
+  }, text);
+/** Scroll the app so the element whose text starts with `text` is at the top. */
+const scrollTo = (page, text) =>
+  inApp(page, (t) => {
+    const el = [...document.querySelectorAll("h1, h2, h3, h4, div, span")].find((e) => e.childElementCount < 3 && e.textContent.trim().startsWith(t));
+    if (!el) return false;
+    el.scrollIntoView({ block: "start" });
+    return true;
+  }, text);
+
 const SHOTS = {
+  // Monthly Expenses, September, the Lunch category opened
+  "ex-expenses-lunch": {
+    url: `${DOCAI}/app/wemqams2wykexa3w6qm3w`,
+    then: async (page) => {
+      await clickInApp(page, "‹"); await wait(2500);
+      await clickText(page, "Lunch"); await wait(1200);
+      await scrollTo(page, "Lunch ("); await wait(800);
+    },
+  },
+  // Folder Suggestions with documents waiting in the top folder (move some there first)
+  "ex-folders": { url: `${DOCAI}/app/qxiojihd1gs73pjptvuox`, settle: 5000 },
+  // ...then "Move all 100%", which files them back
+  "ex-folders-done": {
+    url: `${DOCAI}/app/qxiojihd1gs73pjptvuox`,
+    settle: 5000,
+    then: async (page) => {
+      await inApp(page, () => {
+        const b = [...document.querySelectorAll("button")].find((x) => x.textContent.trim().startsWith("Move all 100%"));
+        if (!b) return false;
+        b.click();
+        return true;
+      });
+      await wait(3000);
+    },
+  },
+  // Bank Reconciliation with a suggested match, filtered to the suggestions (needs one: unlink a match first)
+  "ex-recon-suggest": {
+    url: `${DOCAI}/app/jmzh57q2u3hkb8cproovg`,
+    then: async (page) => { await clickText(page, "click to review"); await wait(1500); },
+  },
+  // ...then "Reconcile", which links it (and puts the month back as it was)
+  "ex-recon-done": {
+    url: `${DOCAI}/app/jmzh57q2u3hkb8cproovg`,
+    then: async (page) => {
+      await clickText(page, "click to review"); await wait(1500);
+      await clickText(page, "Reconcile"); await wait(2500);
+      await clickText(page, "click to review"); await wait(1500); // back to all transactions
+    },
+  },
+  // Bank Reconciliation for August (the app opens on September)
+  "ex-recon-aug": {
+    url: `${DOCAI}/app/jmzh57q2u3hkb8cproovg`,
+    then: async (page) => { await clickInApp(page, "‹"); await wait(2500); },
+  },
   "wizard-choose": { url: `${WIZARD}/settings`, then: (page) => wizard(page, "local"), element: '[data-testid="ai-setup-wizard"]' },
   "wizard-local": { url: `${WIZARD}/settings`, then: (page) => wizardStep(page, "local"), element: '[data-testid="ai-setup-wizard"]' },
   "wizard-ollama": { url: `${WIZARD}/settings`, then: (page) => wizardStep(page, "ollama"), element: '[data-testid="ai-setup-wizard"]' },

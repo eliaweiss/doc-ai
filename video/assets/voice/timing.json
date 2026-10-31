@@ -341,15 +341,93 @@
       ]
     },
     {
+      "id": "examples",
+      "title": "Mini app examples",
+      "audio": "assets/voice/examples.mp3",
+      "duration": 48.434,
+      "sentences": [
+        {
+          "text": "Here are three mini apps I use every day.",
+          "start": 0.0,
+          "end": 3.067
+        },
+        {
+          "text": "Monthly Expenses shows where my money went this month.",
+          "start": 5.017,
+          "end": 7.59
+        },
+        {
+          "text": "Every receipt and payment is grouped by category, and checked against the bank.",
+          "start": 7.94,
+          "end": 11.701
+        },
+        {
+          "text": "Click a category to see each expense, with the bank transaction it matched.",
+          "start": 12.051,
+          "end": 16.158
+        },
+        {
+          "text": "Folder Suggestions files new documents for me.",
+          "start": 18.108,
+          "end": 20.673
+        },
+        {
+          "text": "It looks at where similar documents already live, and suggests a folder for each one.",
+          "start": 21.023,
+          "end": 25.258
+        },
+        {
+          "text": "One click moves them all, and the files move on disk too.",
+          "start": 25.608,
+          "end": 28.784
+        },
+        {
+          "text": "Bank Reconciliation shows which transactions are explained by a document.",
+          "start": 30.734,
+          "end": 34.774
+        },
+        {
+          "text": "When it finds a likely match, it asks me to confirm.",
+          "start": 35.124,
+          "end": 38.098
+        },
+        {
+          "text": "Click Reconcile, and the transaction is linked to its document.",
+          "start": 38.448,
+          "end": 41.923
+        },
+        {
+          "text": "Each of these was built by asking Claude.",
+          "start": 42.273,
+          "end": 44.354
+        },
+        {
+          "text": "Describe the report you need, and Claude builds it on your data.",
+          "start": 44.704,
+          "end": 48.084
+        }
+      ]
+    },
+    {
       "id": "outro",
       "title": "DocAI",
       "audio": "assets/voice/outro.mp3",
-      "duration": 3.602,
+      "duration": 6.812,
       "sentences": [
         {
-          "text": "DocAI. Your money, finally in one place.",
+          "text": "DocAI.",
           "start": 0.0,
-          "end": 3.252
+          "end": 0.937
+        },
+        {
+          "text": "Free, open source, and private.",
+          "start": 1.287,
+          "end": 4.011
+        },
+        {
+          "text": "Organize your finances the way you want.",
+          "start": 4.361,
+          "end": 6.462
         }
       ]
     }

@@ -1,31 +1,58 @@
 <template>
   <!--
-    The closing line, always the last scene: "DocAI. Your money, finally in
-    one place." over the money-flow graph (world.html forms it as this
-    scene starts).
+    The outro, always the last scene: "DocAI. Free, open source, and
+    private. Organize your finances the way you want." The name, then three
+    pillars landing on their words, then the line, over the money-flow graph
+    (world.html forms it as this scene starts).
   -->
   <div id="outro-root" class="scene" data-composition-id="outro" data-width="1920" data-height="1080">
     <style>
       #outro-root { position: absolute; inset: 0; }
-      #outro-name { top: 330px; }
-      #outro-line { top: 610px; }
+      #outro-name { top: 130px; }
+      #outro-pillars { left: 0; right: 0; top: 440px; display: flex; justify-content: center; gap: 60px; }
+      .outro-p { width: 330px; height: 250px; border-radius: 34px; background: var(--paper); text-align: center;
+                 box-shadow: 0 22px 50px rgba(40, 35, 70, 0.22); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+      .outro-p svg { width: 92px; height: 92px; }
+      .outro-p .serif { font-size: 56px; }
+      #outro-line { top: 770px; }
     </style>
     <div id="outro-name" class="abs center serif huge">DocAI</div>
-    <div id="outro-line" class="abs center serif h2">Your money, finally in <span class="accent">one place</span>.</div>
+    <div id="outro-pillars" class="abs">
+      <div id="outro-p1" class="outro-p">
+        <svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="38" fill="none" stroke="#1b1a1f" stroke-width="8" />
+          <text x="46" y="61" text-anchor="middle" font-family="Inter, sans-serif" font-size="42" font-weight="800" fill="#c96442">0</text></svg>
+        <div class="serif">Free</div>
+      </div>
+      <div id="outro-p2" class="outro-p">
+        <svg viewBox="0 0 92 92"><path d="M30 24 L8 46 L30 68 M62 24 L84 46 L62 68" fill="none" stroke="#1b1a1f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M54 16 L38 76" stroke="#c96442" stroke-width="8" stroke-linecap="round" /></svg>
+        <div class="serif">Open source</div>
+      </div>
+      <div id="outro-p3" class="outro-p">
+        <svg viewBox="0 0 92 92"><path d="M26 42 L26 30 Q26 10 46 10 Q66 10 66 30 L66 42" fill="none" stroke="#1b1a1f" stroke-width="8" stroke-linecap="round" />
+          <rect x="14" y="40" width="64" height="46" rx="10" fill="#c96442" /><circle cx="46" cy="62" r="7" fill="#fbf9f5" /></svg>
+        <div class="serif">Private</div>
+      </div>
+    </div>
+    <div id="outro-line" class="abs center serif h2">Organize your finances <span class="accent">the way you want</span>.</div>
   </div>
   <script>
     (function () {
       const D = window.DOC, id = "outro";
       const $ = (s) => document.querySelector(s);
       const tl = gsap.timeline({ paused: true });
-      const at = D.at(id, 0), to = D.end(id, 0);
-      const line = D.when(id, 0, "your");
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      const when = (i, w) => D.when(id, i, w);
 
       // "DocAI."
-      D.blurIn(tl, $("#outro-name"), at - 0.1, { blur: 16, duration: 0.8 });
-      // "Your money, finally in one place." (held to the end of the film)
-      D.blurIn(tl, $("#outro-line"), line - 0.2, { duration: 0.6 });
-      D.words(tl, $("#outro-line"), line - 0.1, to - 0.1);
+      D.blurIn(tl, $("#outro-name"), at(0) - 0.15, { blur: 16, duration: 0.8 });
+      // "Free, open source, and private." Each pillar on its word
+      [["free", 1], ["open", 2], ["private", 3]].forEach(([w, k]) =>
+        tl.fromTo("#outro-p" + k, { opacity: 0, y: 60, scale: 0.9, filter: "blur(8px)" },
+          { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "back.out(1.4)" }, when(1, w) - 0.15));
+      // "Organize your finances the way you want." (held to the end of the film)
+      D.blurIn(tl, $("#outro-line"), at(2) - 0.15, { duration: 0.5 });
+      D.speak(tl, $("#outro-line"), id, 2);
 
       window.__timelines = window.__timelines || {};
       window.__timelines[id] = tl;

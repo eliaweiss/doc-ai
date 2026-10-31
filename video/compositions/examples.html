@@ -1,0 +1,278 @@
+<template>
+  <!--
+    "Mini app examples" (docs/mini-app-examples.md): three apps in daily use,
+    one picture per sentence with the narration as a caption underneath. Each
+    app is one frame (real captures, assets/screens/ex-*.png) whose states
+    cross-fade, with highlights on what the voice names.
+  -->
+  <div id="examples-root" class="scene" data-composition-id="examples" data-width="1920" data-height="1080">
+    <style>
+      #examples-root { position: absolute; inset: 0; }
+      #examples-root .slide { position: absolute; inset: 0; }
+      /* A capture: 1440 x 900 CSS px shown at 1120 x 700 */
+      .ex-frame { position: absolute; left: 400px; top: 112px; width: 1120px; height: 700px; border-radius: 22px; overflow: hidden; background: #fff;
+                  box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); }
+      .ex-zoom { position: absolute; inset: 0; transform-origin: 0 0; }
+      .ex-zoom img { position: absolute; left: 0; top: 0; width: 1120px; }
+      .ex-hl { position: absolute; border: 5px solid var(--clay); border-radius: 14px; background: rgba(201, 100, 66, 0.06); }
+      .ex-name { position: absolute; left: 400px; top: 46px; }
+      .ex-press { position: absolute; border-radius: 10px; background: rgba(27, 26, 31, 0.25); }
+
+      /* 0: the three apps */
+      .ex-app { position: absolute; top: 300px; width: 380px; text-align: center; }
+      .ex-app .tile { width: 200px; height: 200px; margin: 0 auto 34px; border-radius: 42px; background: var(--paper);
+                      box-shadow: 0 18px 40px rgba(40, 35, 70, 0.22); display: flex; align-items: center; justify-content: center; }
+      .ex-app svg { width: 112px; height: 112px; }
+      .ex-app .nm { font-family: var(--font-ui); font-size: 34px; font-weight: 700; }
+      #ex-a1 { left: 230px; } #ex-a2 { left: 770px; } #ex-a3 { left: 1310px; }
+
+      #ex-disk { left: 1420px; top: 610px; }
+
+      /* A title card before each app */
+      .ex-card { position: absolute; left: 0; right: 0; top: 190px; text-align: center; }
+      .ex-card .kicker { display: block; margin-bottom: 40px; }
+      .ex-card .tile { width: 230px; height: 230px; margin: 0 auto 44px; border-radius: 52px; background: var(--paper);
+                       box-shadow: 0 22px 50px rgba(40, 35, 70, 0.24); display: flex; align-items: center; justify-content: center; }
+      .ex-card svg { width: 128px; height: 128px; }
+      .ex-card .serif { font-size: 120px; }
+
+      /* 10: each app, built with Claude */
+      .ex-built { position: absolute; top: 610px; width: 380px; text-align: center; }
+      .ex-built .chip { background: var(--ink); color: #fff; }
+      #ex-b1 { left: 230px; } #ex-b2 { left: 770px; } #ex-b3 { left: 1310px; }
+      #ex-c1 { left: 230px; } #ex-c2 { left: 770px; } #ex-c3 { left: 1310px; }
+
+      /* 11: ask, and the app is built on your data */
+      #ex-chat { left: 170px; top: 170px; width: 760px; height: 560px; background: #1f1e24; }
+      #ex-chat .bar { height: 58px; background: #2b2a31; display: flex; align-items: center; gap: 12px; padding-left: 24px; }
+      #ex-chat .bar i { width: 16px; height: 16px; border-radius: 50%; background: #55535c; display: inline-block; }
+      #ex-chat .bar span { margin-left: 18px; color: #a8a5b3; font-family: var(--font-ui); font-size: 28px; font-weight: 600; }
+      #ex-chat .body { padding: 40px 44px; font-family: "JetBrains Mono", monospace; font-size: 30px; line-height: 1.75; color: #ece9f2; }
+      #ex-chat .p { color: #e0866a; }
+      #ex-chat .dim { color: #a8a5b3; }
+      #ex-chat .ok { color: #7fb594; }
+      #ex-ask-line { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
+      #ex-app { left: 1010px; top: 190px; width: 740px; height: 520px; }
+      #ex-app .top { height: 64px; background: #eeebf3; display: flex; align-items: center; padding: 0 30px; font-family: var(--font-ui);
+                     font-size: 26px; font-weight: 700; color: rgba(27,26,31,0.6); }
+      #ex-app h4 { font-family: var(--font-display); font-weight: 400; font-size: 52px; margin: 30px 40px 0; }
+      #ex-bars { position: absolute; left: 60px; right: 60px; bottom: 50px; height: 280px; display: flex; align-items: flex-end; gap: 46px; }
+      .ex-bar { flex: 1; position: relative; height: 100%; }
+      .ex-bar i { position: absolute; left: 0; right: 0; bottom: 44px; border-radius: 12px 12px 4px 4px; background: var(--clay); transform-origin: 50% 100%; }
+      .ex-bar span { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-family: var(--font-ui); font-size: 28px; font-weight: 700; color: rgba(27,26,31,0.6); }
+      #ex-link { left: 930px; top: 430px; width: 80px; height: 40px; overflow: visible; }
+    </style>
+
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <symbol id="ex-i-chart" viewBox="0 0 96 96"><rect x="12" y="52" width="16" height="32" rx="4" fill="#c96442" /><rect x="40" y="30" width="16" height="54" rx="4" fill="#1b1a1f" /><rect x="68" y="14" width="16" height="70" rx="4" fill="#8c87a3" /></symbol>
+        <symbol id="ex-i-folder" viewBox="0 0 96 96"><path d="M8 24 Q8 16 16 16 L36 16 L44 26 L80 26 Q88 26 88 34 L88 76 Q88 82 82 82 L14 82 Q8 82 8 76 Z" fill="#c96442" /><path d="M36 56 L62 56 M52 46 L62 56 L52 66" stroke="#fbf9f5" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="ex-i-bank" viewBox="0 0 96 96"><path d="M48 8 L88 30 L8 30 Z" fill="#1b1a1f" /><rect x="16" y="36" width="10" height="34" fill="#1b1a1f" /><rect x="43" y="36" width="10" height="34" fill="#1b1a1f" /><rect x="70" y="36" width="10" height="34" fill="#1b1a1f" /><rect x="8" y="74" width="80" height="12" rx="3" fill="#c96442" /></symbol>
+      </defs>
+    </svg>
+
+    <!-- 0 -->
+    <div id="ex-0" class="slide">
+      <div id="ex-a1" class="ex-app"><div class="tile"><svg><use href="#ex-i-chart" /></svg></div><div class="nm">Monthly Expenses</div></div>
+      <div id="ex-a2" class="ex-app"><div class="tile"><svg><use href="#ex-i-folder" /></svg></div><div class="nm">Folder Suggestions</div></div>
+      <div id="ex-a3" class="ex-app"><div class="tile"><svg><use href="#ex-i-bank" /></svg></div><div class="nm">Bank Reconciliation</div></div>
+    </div>
+
+    <!-- Title cards: one before each app -->
+    <div id="ex-t1" class="ex-card"><span class="kicker">Mini app 1 of 3</span><div class="tile"><svg><use href="#ex-i-chart" /></svg></div><div class="serif">Monthly Expenses</div></div>
+    <div id="ex-t2" class="ex-card"><span class="kicker">Mini app 2 of 3</span><div class="tile"><svg><use href="#ex-i-folder" /></svg></div><div class="serif">Folder Suggestions</div></div>
+    <div id="ex-t3" class="ex-card"><span class="kicker">Mini app 3 of 3</span><div class="tile"><svg><use href="#ex-i-bank" /></svg></div><div class="serif">Bank Reconciliation</div></div>
+
+    <!-- 1-3: Monthly Expenses -->
+    <div id="ex-exp" class="slide">
+      <div id="ex-exp-name" class="ex-name"><span class="chip">Monthly Expenses</span></div>
+      <div id="ex-exp-frame" class="ex-frame">
+        <div id="ex-exp-zoom" class="ex-zoom">
+          <img id="ex-exp-1" src="assets/screens/expenses.png" alt="" />
+          <img id="ex-exp-2" src="assets/screens/ex-expenses-lunch.png" alt="" />
+          <div id="ex-hl-total" class="ex-hl" style="left:126px; top:201px; width:219px; height:102px"></div>
+          <div id="ex-hl-cat" class="ex-hl" style="left:126px; top:310px; width:860px; height:388px"></div>
+          <div id="ex-hl-bank" class="ex-hl" style="left:559px; top:201px; width:217px; height:102px"></div>
+          <div id="ex-hl-row" class="ex-hl" style="left:134px; top:168px; width:844px; height:56px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4-6: Folder Suggestions -->
+    <div id="ex-fold" class="slide">
+      <div id="ex-fold-name" class="ex-name"><span class="chip">Folder Suggestions</span></div>
+      <div id="ex-fold-frame" class="ex-frame">
+        <div id="ex-fold-zoom" class="ex-zoom">
+          <img id="ex-fold-1" src="assets/screens/ex-folders.png" alt="" />
+          <img id="ex-fold-2" src="assets/screens/ex-folders-done.png" alt="" />
+          <div id="ex-hl-sugg" class="ex-hl" style="left:546px; top:274px; width:254px; height:330px"></div>
+          <div id="ex-hl-move" class="ex-hl" style="left:728px; top:112px; width:126px; height:40px"></div>
+          <div id="ex-press-move" class="ex-press" style="left:734px; top:118px; width:114px; height:28px"></div>
+        </div>
+      </div>
+      <div id="ex-disk" class="abs"><span class="chip">✓ Files move on disk too</span></div>
+    </div>
+
+    <!-- 7-9: Bank Reconciliation -->
+    <div id="ex-rec" class="slide">
+      <div id="ex-rec-name" class="ex-name"><span class="chip">Bank Reconciliation</span></div>
+      <div id="ex-rec-frame" class="ex-frame">
+        <div id="ex-rec-zoom" class="ex-zoom">
+          <img id="ex-rec-1" src="assets/screens/ex-recon-done.png" alt="" />
+          <img id="ex-rec-2" src="assets/screens/ex-recon-suggest.png" alt="" />
+          <img id="ex-rec-3" src="assets/screens/ex-recon-done.png" alt="" />
+          <div id="ex-hl-reconciled" class="ex-hl" style="left:341px; top:164px; width:217px; height:88px"></div>
+          <div id="ex-hl-sug" class="ex-hl" style="left:126px; top:299px; width:868px; height:87px"></div>
+          <div id="ex-press-rec" class="ex-press" style="left:230px; top:353px; width:56px; height:17px"></div>
+          <div id="ex-hl-done" class="ex-hl" style="left:126px; top:489px; width:868px; height:56px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10: each of these was built by asking Claude -->
+    <div id="ex-10" class="slide">
+      <div id="ex-c1" class="ex-app"><div class="tile"><svg><use href="#ex-i-chart" /></svg></div><div class="nm">Monthly Expenses</div></div>
+      <div id="ex-c2" class="ex-app"><div class="tile"><svg><use href="#ex-i-folder" /></svg></div><div class="nm">Folder Suggestions</div></div>
+      <div id="ex-c3" class="ex-app"><div class="tile"><svg><use href="#ex-i-bank" /></svg></div><div class="nm">Bank Reconciliation</div></div>
+      <div id="ex-b1" class="ex-built"><span class="chip">Built with Claude</span></div>
+      <div id="ex-b2" class="ex-built"><span class="chip">Built with Claude</span></div>
+      <div id="ex-b3" class="ex-built"><span class="chip">Built with Claude</span></div>
+    </div>
+
+    <!-- 11: describe it, and Claude builds it on your data -->
+    <div id="ex-11" class="slide">
+      <div id="ex-chat" class="abs" style="border-radius:22px; overflow:hidden; box-shadow:0 30px 70px rgba(40,35,70,0.3)">
+        <div class="bar"><i></i><i></i><i></i><span>Claude Code</span></div>
+        <div class="body">
+          <div><span class="p">&gt;</span> <span id="ex-ask-line">a page with my VAT for each quarter</span></div>
+          <div id="ex-l1" class="dim">Reading your invoices…</div>
+          <div id="ex-l2" class="dim">Building vat-by-quarter…</div>
+          <div id="ex-l3" class="ok">✓ Done. It's in your Apps.</div>
+        </div>
+      </div>
+      <svg id="ex-link" class="abs" viewBox="0 0 80 40"><path d="M4 20 L66 20 M52 8 L68 20 L52 32" stroke="#c96442" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <div id="ex-app" class="abs" style="border-radius:22px; overflow:hidden; background:var(--paper); box-shadow:0 30px 70px rgba(40,35,70,0.25)">
+        <div class="top">Apps · VAT by quarter</div>
+        <h4>VAT by quarter</h4>
+        <div id="ex-bars">
+          <div class="ex-bar"><i id="ex-q-1" style="height:46%"></i><span>Q1</span></div>
+          <div class="ex-bar"><i id="ex-q-2" style="height:68%"></i><span>Q2</span></div>
+          <div class="ex-bar"><i id="ex-q-3" style="height:55%"></i><span>Q3</span></div>
+          <div class="ex-bar"><i id="ex-q-4" style="height:80%"></i><span>Q4</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ex-caps" class="caps"></div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "examples", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      const when = (i, w) => D.when(id, i, w);
+      const fadeIn = (el, t, o) => D.blurIn(tl, typeof el === "string" ? $(el) : el, t, o);
+      const fadeOut = (el, t, o) => D.blurOut(tl, typeof el === "string" ? $(el) : el, t, o);
+      /** A highlight box lands */
+      const mark = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, t);
+      const unmark = (sel, t) => tl.to(sel, { opacity: 0, duration: 0.2 }, t);
+      /** One screenshot state gives way to the next */
+      const swap = (a, b, t) => {
+        tl.fromTo(b, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out", immediateRender: false }, t);
+        tl.to(a, { opacity: 0, duration: 0.2 }, t + 0.3);
+      };
+      /** A button press */
+      // Each frame starts zoomed into the app's content (the pages have wide margins)
+      const BASE = { scale: 1.25, x: -110, y: -22 };
+      ["#ex-exp-zoom", "#ex-fold-zoom", "#ex-rec-zoom"].forEach((s) => tl.fromTo(s, BASE, { ...BASE, duration: 0.01 }, 0));
+      const press = (sel, t) => tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.08, yoyo: true, repeat: 1, ease: "none" }, t);
+
+      D.captions(tl, $("#ex-caps"), id, 0);
+      // Later states and marks start hidden
+      ["#ex-exp-2", "#ex-fold-2", "#ex-rec-2", "#ex-rec-3", ".ex-hl", ".ex-press"].forEach((s) => tl.fromTo(s, { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0));
+
+      // ---- 0: "Here are three mini apps I use every day." ----
+      [1, 2, 3].forEach((k) => fadeIn("#ex-a" + k, at(0) + (k - 1) * 0.2, { y: 50, duration: 0.6 }));
+      fadeOut("#ex-0", at(1) - 1.75, { scale: 1.08 });
+
+      /**
+       * The title card for app k, in the pause before sentence i names it:
+       * it holds while the name is spoken, then the app's screens take over.
+       */
+      const titleCard = (k, i) => {
+        fadeIn("#ex-t" + k, at(i) - 1.5, { blur: 12, duration: 0.6, scale: 0.94 });
+        fadeOut("#ex-t" + k, at(i) + 0.75, { y: -40, duration: 0.3 });
+      };
+      titleCard(1, 1);
+      titleCard(2, 4);
+      titleCard(3, 7);
+
+      // ---- 1-3: Monthly Expenses ----
+      fadeIn("#ex-exp-frame", at(1) + 0.85, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#ex-exp-name", at(1) + 1.0, { y: 16, duration: 0.45 });
+      mark("#ex-hl-total", Math.max(when(1, "where"), at(1) + 1.5));
+      // "Every receipt and payment is grouped by category, and checked against the bank."
+      unmark("#ex-hl-total", at(2) - 0.2);
+      mark("#ex-hl-cat", when(2, "category") - 0.1);
+      unmark("#ex-hl-cat", when(2, "checked") - 0.2);
+      mark("#ex-hl-bank", when(2, "bank") - 0.2);
+      // "Click a category to see each expense, with the bank transaction it matched."
+      unmark("#ex-hl-bank", at(3) - 0.2);
+      swap("#ex-exp-1", "#ex-exp-2", at(3) - 0.1);
+      mark("#ex-hl-row", when(3, "bank") - 0.1);
+      tl.to("#ex-exp-zoom", { scale: 1.55, x: -260, y: -150, duration: 1.6, ease: "power2.inOut" }, when(3, "bank") - 0.2);
+      fadeOut("#ex-exp", at(4) - 1.75, { y: -30 });
+
+      // ---- 4-6: Folder Suggestions ----
+      fadeIn("#ex-fold-frame", at(4) + 0.85, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#ex-fold-name", at(4) + 1.0, { y: 16, duration: 0.45 });
+      // "It looks at where similar documents already live, and suggests a folder for each one."
+      mark("#ex-hl-sugg", when(5, "suggests") - 0.15);
+      tl.to("#ex-fold-zoom", { scale: 1.6, x: -560, y: -280, duration: 1.4, ease: "power2.inOut" }, when(5, "similar"));
+      // "One click moves them all, and the files move on disk too."
+      unmark("#ex-hl-sugg", at(6) - 0.3);
+      tl.to("#ex-fold-zoom", { ...BASE, duration: 0.6, ease: "power2.inOut" }, at(6) - 0.3);
+      mark("#ex-hl-move", at(6) + 0.25);
+      press("#ex-press-move", when(6, "moves") - 0.1);
+      unmark("#ex-hl-move", when(6, "moves") + 0.15);
+      swap("#ex-fold-1", "#ex-fold-2", when(6, "moves") + 0.1);
+      fadeIn("#ex-disk", when(6, "disk") - 0.2, { y: 20, duration: 0.45 });
+      fadeOut("#ex-fold", at(7) - 1.75, { y: -30 });
+
+      // ---- 7-9: Bank Reconciliation ----
+      fadeIn("#ex-rec-frame", at(7) + 0.85, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#ex-rec-name", at(7) + 1.0, { y: 16, duration: 0.45 });
+      mark("#ex-hl-reconciled", Math.max(when(7, "explained") - 0.2, at(7) + 1.6));
+      // "When it finds a likely match, it asks me to confirm."
+      unmark("#ex-hl-reconciled", at(8) - 0.2);
+      swap("#ex-rec-1", "#ex-rec-2", at(8) - 0.1);
+      mark("#ex-hl-sug", when(8, "match") - 0.1);
+      // "Click Reconcile, and the transaction is linked to its document."
+      press("#ex-press-rec", when(9, "reconcile") - 0.05);
+      unmark("#ex-hl-sug", when(9, "reconcile") + 0.15);
+      swap("#ex-rec-2", "#ex-rec-3", when(9, "reconcile") + 0.15);
+      mark("#ex-hl-done", when(9, "linked") - 0.2);
+      fadeOut("#ex-rec", at(10) - 0.4, { y: -30 });
+
+      // ---- 10: "Each of these was built by asking Claude." ----
+      [1, 2, 3].forEach((k) => fadeIn("#ex-c" + k, at(10) - 0.15 + (k - 1) * 0.12, { y: 40, duration: 0.55 }));
+      [1, 2, 3].forEach((k) => fadeIn("#ex-b" + k, when(10, "built") - 0.1 + (k - 1) * 0.18, { y: 16, scale: 0.9, duration: 0.45 }));
+      fadeOut("#ex-10", at(11) - 0.3, { y: -30 });
+
+      // ---- 11: "Describe the report you need, and Claude builds it on your data." ----
+      fadeIn("#ex-chat", at(11) - 0.15, { x: -60, duration: 0.6, blur: 6 });
+      tl.fromTo("#ex-ask-line", { maxWidth: 0 }, { maxWidth: 700, duration: 1.0, ease: "steps(36)" }, at(11) + 0.2);
+      const builds = when(11, "builds");
+      [1, 2, 3].forEach((k) => tl.fromTo("#ex-l" + k, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, ease: "power3.out" }, at(11) + 1.0 + (k - 1) * 0.45));
+      tl.fromTo("#ex-link", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35 }, at(11) + 1.3);
+      fadeIn("#ex-app", at(11) + 1.4, { x: 60, duration: 0.6, blur: 6 });
+      // "...on your data": the chart fills in, one quarter at a time
+      [1, 2, 3, 4].forEach((k) => tl.fromTo("#ex-q-" + k, { scaleY: 0 }, { scaleY: 1, duration: 0.5, ease: "expo.out" }, Math.max(builds, at(11) + 2.0) + (k - 1) * 0.16));
+      fadeOut("#ex-11", end - 0.45, { y: -30 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

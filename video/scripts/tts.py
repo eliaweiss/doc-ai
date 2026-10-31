@@ -93,6 +93,13 @@ def main():
             if force or not os.path.exists(clip):
                 print(f"[tts] {scene['id']}: {text}", flush=True)
                 synthesize(text, clip)
+            # Optional silence before the sentence, e.g. for a title card
+            before = sentence.get("pauseBefore", 0)
+            if before:
+                hold = os.path.join(CACHE, f"silence-{before}.wav")
+                silence(before, hold)
+                parts.append(hold)
+                t += before
             d = duration(clip)
             sentences.append({"text": sentence["text"], "start": round(t, 3), "end": round(t + d, 3)})
             parts += [clip, gap]

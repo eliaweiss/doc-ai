@@ -15,7 +15,7 @@
       #world-root { position: absolute; inset: 0; }
       #world-canvas { position: absolute; inset: 0; width: 1920px; height: 1080px; filter: blur(1.4px); }
     </style>
-    <canvas data-hf-id="hf-joyu" id="world-canvas" class="clip" data-start="0" data-duration="211.444" data-track-index="1"></canvas>
+    <canvas data-hf-id="hf-joyu" id="world-canvas" class="clip" data-start="0" data-duration="264.288" data-track-index="1"></canvas>
   </div>
   <script>
     (function () {
@@ -194,7 +194,8 @@
       const dim = (1 - 0.55 * window_(t, T.dimHowIn, T.dimHowOut, 1.0))
         * (1 - 0.8 * window_(t, T.dimWhyIn, T.dimWhyOut, 0.8)) // the Why slides carry their own pictures
         * (1 - 0.8 * window_(t, T.dimIntroIn, T.graphIn, 0.8)) // and so do the intro's
-        * (1 - 0.8 * window_(t, T.dimAppsIn, T.dimAppsOut, 0.8)); // and the Mini apps'.
+        * (1 - 0.8 * window_(t, T.dimAppsIn, T.dimAppsOut, 0.8)) // and the Mini apps'
+        * (1 - 0.45 * rise(t, T.finale + 0.8, 1.2)); // a softer graph behind the outro's text
       // Fade the world in at the very start
       const intro = rise(t, 0.0, 1.6);
 

@@ -198,7 +198,9 @@ const html = `<!doctype html>
             container.appendChild(cap);
             window.DOC.blurIn(tl, cap, sentences[i].start - 0.15, { duration: 0.35, blur: 6 });
             window.DOC.speak(tl, cap, scene, i);
-            window.DOC.blurOut(tl, cap, i < last ? sentences[i + 1].start - 0.2 : end - 0.45, { duration: 0.18 });
+            // Leaves before the next one arrives, and doesn't linger through a long pause
+            const leave = i < last ? Math.min(sentences[i + 1].start - 0.32, sentences[i].end + 0.6) : end - 0.45;
+            window.DOC.blurOut(tl, cap, leave, { duration: 0.16 });
           }
         },
         /** Arrive: opacity 0 -> 1 with the blur clearing (and an optional rise). */
