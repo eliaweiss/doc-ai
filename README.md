@@ -20,7 +20,7 @@ DocAI is also an MCP server, so you can connect Claude (or another AI assistant)
 
 ## Mini apps: no AI needed to run them
 
-A mini app is a small tool built on top of your data, such as a monthly expense report, a VAT summary or a vendor dashboard. The AI helps you *build* it once; after that, it runs on its own without calling an AI model. That makes mini apps:
+A mini app is a custom tool built on top of your data, such as a monthly expense report, a VAT summary or a vendor dashboard. The AI helps you *build* it once; after that, it runs on its own without calling an AI model. That makes mini apps:
 
 - **Faster**: no waiting for a model to answer
 - **Deterministic**: the same input always gives the same result
