@@ -85,7 +85,7 @@ DocAI uses an AI model to recognize your documents and pull out their data. When
 - **On your own computer.** DocAI downloads and runs [Qwen 3.5 9B](https://huggingface.co/Qwen) for you, or uses it through [Ollama](https://ollama.com) if you already have it. Your documents never leave your computer. The trade-off: it's slower and less precise than the big cloud models, and it needs a strong enough machine (16 GB of memory or more, ideally a recent Mac or a PC with a good graphics card).
 - **With an AI provider you already trust.** Use your own API key for OpenAI, Claude, Gemini, OpenRouter or Vercel AI Gateway. It's fast and accurate, and your documents are sent only to the provider you choose.
 
-You can switch at any time in **Settings → Processing**.
+You can switch at any time in **Settings → Processing**. See [Setting up DocAI](docs/setup-wizard.md) for a step-by-step walkthrough with screenshots.
 
 ## Getting started
 
@@ -96,7 +96,7 @@ npm install
 npm start
 ```
 
-Then open http://localhost:4310. The setup asks for the folder with your documents and how the AI should run (see above).
+Then open http://localhost:4310. The setup asks for the folder with your documents and how the AI should run; [Setting up DocAI](docs/setup-wizard.md) walks you through it.
 
 Everything runs on your computer. DocAI is only reachable from your own machine and has no login.
 
