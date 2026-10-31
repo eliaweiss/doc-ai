@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wizard-test-server",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "--env-file-if-exists=../../.env", "src/main.ts"],
+      "cwd": "apps/server",
+      "env": {
+        "PORT": "4320",
+        "DOC_AI_DATA_DIR": "/private/tmp/claude-501/-Users-eliaweiss-work-doc-ai/e4ab7f79-335d-48a4-93cd-a32e02872652/scratchpad/docai-data",
+        "DOC_AI_WATCH_DIR": "",
+        "DOC_AI_PROVIDER": "",
+        "AI_GATEWAY_API_KEY": "",
+        "OPENROUTER_API_KEY": "",
+        "OPENAI_API_KEY": "",
+        "ANTHROPIC_API_KEY": "",
+        "GOOGLE_GENERATIVE_AI_API_KEY": ""
+      },
+      "port": 4320
+    },
+    {
+      "name": "wizard-test-web",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--outDir", "/private/tmp/claude-501/-Users-eliaweiss-work-doc-ai/e4ab7f79-335d-48a4-93cd-a32e02872652/scratchpad/web-dist", "--port", "4321", "--strictPort"],
+      "cwd": "apps/web",
+      "env": { "DOC_AI_SERVER_URL": "http://127.0.0.1:4320" },
+      "port": 4321
+    }
+  ]
+}

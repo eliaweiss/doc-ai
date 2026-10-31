@@ -53,15 +53,6 @@ Then I connect DocAI to Claude Code over MCP and use it to:
 2. **Data is extracted automatically.** Every document in the folder is recognized (invoice, receipt, bank statement…) and its data is pulled into a structured schema: vendor, date, totals, line items, transactions. DocAI ships with schemas for common documents, and you can create your own.
 3. **Work with your data.** Browse & Search in a Drive-like web UI, and match payments to invoices with the built-in reconciliation tool.
 
-## Which AI reads your documents? You choose
-
-DocAI uses an AI model to recognize your documents and pull out their data. When you first open it, a short setup lets you choose where that model runs:
-
-- **On your own computer.** DocAI downloads and runs [Qwen 3.5 9B](https://huggingface.co/Qwen) for you, or uses it through [Ollama](https://ollama.com) if you already have it. Your documents never leave your computer. The trade-off: it's slower and less precise than the big cloud models, and it needs a strong enough machine (16 GB of memory or more, ideally a recent Mac or a PC with a good graphics card).
-- **With an AI provider you already trust.** Use your own API key for OpenAI, Claude, Gemini, OpenRouter or Vercel AI Gateway. It's fast and accurate, and your documents are sent only to the provider you choose.
-
-You can switch at any time in **Settings → Processing**.
-
 ## Even better: connect an AI assistant
 
 DocAI is also an MCP server, so you can connect Claude (or another AI assistant) and simply ask it to:
@@ -86,6 +77,15 @@ Mini apps are a way to stay fully private. Use Claude Code to build a mini app o
 ## Your folder stays in sync
 
 DocAI's folders are the real folders on your disk, and changes go both ways. Add, move or rename a file in Finder and DocAI follows; create, rename or move a folder or document in DocAI and the files on disk change too. Nothing is ever permanently deleted: when you delete something in DocAI, the files go to a trash folder in DocAI's data directory.
+
+## Which AI reads your documents? You choose
+
+DocAI uses an AI model to recognize your documents and pull out their data. When you first open it, a short setup lets you choose where that model runs:
+
+- **On your own computer.** DocAI downloads and runs [Qwen 3.5 9B](https://huggingface.co/Qwen) for you, or uses it through [Ollama](https://ollama.com) if you already have it. Your documents never leave your computer. The trade-off: it's slower and less precise than the big cloud models, and it needs a strong enough machine (16 GB of memory or more, ideally a recent Mac or a PC with a good graphics card).
+- **With an AI provider you already trust.** Use your own API key for OpenAI, Claude, Gemini, OpenRouter or Vercel AI Gateway. It's fast and accurate, and your documents are sent only to the provider you choose.
+
+You can switch at any time in **Settings → Processing**.
 
 ## Getting started
 
