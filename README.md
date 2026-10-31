@@ -1,8 +1,8 @@
 # DocAI
 
-Think of DocAI as Free, Local, Open-Source GDrive optimize for financial documents - it runs on your own computer, keeps your files private. It's built for invoices, receipts, bank statements and transactions.
+Think of DocAI as a free, local, open-source Google Drive optimized for financial documents. It runs on your own computer and keeps your files private. It's built for invoices, receipts, bank statements and transactions.
 
-It uses local AI to extract data from the document, organize it in a concise DB, connect data point and build a complete graph of your money flow, and allow connecting the your AI coder using MCP to build custom mini apps and manage your data how ever your flow require
+DocAI uses local AI to extract the data from your documents, organize it in a unified database, and connect the data points into a complete graph of your money flow. You can also connect your AI coding assistant over MCP to build custom mini apps and manage your data however your workflow requires.
 
 ## How it works
 
