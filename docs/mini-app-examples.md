@@ -36,11 +36,7 @@ Here, five documents are waiting in the top folder: two market receipts, two lun
 
 Under each suggestion you can see why it was made, for example "23 similar · same name and type". If you disagree, pick another folder from the dropdown.
 
-Click **Move** to file one document:
-
-![One document moved; four left](images/mini-apps/folders-moved-one.jpg)
-
-Or click **Move all 100%** (or **Move all high-confidence**) to file everything you're sure about at once:
+Click **Move** to file one document, or **Move all 100%** (or **Move all high-confidence**) to file everything you're sure about at once:
 
 ![All documents filed; the top folder is empty](images/mini-apps/folders-moved-all.jpg)
 
@@ -52,27 +48,19 @@ The files move on disk too, so your folder (or Google Drive) stays organized the
 
 For each month it lists every bank transaction with the receipt, invoice or remittance that explains it.
 
-![Bank Reconciliation: 122 transactions, 75 reconciled, 3 suggested matches, 44 without a document](images/mini-apps/recon-overview.jpg)
+![Bank Reconciliation for September: 122 transactions, 78 reconciled, 44 without a document](images/mini-apps/recon-overview.jpg)
 
 - **Reconciled**: the transaction is linked to its document. **Unlink** undoes the link.
 - **Suggested match**: DocAI found a document that fits (same amount, same day) but wants you to confirm it.
 - **No document**: nothing explains this transaction yet. These are the ones to chase.
 
-Click the **Suggested match** card to review the suggestions:
+When there are suggestions, click the **Suggested match** card to review them. Here one is waiting:
 
-![Three suggested matches waiting for review](images/mini-apps/recon-suggested.jpg)
+![One suggested match waiting for review](images/mini-apps/recon-suggested.jpg)
 
-Each suggestion shows the document it found and why ("same day"). If it's right, click **Reconcile**:
+Each suggestion shows the document it found and why ("same day"). If it's right, click **Reconcile**. The transaction now shows as reconciled, linked to its document, and reconciled goes from 77 to 78:
 
-![One match accepted: reconciled goes from 75 to 76](images/mini-apps/recon-accepted-one.jpg)
-
-After all three are accepted, nothing is left to review and 78 transactions are reconciled:
-
-![All suggestions accepted](images/mini-apps/recon-accepted-all.jpg)
-
-The transaction now shows as reconciled, with the amount of the document it's linked to:
-
-![A reconciled transaction with its linked document](images/mini-apps/recon-reconciled-row.jpg)
+![The match accepted: the transaction is reconciled with its document](images/mini-apps/recon-reconciled.jpg)
 
 ## Build your own
 
