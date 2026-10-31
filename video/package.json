@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "timing": "node scripts/timing.mjs",
     "tts": "python3 scripts/tts.py",
     "capture": "node scripts/capture.mjs",
     "thumbnail": "node scripts/thumbnail.mjs",

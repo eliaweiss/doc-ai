@@ -1,0 +1,33 @@
+<template>
+  <!--
+    The outro, always the last scene: the name, then the closing line, held
+    to the end of the film. Sentence 0 is the name; sentence 1 (if any) the line.
+  -->
+  <div id="outro-root" class="scene" data-composition-id="outro" data-width="1920" data-height="1080">
+    <style>
+      #outro-root { position: absolute; inset: 0; }
+      #outro-name { top: 300px; }
+      #outro-line { top: 620px; }
+    </style>
+    <div id="outro-name" class="abs center serif huge">__TITLE__</div>
+    <div id="outro-line" class="abs center serif h2"></div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "outro";
+      const sentences = window.VO.scenes[id].sentences;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+
+      D.blurIn(tl, $("#outro-name"), D.at(id, 0) - 0.15, { blur: 16, duration: 0.8 });
+      if (sentences.length > 1) {
+        $("#outro-line").textContent = sentences[1].text;
+        D.blurIn(tl, $("#outro-line"), D.at(id, 1) - 0.15, { duration: 0.5 });
+        D.speak(tl, $("#outro-line"), id, 1);
+      }
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

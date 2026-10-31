@@ -33,9 +33,11 @@ const scenes = timing.scenes.map((scene, i) => {
   return entry;
 });
 const total = +t.toFixed(3);
-// The cover (compositions/cover.html) is the picture for the first sentence
-// ("This is DocAI."): on screen from frame 0 until the second sentence starts.
-const COVER = +(scenes[0].sentences[1].start - 0.1).toFixed(3);
+// Optional layers: the 3D world behind every scene, and the cover (the picture
+// for the first sentence, on screen from frame 0 until the second one starts)
+const HAS_WORLD = fs.existsSync(path.join(ROOT, "compositions/world.html"));
+const HAS_COVER = fs.existsSync(path.join(ROOT, "compositions/cover.html")) && scenes[0].sentences.length > 1;
+const COVER = HAS_COVER ? +(scenes[0].sentences[1].start - 0.1).toFixed(3) : 0;
 
 const hosts = scenes
   .map(
@@ -225,13 +227,13 @@ const html = `<!doctype html>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="${total}"
          data-width="1920" data-height="1080">
-      <div id="world" data-composition-id="world" data-composition-src="compositions/world.html"
+${HAS_WORLD ? `      <div id="world" data-composition-id="world" data-composition-src="compositions/world.html"
            data-start="0" data-duration="${total}" data-track-index="1"
-           data-width="1920" data-height="1080"></div>
+           data-width="1920" data-height="1080"></div>` : ""}
 ${hosts}
-      <div id="cover" data-composition-id="cover" data-composition-src="compositions/cover.html"
+${HAS_COVER ? `      <div id="cover" data-composition-id="cover" data-composition-src="compositions/cover.html"
            data-start="0" data-duration="${COVER}" data-track-index="2"
-           data-width="1920" data-height="1080" style="z-index: 5"></div>
+           data-width="1920" data-height="1080" style="z-index: 5"></div>` : ""}
 ${audio}
     </div>
     <script>
@@ -244,8 +246,10 @@ ${audio}
 
 fs.writeFileSync(path.join(ROOT, "index.html"), html);
 // The world's canvas lasts the whole film
-const worldPath = path.join(ROOT, "compositions/world.html");
-fs.writeFileSync(worldPath, fs.readFileSync(worldPath, "utf8")
-  .replace(/(id="world-canvas"[^>]*data-duration=")[\d.]+/, `$1${total}`));
+if (HAS_WORLD) {
+  const worldPath = path.join(ROOT, "compositions/world.html");
+  fs.writeFileSync(worldPath, fs.readFileSync(worldPath, "utf8")
+    .replace(/(id="world-canvas"[^>]*data-duration=")[\d.]+/, `$1${total}`));
+}
 console.log(`[build] index.html: ${scenes.length} scenes, ${total.toFixed(1)}s`);
 for (const s of scenes) console.log(`  ${s.id.padEnd(9)} ${s.start.toFixed(2)}s  +${s.duration.toFixed(2)}s  (${s.sentences.length} sentences)`);
