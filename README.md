@@ -35,27 +35,26 @@ That's what DocAI is. I built it for myself, but I believe it can help anyone.
 
 Since I started using it, I no longer spend days at the end of every month figuring out where my money went. I never lose track of a payment, and tax time no longer brings surprises.
 
-## How I use it
-
-I sync a Google Drive folder to a folder on my computer. Whenever I buy something and get a receipt, I take a photo or screenshot and save it to Google Drive; when I get a document, I upload it there too. Google Drive syncs it to my computer, and DocAI extracts the data with AI. (You can use a local model; I prefer OpenRouter.)
-
-Then I connect DocAI to Claude Code over MCP and use it to:
-
-- Organize my data
-- Move documents between folders
-- Create reports
-- Build a mini app that quickly matches invoices with bank transactions
-- Link my income to my tax payments, so I never miss one and can predict the next
-
 ## How it works
 
 1. **Connect a folder.** Any folder works, including a Google Drive folder synced to your computer.
 2. **Data is extracted automatically.** Every document in the folder is recognized (invoice, receipt, bank statement…) and its data is pulled into a structured schema: vendor, date, totals, line items, transactions. DocAI ships with schemas for common documents, and you can create your own.
 3. **Work with your data.** Browse & Search in a Drive-like web UI, and match payments to invoices with the built-in reconciliation tool.
 
-## Even better: connect an AI assistant
+## How I use it
 
-DocAI is also an MCP server, so you can connect Claude (or another AI assistant) and simply ask it to:
+I sync a Google Drive folder to a folder on my computer. Whenever I buy something and get a receipt, I take a photo or screenshot and save it to Google Drive; when I get a document, I upload it there too. Google Drive syncs it to my computer, and DocAI extracts the data with AI. (You can use a local model; I prefer OpenRouter.)
+
+Then I connect DocAI to Claude Code over MCP and use it to:
+
+- Organize my data and move documents between folders
+- Create reports
+- Build a mini app that quickly matches invoices with bank transactions
+- Link my income to my tax payments, so I never miss one and can predict the next
+
+## Connect any AI assistant
+
+DocAI is also an MCP server, so I can connect Claude (or another AI assistant) and simply ask it to:
 
 - Sort your documents
 - Arrange them in folders
@@ -72,7 +71,9 @@ A mini app is a custom tool built on top of your data, such as a monthly expense
 - **Cheaper**: no tokens spent each time you run them
 - **Private**: no data is sent to the cloud
 
-Mini apps are a way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
+Mini apps are a way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. 
+
+- Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
 
 ## Your folder stays in sync
 

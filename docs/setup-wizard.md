@@ -77,3 +77,49 @@ If the test fails, the message says why (a wrong key, Ollama not running, and so
 Go to **Settings → Processing**. The **AI model** section shows which AI reads your documents. Click **Change AI provider** to run steps 2 to 4 again.
 
 ![The AI model section in Settings](images/setup-wizard/10-settings.jpg)
+
+## Example: your first document
+
+Here's what happens when you add a document once the setup is done. We'll use a sample invoice from a made-up office supplier. Download it from [samples/sample-invoice.pdf](samples/sample-invoice.pdf) if you want to try it yourself.
+
+![The sample invoice: four line items and a total of $645.03](images/setup-wizard/sample-invoice.jpg)
+
+### 1. Upload it
+
+Click **New → Upload Document**:
+
+![The New menu with Upload Document](images/setup-wizard/11-upload-menu.jpg)
+
+Pick the folder it should go in, then drop the file or click to browse. You can upload several files at once.
+
+![The upload dialog](images/setup-wizard/12-upload-dialog.jpg)
+
+You don't have to use the upload button: copying a file into your documents folder (in Finder, Explorer or Google Drive) works the same way.
+
+### 2. Watch it being read
+
+The document shows up right away as **Pending**:
+
+![The uploaded invoice waiting to be read](images/setup-wizard/13-uploaded-pending.jpg)
+
+A few seconds later the AI has recognized it. The status changes to **Partial**, and the type, date and amount appear while the rest of the data is still being extracted:
+
+![The invoice recognized as an invoice, with its date and amount](images/setup-wizard/14-classified.jpg)
+
+When the status says **Indexed**, everything has been extracted and the document can be searched:
+
+![The invoice fully processed](images/setup-wizard/15-indexed.jpg)
+
+With a cloud provider this took about 15 seconds. A local model takes longer.
+
+### 3. See the result
+
+Double-click the document to open it. On the left is everything DocAI pulled out; on the right, the original file:
+
+![The extracted invoice fields next to the original PDF](images/setup-wizard/16-document-fields.jpg)
+
+The **Invoice Items** tab has one row per line on the invoice, with quantity, unit and price:
+
+![The four extracted line items](images/setup-wizard/17-document-line-items.jpg)
+
+If something was read wrong, click the value and fix it. Your correction is saved with the document.
