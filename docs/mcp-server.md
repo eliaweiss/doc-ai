@@ -69,7 +69,7 @@ Search semantics are described in [Search and querying](search.md).
 
 ### Reconciliation links
 
-Registered by [reconciliation/mcp-tools.ts](../apps/server/src/reconciliation/mcp-tools.ts). They wrap the same handlers as the mini-app SDK's reconciliation methods. A link says that money moved from a source entity (for example a bank-statement transaction) to a target (for example the invoice it paid). Either side can be a header or a line item.
+The code for these tools is in [reconciliation/mcp-tools.ts](../apps/server/src/reconciliation/mcp-tools.ts). They wrap the same handlers as the mini-app SDK's reconciliation methods. A link says that money moved from a source entity (for example a bank-statement transaction) to a target (for example the invoice it paid). Either side can be a header or a line item.
 
 | Tool | Arguments | What it does | Implementation |
 |---|---|---|---|
@@ -80,7 +80,7 @@ Registered by [reconciliation/mcp-tools.ts](../apps/server/src/reconciliation/mc
 
 ### Import from folder
 
-Registered by [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.ts). See [Import from folder](import-from-folder.md) for the full flow.
+The code for these tools is in [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.ts). See [Import from folder](import-from-folder.md) for the full flow.
 
 | Tool | Arguments | What it does | Visible to |
 |---|---|---|---|
@@ -91,7 +91,7 @@ Registered by [photo-sort/mcp-tools.ts](../apps/server/src/photo-sort/mcp-tools.
 
 ### Folders
 
-Registered by [folders/mcp-tools.ts](../apps/server/src/folders/mcp-tools.ts). Changes go through the same HTTP routes as the UI (called in-process with `app.request`), so the folder ↔ directory sync in [folder-routes.ts](../apps/server/src/folder-routes.ts) applies: directories in the watch folder are created, renamed and moved with their folders, and moved documents' files follow them.
+The code for these tools is in [folders/mcp-tools.ts](../apps/server/src/folders/mcp-tools.ts). Changes go through the same HTTP routes as the UI (called in-process with `app.request`), so the folder ↔ directory sync in [folder-routes.ts](../apps/server/src/folder-routes.ts) applies: directories in the watch folder are created, renamed and moved with their folders, and moved documents' files follow them.
 
 | Tool | Arguments | What it does |
 |---|---|---|
@@ -106,15 +106,15 @@ Unlike the UI's folder delete, which also deletes the folder's documents and sub
 
 ### Mini apps
 
-Registered by [mini-apps/mcp-tools.ts](../apps/server/src/mini-apps/mcp-tools.ts). They take the place of zdocs' AI builder: the MCP client writes the code. See [Mini apps](mini-apps.md).
+The code for these tools is in [mini-apps/mcp-tools.ts](../apps/server/src/mini-apps/mcp-tools.ts). You describe the app you want, and the AI assistant connected over MCP writes its code. See [Mini apps](mini-apps.md), and [Mini app examples](mini-app-examples.md) for three apps built this way.
 
 | Tool | Arguments | What it does |
 |---|---|---|
-| `get_mini_app_guide` | | Requirements, the uiTx SDK reference (zdocs' builder docs, with doc-ai notes) and the edit format. Clients should read it before writing code. |
+| `get_mini_app_guide` | | Requirements, the uiTx SDK reference and the edit format. Clients should read it before writing code. |
 | `list_mini_apps` | `includeArchived?` | Every app with its URL in the web UI; archived apps only with `includeArchived`. |
 | `get_mini_app` | `id` | One app with its full code. |
 | `create_mini_app` | `name`, `code`, `description?`, `icon?` (Lucide name), `color?` (hex) | Validates the HTML, inline JS and CSS, then saves. Warns if the SDK script tag is missing. |
-| `update_mini_app` | `id`, `edits?` or `code?`, `name?`, `description?`, `icon?`, `color?`, `archived?` | Applies zdocs' anchor-based edits (`replace`, `insert_before`, `insert_after`, `delete`) or replaces the whole code. If any edit fails or the result doesn't validate, nothing is saved. `archived: true` archives the app, `false` restores it. |
+| `update_mini_app` | `id`, `edits?` or `code?`, `name?`, `description?`, `icon?`, `color?`, `archived?` | Applies anchor-based edits (`replace`, `insert_before`, `insert_after`, `delete`) or replaces the whole code. If any edit fails or the result doesn't validate, nothing is saved. `archived: true` archives the app, `false` restores it. |
 
 There's no delete tool; apps can be deleted through the HTTP API.
 

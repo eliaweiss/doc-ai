@@ -60,7 +60,7 @@ DocAI is also an MCP server, so I can connect Claude (or another AI assistant) a
 - Arrange them in folders
 - Search them ("how much did I spend on software in March?")
 - Reconcile payments with invoices
-- Build custom mini apps
+- Build custom mini apps ([see examples](docs/mini-app-examples.md))
 
 ## Mini apps: no AI needed to run them
 
