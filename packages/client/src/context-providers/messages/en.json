@@ -1713,23 +1713,6 @@
         "watchDirChoose": "Choose…",
         "watchDirNone": "No folder chosen",
         "watchDirPickerUnsupported": "Can't open a folder dialog on this system. Type the folder's path instead.",
-        "provider": "Model provider",
-        "providerGateway": "Vercel AI Gateway (remote)",
-        "providerOllama": "Ollama (local)",
-        "models": "Models",
-        "modelsHint": "The AI Gateway model used for each step.",
-        "modelDefault": "default",
-        "actions": {
-            "CLASSIFY_DOCUMENT": "Classification",
-            "EXTRACT_DOCUMENT": "Extraction"
-        },
-        "gatewayKey": "AI Gateway API key",
-        "gatewayKeySet": "Key ending in {last4} (from {source}). Enter a new key to replace it",
-        "gatewayKeyMissing": "No key set",
-        "gatewayKeyHint": "Stored in the doc-ai data folder and never sent back to the browser.",
-        "ollamaUrl": "Ollama URL",
-        "ollamaModel": "Vision model",
-        "ollamaHint": "One model is used for every step. PDFs are not supported with Ollama yet; images and CSV are.",
         "save": "Save",
         "saving": "Saving…",
         "saved": "Processing settings saved",
@@ -1740,6 +1723,106 @@
         "dataDir": "Data folder",
         "dataDirHint": "Where doc-ai keeps its settings and, for each watch folder, its database and caches. Takes effect after a restart; existing data is not moved.",
         "dataDirEnv": "Set by DOC_AI_DATA_DIR in .env. Change it there.",
-        "dataDirRestart": "Restart doc-ai to switch. Until then it keeps using {current}."
+        "dataDirRestart": "Restart doc-ai to switch. Until then it keeps using {current}.",
+        "aiTitle": "AI model",
+        "aiCurrent": "Documents are read by: {setup}",
+        "aiChange": "Change AI provider",
+        "aiSetupNeeded": "No AI provider is set up yet. Documents wait until one is."
+    },
+    "aiSetup": {
+        "next": "Next",
+        "back": "Back",
+        "cancel": "Cancel",
+        "skip": "Skip for now",
+        "finish": "Finish",
+        "saveAnyway": "Save anyway",
+        "saved": "AI setup saved",
+        "folderPickerUnsupported": "Can't open a folder dialog on this system. Type the folder's path instead.",
+        "folder": {
+            "title": "Welcome to DocAI",
+            "description": "Choose the folder with your documents. DocAI reads every file in it, including subfolders, and keeps its folders in sync.",
+            "choose": "Choose…",
+            "hint": "A Google Drive folder synced to your computer works too. You can change it later in Settings."
+        },
+        "choose": {
+            "title": "How should DocAI read your documents?",
+            "description": "DocAI uses an AI model to recognize documents and pull out their data. Choose where that model runs. You can change this later in Settings.",
+            "localTitle": "On your computer (private)",
+            "localHint": "Nothing leaves your computer. Slower and less precise than the big cloud models, and needs a strong enough machine (16 GB of memory or more).",
+            "cloudTitle": "With an AI provider",
+            "cloudHint": "Fast and accurate. Your documents are sent to the provider you choose, with your own API key."
+        },
+        "providers": {
+            "ollama": {
+                "name": "Ollama",
+                "description": "Use Qwen 3.5 9B on Ollama, if you already run it."
+            },
+            "local": {
+                "name": "Built-in local model",
+                "description": "DocAI downloads Qwen 3.5 9B and runs it for you. No other software needed."
+            },
+            "openai": {
+                "name": "OpenAI",
+                "description": "GPT models, with your OpenAI API key."
+            },
+            "anthropic": {
+                "name": "Claude (Anthropic)",
+                "description": "Claude models, with your Anthropic API key."
+            },
+            "google": {
+                "name": "Gemini (Google)",
+                "description": "Gemini models, with your Google AI Studio key."
+            },
+            "openrouter": {
+                "name": "OpenRouter",
+                "description": "One key for models from many providers."
+            },
+            "gateway": {
+                "name": "Vercel AI Gateway",
+                "description": "One key for models from many providers, through Vercel."
+            }
+        },
+        "local": {
+            "intro": "DocAI will download {model} (about 6.6 GB) and the llama.cpp engine that runs it, and keep them in its data folder.",
+            "unsupported": "There's no prebuilt engine for this computer. Use Ollama instead.",
+            "memoryOk": "This computer has {total} GB of memory, enough for this model.",
+            "lowMemory": "This computer has {total} GB of memory; {min} GB or more is recommended. The model may be very slow or fail to load.",
+            "installed": "Downloaded and ready.",
+            "download": "Download the model",
+            "resume": "Resume download",
+            "downloading": "Downloading the {part}…",
+            "downloadHint": "You can keep using DocAI while it downloads. An interrupted download resumes where it stopped."
+        },
+        "ollama": {
+            "intro": "Point DocAI at your Ollama. It needs a vision model; Qwen 3.5 9B is recommended.",
+            "url": "Ollama URL",
+            "model": "Model",
+            "check": "Check again",
+            "unreachable": "Can't reach Ollama at this address. Start it, or install it from",
+            "ready": "Ollama {version} is running and has {model}.",
+            "missing": "Ollama is running but doesn't have {model} yet (about 6.6 GB).",
+            "pull": "Download {model}"
+        },
+        "key": {
+            "label": "API key",
+            "set": "Key ending in {last4} (from {source}). Enter a new key to replace it",
+            "missing": "Paste your API key",
+            "verify": "Check key",
+            "hint": "Stored only in DocAI's data folder on this computer.",
+            "get": "Get a key",
+            "ok": "Key works: {count} models available."
+        },
+        "models": {
+            "hint": "A fast, cheap model recognizes documents; a stronger one extracts their data. Start typing to see the available models.",
+            "classify": "Recognizing documents",
+            "extract": "Extracting data"
+        },
+        "test": {
+            "title": "Test the setup",
+            "running": "Sending a test request…",
+            "runningLocal": "Starting the local model and sending a test request. The first start can take a minute…",
+            "ok": "It works: {models} answered in {ms} ms.",
+            "retry": "Try again"
+        }
     }
 }

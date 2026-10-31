@@ -13,7 +13,7 @@ Tested end to end on the Gateway provider with a synthetic one-page invoice PDF:
 
 ## Known gaps
 
-**Ollama and PDFs.** zdocs sends PDFs to the model natively, which Gemini accepts and Ollama doesn't. The Ollama path needs a PDF-to-image rasterizer, ideally feeding the per-page extraction path. The Ollama provider itself (through its OpenAI-compatible endpoint) is wired up in [get-model-provider.ts](../packages/srv/src/ai/get-model-provider.ts) but **untested**.
+**Local models are untested end to end.** Ollama and the built-in model (llama-server) are wired up in [get-model-provider.ts](../packages/srv/src/ai/get-model-provider.ts), with PDFs rendered to page images first, but haven't been run against real documents yet. Neither have the OpenAI, Claude, Gemini and OpenRouter providers.
 
 **Retries on key errors.** Without a valid API key, `KEY_ERROR` jobs are retried on every worker tick (every 5 seconds). The retries are cheap but fill the log; they need a backoff ([worker.ts](../apps/server/src/worker.ts), [queue.ts](../packages/db-schema/src/queries/queue.ts)).
 
@@ -39,7 +39,7 @@ Tested end to end on the Gateway provider with a synthetic one-page invoice PDF:
 
 - **Schema registry**: a format for public or downloadable schemas. Not designed yet.
 - **Reconciliation ledger trace**: the workbench is ported; the ledger trace page (`/reconciliation/ledger`) and its saved-session routes aren't.
-- PDF rasterization for Ollama and for Import from folder.
+- PDF rasterization for Import from folder.
 - Backoff for `KEY_ERROR` retries.
 - Handling of in-place edits and deletions.
 - A schema review step so code formulas can be accepted safely.

@@ -8,11 +8,21 @@ import path from "path";
 import { generateText } from "ai";
 import { AI_MODEL_MAP, AI_USAGE_ACTIONS, DEFAULT_AI_PROVIDER, type AiUsageAction } from "@zdocs/types";
 import {
+  DEFAULT_CLOUD_MODELS,
+  KEY_ENV_VARS,
+  KEY_PROVIDERS,
   getConfig,
+  getLocalModelStatus,
   getModelProviderForOrg,
+  isCloudProvider,
+  isKeyProvider,
+  isProviderKind,
+  keySettingName,
   readSettings,
+  stopLocalModel,
   writeSettings,
   type LocalSettings,
+  type StepModels,
 } from "@zdocs/srv";
 import {
   LOCAL_ORG_ID,
@@ -52,9 +62,18 @@ export async function getPublicSettings() {
     dataDirNext: getNextDataDir(),
     dataDirSource: getDataDirSource(),
     provider: config.provider,
-    gatewayApiKeySet: Boolean(config.gatewayApiKey),
-    gatewayApiKeyLast4: config.gatewayApiKey ? config.gatewayApiKey.slice(-4) : null,
-    gatewayApiKeySource: saved.gatewayApiKey ? "settings" : config.gatewayApiKey ? "env" : null,
+    setupNeeded: config.setupNeeded,
+    // Per key provider: whether a key is set, its last 4 characters and where it comes from
+    apiKeys: Object.fromEntries(
+      KEY_PROVIDERS.map((p) => {
+        const key = config.apiKeys[p];
+        const source = saved[keySettingName(p)] ? "settings" : key ? "env" : null;
+        return [p, { set: Boolean(key), last4: key ? key.slice(-4) : null, source, envVar: KEY_ENV_VARS[p] }];
+      })
+    ),
+    cloudModels: config.cloudModels,
+    defaultCloudModels: DEFAULT_CLOUD_MODELS,
+    localModel: getLocalModelStatus(),
     ollamaBaseUrl: config.ollamaBaseUrl,
     ollamaModel: config.ollamaModel,
     models: MODEL_ACTIONS.map((action) => {
@@ -107,10 +126,36 @@ export async function saveSettings(input: Record<string, unknown>): Promise<{ wa
     }
   }
   if (input.provider !== undefined) {
-    if (input.provider !== "gateway" && input.provider !== "ollama") {
-      throw new SettingsError(`Unknown provider: ${String(input.provider)}`);
-    }
+    if (!isProviderKind(input.provider)) throw new SettingsError(`Unknown provider: ${String(input.provider)}`);
     update.provider = input.provider;
+  }
+  if (input.setupDone === true) update.setupDone = true;
+  // { [provider]: { classify, extract } } for the cloud providers
+  if (input.cloudModels !== undefined) {
+    if (typeof input.cloudModels !== "object" || input.cloudModels === null) {
+      throw new SettingsError("cloudModels must be an object of provider → { classify, extract }");
+    }
+    const cloudModels = { ...readSettings().cloudModels };
+    for (const [provider, value] of Object.entries(input.cloudModels)) {
+      if (!isCloudProvider(provider)) throw new SettingsError(`Unknown cloud provider: ${provider}`);
+      const { classify, extract } = (value ?? {}) as Partial<StepModels>;
+      if (typeof classify !== "string" || !classify.trim() || typeof extract !== "string" || !extract.trim()) {
+        throw new SettingsError(`Choose a classification and an extraction model for ${provider}`);
+      }
+      cloudModels[provider] = { classify: classify.trim(), extract: extract.trim() };
+    }
+    update.cloudModels = cloudModels;
+  }
+  // { [provider]: key }. Empty string keeps the current key; null clears the saved one (falls back to .env)
+  if (input.apiKeys !== undefined) {
+    if (typeof input.apiKeys !== "object" || input.apiKeys === null) {
+      throw new SettingsError("apiKeys must be an object of provider → key");
+    }
+    for (const [provider, key] of Object.entries(input.apiKeys)) {
+      if (!isKeyProvider(provider)) throw new SettingsError(`Unknown provider: ${provider}`);
+      if (key === null) update[keySettingName(provider)] = null;
+      else if (typeof key === "string" && key.trim()) update[keySettingName(provider)] = key.trim();
+    }
   }
   // { [action]: "provider/slug" }, saved to the ai_model_settings table
   const models: AiModelSelections = {};
@@ -146,6 +191,8 @@ export async function saveSettings(input: Record<string, unknown>): Promise<{ wa
 
   await setAiModelSelectionsForOrg(LOCAL_ORG_ID, models);
   writeSettings(update);
+  // Free the memory the built-in model holds once another provider is chosen
+  if (before.provider === "local" && getConfig().provider !== "local") stopLocalModel();
   if (dataDirChanged) {
     // Carry the provider, key and watch folder over unless that folder already has its own
     await fs

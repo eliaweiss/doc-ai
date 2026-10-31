@@ -8,33 +8,44 @@ You can also connect your AI coding assistant over MCP to build custom mini apps
 
 ## Why DocAI?
 
-The reason I built it is because I couldn't agree with the fact that I have no idea what's going on with my money.
-I mean, the data is there. I get all the documents. I get all the invoices, all the receipts, all the bank transactions. But each one is a different format, a different source, a different time of the month. Organizing it into Excel is a full-time job, so most of us just drop it.
-And hope that we can trust the institution to manage our money.
-But what happen when you do need to understand your data? Then you need to dig through emails and accounts and UI that was never optimized for you to do it. And you can waste days only to answer a simple question such as:
-- How come I missed paying tax?
-- Or did I got paid for this work?
-- Or what is this expense that I don't remember making?
-But even if you don't need it urgently, you just want to have the ability to:
-- ask questions about your financial data
-- create a report
-- see your status
-- understand your spending
-It is obvious that in the age of AI, it should be pretty simple to do this. But you still need a repository where you can easily:
-- drop all your documents
-- have the AI do the initial extraction of the data
-- and some basic tool to manage it such as browse, search, and reconcile.
-So, this is what DocAI is all about. I built it primarily for myself, but I believe it can help anyone.
+I built DocAI because I couldn't accept having no idea what was going on with my money.
 
-Because since I built it, I no longer need to spend days every end of month to understand what's going on with my money. I never lose tracking a payment. I never get surprised when I pay the tax.
+The data is all there: invoices, receipts, bank transactions. But each one comes in a different format, from a different source, at a different time of the month. Organizing it all in Excel is a full-time job, so most of us give up and hope we can trust the institutions that handle our money.
 
-## How do I use it
-So, how do I use it? I basically connect a Google Drive folder to a local folder and sync them. Then, as I do my things such as buying stuff and getting receipts, I just take a screenshot and save it to Google Drive, or upload a document to the Google Drive if I get a document. The system automatically sync the Google Drive to my local folder and extract the data using AI (You can use local models, but I personally prefer to use OpenRouter), Then I connect the data using an MCP to my cloud code and use the coder to:
-- organize my data
-- move between folder
-- create report
-- and build a mini app that help me quickly match between invoices and bank statement transaction
-- and connect my incoming money with my tax payment to make sure that I didn't miss a payment and predict my next payment
+Then one day you do need to understand your data, and you end up digging through emails, accounts and interfaces that were never built for it. You can waste days answering a simple question like:
+
+- How did I miss a tax payment?
+- Did I get paid for this job?
+- What is this expense I don't remember making?
+
+And even when nothing is urgent, you want to be able to:
+
+- Ask questions about your financial data
+- Create reports
+- See where you stand
+- Understand your spending
+
+In the age of AI this should be simple. But you still need one place where you can:
+
+- Drop all your documents
+- Let AI do the first pass at extracting the data
+- Manage it with basic tools: browse, search and reconcile
+
+That's what DocAI is. I built it for myself, but I believe it can help anyone.
+
+Since I started using it, I no longer spend days at the end of every month figuring out where my money went. I never lose track of a payment, and tax time no longer brings surprises.
+
+## How I use it
+
+I sync a Google Drive folder to a folder on my computer. Whenever I buy something and get a receipt, I take a photo or screenshot and save it to Google Drive; when I get a document, I upload it there too. Google Drive syncs it to my computer, and DocAI extracts the data with AI. (You can use a local model; I prefer OpenRouter.)
+
+Then I connect DocAI to Claude Code over MCP and use it to:
+
+- Organize my data
+- Move documents between folders
+- Create reports
+- Build a mini app that quickly matches invoices with bank transactions
+- Link my income to my tax payments, so I never miss one and can predict the next
 
 ## How it works
 

@@ -9,7 +9,7 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { LOCAL_ORG_ID, closeDatabase, getAiModelSelectionsForOrg, setAiModelSelectionsForOrg } from "@zdocs/db-schema";
-import { getConfig } from "@zdocs/srv";
+import { getConfig, isKeyProvider } from "@zdocs/srv";
 import { initDatabase } from "./db";
 import { startWatcher } from "./watcher";
 import { startWorker } from "./worker";
@@ -30,8 +30,10 @@ async function main() {
   const { workspaceDir } = await initDatabase();
   console.log(`[doc-ai] Database ready at ${workspaceDir}`);
 
-  if (config.provider === "gateway" && !config.gatewayApiKey) {
-    console.warn("[doc-ai] AI_GATEWAY_API_KEY is not set: documents will wait with KEY_ERROR until it is.");
+  if (config.setupNeeded) {
+    console.warn("[doc-ai] No AI provider set up yet: open the UI to run the setup wizard.");
+  } else if (isKeyProvider(config.provider) && !config.apiKeys[config.provider]) {
+    console.warn(`[doc-ai] No API key for ${config.provider}: documents will wait with KEY_ERROR until one is set.`);
   }
 
   let worker = startWorker();
