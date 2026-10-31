@@ -25,8 +25,9 @@ A mini app is a custom tool built on top of your data, such as a monthly expense
 - **Faster**: no waiting for a model to answer
 - **Deterministic**: the same input always gives the same result
 - **Cheaper**: no tokens spent each time you run them
+- **Private**: no data is sent to the cloud
 
-They are also the way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
+Mini apps are a way to stay fully private. Use Claude Code to build a mini app on a few sample documents, then run it on your real documents completely offline, with no data sent to any AI service. Even if privacy isn't your concern, mini apps save tokens on any task you repeat.
 
 DocAI is the open-source, local version of [zdocs](#how-it-reuses-zdocs). The rest of this README covers setup and technical details.
 
