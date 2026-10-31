@@ -1,0 +1,85 @@
+<template>
+  <!--
+    The cover: the first frame of the video and the YouTube thumbnail
+    (scripts/thumbnail.mjs exports it at 1280 x 720). Visible from frame 0,
+    held for the cover's length (COVER in scripts/build.mjs), then it blurs
+    away into the intro. Text on the left, the picture on the right; the
+    bottom-right corner stays empty for YouTube's time badge.
+  -->
+  <div id="cover-root" class="scene" data-composition-id="cover" data-width="1920" data-height="1080">
+    <style>
+      #cover-root { position: absolute; inset: 0; background: var(--ground); }
+      #cv-text { position: absolute; left: 150px; top: 230px; width: 1000px; }
+      #cv-name { font-family: var(--font-display); font-size: 300px; line-height: 0.9; letter-spacing: -0.04em; color: var(--ink); }
+      #cv-badges { display: flex; gap: 22px; margin-top: 64px; }
+      #cv-badges span { padding: 20px 40px; border-radius: 999px; background: var(--paper); font-family: var(--font-ui); font-size: 42px;
+                        font-weight: 700; color: var(--ink); box-shadow: 0 12px 30px rgba(40, 35, 70, 0.16); }
+      #cv-line { margin-top: 54px; font-family: var(--font-display); font-size: 62px; color: var(--ink); letter-spacing: -0.01em; }
+
+      #cv-graph { position: absolute; left: 1000px; top: 120px; width: 900px; height: 760px; overflow: visible; }
+      #cv-folder { position: absolute; left: 1210px; top: 400px; width: 500px; height: 412px;
+                   filter: drop-shadow(0 30px 40px rgba(40, 35, 70, 0.28)); }
+      .cv-doc { position: absolute; border-radius: 12px; background: var(--paper); overflow: hidden;
+                box-shadow: 0 18px 40px rgba(40, 35, 70, 0.22), 0 0 0 1px rgba(27, 26, 31, 0.05); }
+      .cv-doc .hd { height: 15%; }
+      .cv-doc .ln { position: absolute; left: 13%; right: 13%; top: 25%; bottom: 18%;
+                    background: repeating-linear-gradient(to bottom, rgba(27,26,31,0.15) 0 7px, transparent 7px 19px); }
+      .cv-doc .tot { position: absolute; right: 13%; bottom: 8%; width: 32%; height: 8px; border-radius: 3px; background: rgba(27,26,31,0.4); }
+    </style>
+
+    <!-- The money-flow graph, faint, behind the folder -->
+    <svg id="cv-graph" viewBox="0 0 900 760">
+      <g stroke="#c96442" stroke-width="3" opacity="0.32" fill="none">
+        <path d="M90 520 L250 380 L420 450 L560 300 L760 360 L840 180" />
+        <path d="M250 380 L330 170 L560 300 M420 450 L520 620 L760 560 L760 360" />
+        <path d="M90 520 L160 680 L520 620" />
+      </g>
+      <g fill="#c96442" opacity="0.45">
+        <circle cx="90" cy="520" r="11" /><circle cx="250" cy="380" r="13" /><circle cx="420" cy="450" r="10" />
+        <circle cx="560" cy="300" r="14" /><circle cx="760" cy="360" r="11" /><circle cx="840" cy="180" r="12" />
+        <circle cx="330" cy="170" r="10" /><circle cx="520" cy="620" r="12" /><circle cx="760" cy="560" r="10" /><circle cx="160" cy="680" r="9" />
+      </g>
+    </svg>
+
+    <!-- Documents flying into the folder, from the upper right in an arc (far ones smaller and softer) -->
+    <div id="cv-docs">
+      <div class="cv-doc" style="left:1640px; top:70px; width:120px; height:156px; transform:rotate(14deg); opacity:0.55; filter:blur(2px)"><div class="hd" style="background:#2e2d3d"></div><div class="ln"></div></div>
+      <div class="cv-doc" style="left:1470px; top:110px; width:96px; height:190px; transform:rotate(-10deg); opacity:0.7; filter:blur(1.2px)"><div class="ln" style="top:10%"></div><div class="tot"></div></div>
+      <div class="cv-doc" style="left:1735px; top:250px; width:140px; height:182px; transform:rotate(-16deg); opacity:0.8; filter:blur(0.8px)"><div class="hd" style="background:#c96442"></div><div class="ln"></div><div class="tot"></div></div>
+      <div class="cv-doc" style="left:1280px; top:190px; width:150px; height:196px; transform:rotate(9deg)"><div class="hd" style="background:#3f8a63"></div><div class="ln"></div><div class="tot"></div></div>
+      <div class="cv-doc" style="left:1560px; top:250px; width:170px; height:222px; transform:rotate(-6deg)"><div class="hd" style="background:#c96442"></div><div class="ln"></div><div class="tot"></div></div>
+      <div class="cv-doc" style="left:1415px; top:300px; width:120px; height:236px; transform:rotate(4deg)"><div class="ln" style="top:10%"></div><div class="tot"></div></div>
+    </div>
+
+    <svg id="cv-folder" viewBox="0 0 400 330">
+      <path d="M18 60 Q18 34 44 34 L150 34 Q164 34 172 46 L188 66 L356 66 Q382 66 382 92 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#b5532f" />
+      <path d="M18 110 Q18 92 40 92 L360 92 Q382 92 382 114 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#c96442" />
+    </svg>
+
+    <div id="cv-text">
+      <div id="cv-name">DocAI</div>
+      <div id="cv-badges"><span>Local</span><span>Free</span><span>Open source</span></div>
+      <div id="cv-line">Your financial documents, <span class="accent">organized</span></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const id = "cover", end = window.VO.cover;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+
+      // Frame 0 is the thumbnail: everything is already in place. While it
+      // holds, only the documents drift on toward the folder.
+      tl.fromTo("#cv-docs", { x: 0, y: 0 }, { x: -30, y: 40, duration: end - 0.5, ease: "none" }, 0);
+      // Then it gives way to the intro
+      window.DOC.blurOut(tl, $("#cv-text"), end - 0.5, { blur: 14, duration: 0.35, y: -30 });
+      window.DOC.blurOut(tl, $("#cv-docs"), end - 0.45, { blur: 14, duration: 0.35 });
+      window.DOC.blurOut(tl, $("#cv-folder"), end - 0.45, { blur: 14, duration: 0.35, scale: 0.9 });
+      window.DOC.blurOut(tl, $("#cv-graph"), end - 0.45, { blur: 14, duration: 0.35 });
+      tl.to("#cover-root", { backgroundColor: "rgba(204, 201, 219, 0)", duration: 0.3 }, end - 0.35);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

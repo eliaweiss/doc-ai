@@ -13,8 +13,9 @@ const timing = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/voice/timing.j
 const LEAD = 0.6; // picture before the voice starts in each scene
 const TAIL = 0.6; // after the last sentence, before the next scene
 const END_HOLD = 2.4; // the last line stays on screen
+const COVER = 2.4; // the title card before the intro (compositions/cover.html), also the thumbnail
 
-let t = 0;
+let t = COVER;
 const scenes = timing.scenes.map((scene, i) => {
   const last = i === timing.scenes.length - 1;
   const duration = +(LEAD + scene.duration + (last ? END_HOLD : TAIL)).toFixed(3);
@@ -105,7 +106,7 @@ const html = `<!doctype html>
     </style>
     <script>
       // Narration timing, in each scene's own time (seconds from the scene's start).
-      window.VO = ${JSON.stringify({ total, scenes: Object.fromEntries(scenes.map((s) => [s.id, s])) })};
+      window.VO = ${JSON.stringify({ total, cover: COVER, scenes: Object.fromEntries(scenes.map((s) => [s.id, s])) })};
 
       // Helpers the scenes share. Everything here runs before the scenes build
       // their timelines, and is a pure function of the timing above.
@@ -222,6 +223,9 @@ const html = `<!doctype html>
          data-width="1920" data-height="1080">
       <div id="world" data-composition-id="world" data-composition-src="compositions/world.html"
            data-start="0" data-duration="${total}" data-track-index="1"
+           data-width="1920" data-height="1080"></div>
+      <div id="cover" data-composition-id="cover" data-composition-src="compositions/cover.html"
+           data-start="0" data-duration="${COVER}" data-track-index="2"
            data-width="1920" data-height="1080"></div>
 ${hosts}
 ${audio}
