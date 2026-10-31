@@ -14,7 +14,7 @@ A narrated walkthrough of the main README, made with [HyperFrames](https://hyper
 ```bash
 npm run check
 npx hyperframes@0.8.220 snapshot --at 5,30,60
-npx hyperframes@0.8.220 render --output renders/docai-readme.mp4 --quality standard
+npx hyperframes@0.8.220 render --output renders/docai-introduction.mp4 --quality standard
 ```
 
 After changing the narration, run steps 2 and 4 again; the scenes follow the new timing on their own.
