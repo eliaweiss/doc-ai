@@ -13,7 +13,7 @@ const timing = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/voice/timing.j
 const LEAD = 0.6; // picture before the voice starts in each scene
 const TAIL = 0.6; // after the last sentence, before the next scene
 const END_HOLD = 2.4; // the last line stays on screen
-const COVER = 2.4; // the title card before the intro (compositions/cover.html), also the thumbnail
+const COVER = 1.0; // the title card before the intro (compositions/cover.html), also the thumbnail
 
 let t = COVER;
 const scenes = timing.scenes.map((scene, i) => {

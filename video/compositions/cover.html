@@ -1,7 +1,7 @@
 <template>
   <!--
-    The cover: the first frame of the video and the YouTube thumbnail
-    (scripts/thumbnail.mjs exports it at 1280 x 720). Visible from frame 0,
+    The cover: the first frame of the video (the YouTube thumbnail itself is
+    assets/images/thumbnail-chatgpt.png, see scripts/thumbnail.mjs). Visible from frame 0,
     held for the cover's length (COVER in scripts/build.mjs), then it blurs
     away into the intro. Text on the left, the picture on the right; the
     bottom-right corner stays empty for YouTube's time badge.
@@ -70,13 +70,13 @@
 
       // Frame 0 is the thumbnail: everything is already in place. While it
       // holds, only the documents drift on toward the folder.
-      tl.fromTo("#cv-docs", { x: 0, y: 0 }, { x: -30, y: 40, duration: end - 0.5, ease: "none" }, 0);
+      tl.fromTo("#cv-docs", { x: 0, y: 0 }, { x: -20, y: 26, duration: end - 0.28, ease: "none" }, 0);
       // Then it gives way to the intro
-      window.DOC.blurOut(tl, $("#cv-text"), end - 0.5, { blur: 14, duration: 0.35, y: -30 });
-      window.DOC.blurOut(tl, $("#cv-docs"), end - 0.45, { blur: 14, duration: 0.35 });
-      window.DOC.blurOut(tl, $("#cv-folder"), end - 0.45, { blur: 14, duration: 0.35, scale: 0.9 });
-      window.DOC.blurOut(tl, $("#cv-graph"), end - 0.45, { blur: 14, duration: 0.35 });
-      tl.to("#cover-root", { backgroundColor: "rgba(204, 201, 219, 0)", duration: 0.3 }, end - 0.35);
+      window.DOC.blurOut(tl, $("#cv-text"), end - 0.3, { blur: 14, duration: 0.24, y: -30 });
+      window.DOC.blurOut(tl, $("#cv-docs"), end - 0.28, { blur: 14, duration: 0.24 });
+      window.DOC.blurOut(tl, $("#cv-folder"), end - 0.28, { blur: 14, duration: 0.24, scale: 0.9 });
+      window.DOC.blurOut(tl, $("#cv-graph"), end - 0.28, { blur: 14, duration: 0.24 });
+      tl.to("#cover-root", { backgroundColor: "rgba(204, 201, 219, 0)", duration: 0.2 }, end - 0.22);
 
       window.__timelines = window.__timelines || {};
       window.__timelines[id] = tl;
