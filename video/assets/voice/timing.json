@@ -245,6 +245,102 @@
       ]
     },
     {
+      "id": "setup",
+      "title": "Setting up DocAI",
+      "audio": "assets/voice/setup.mp3",
+      "duration": 41.42,
+      "sentences": [
+        {
+          "text": "Setting up DocAI takes a minute.",
+          "start": 0.0,
+          "end": 1.947
+        },
+        {
+          "text": "Install it with two commands, and open it in your browser.",
+          "start": 2.297,
+          "end": 5.634
+        },
+        {
+          "text": "First, choose the folder with your documents.",
+          "start": 5.984,
+          "end": 8.498
+        },
+        {
+          "text": "A Google Drive folder synced to your computer works too.",
+          "start": 8.848,
+          "end": 11.636
+        },
+        {
+          "text": "Then choose where the AI runs.",
+          "start": 11.986,
+          "end": 13.713
+        },
+        {
+          "text": "On your own computer, nothing leaves your machine, but it's slower and needs a strong computer.",
+          "start": 14.063,
+          "end": 19.208
+        },
+        {
+          "text": "With an AI provider you trust, it's fast and accurate, using your own key.",
+          "start": 19.558,
+          "end": 24.016
+        },
+        {
+          "text": "For a local model, DocAI downloads one and runs it for you, or uses Ollama if you already have it.",
+          "start": 24.366,
+          "end": 30.077
+        },
+        {
+          "text": "For a provider, paste your key, and DocAI checks it and loads its models.",
+          "start": 30.427,
+          "end": 34.965
+        },
+        {
+          "text": "A quick test makes sure it all works, and you're done.",
+          "start": 35.315,
+          "end": 38.706
+        },
+        {
+          "text": "You can switch any time in Settings.",
+          "start": 39.056,
+          "end": 41.07
+        }
+      ]
+    },
+    {
+      "id": "firstdoc",
+      "title": "Your first document",
+      "audio": "assets/voice/firstdoc.mp3",
+      "duration": 15.901,
+      "sentences": [
+        {
+          "text": "Now add your first document.",
+          "start": 0.0,
+          "end": 1.475
+        },
+        {
+          "text": "Upload it, or just drop it in your folder.",
+          "start": 1.825,
+          "end": 4.134
+        },
+        {
+          "text": "It shows up right away, and in a few seconds the AI has read it.",
+          "start": 4.484,
+          "end": 8.058
+        },
+        {
+          "text": "Open it to see everything DocAI extracted, next to the original.",
+          "start": 8.408,
+          "end": 12.252
+        },
+        {
+          "text": "Every line item is there too, and you can correct anything.",
+          "start": 12.602,
+          "end": 15.551
+        }
+      ]
+    },
+    {
       "id": "outro",
       "title": "DocAI",
       "audio": "assets/voice/outro.mp3",

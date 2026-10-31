@@ -1,0 +1,266 @@
+<template>
+  <!--
+    "Setting up DocAI" (docs/setup-wizard.md) as an illustrated slideshow:
+    one picture per sentence, the narration as a caption underneath. The
+    wizard's dialogs are real captures (assets/screens/wizard-*.png); the
+    first-run steps (install, choose a folder) are drawn.
+  -->
+  <div id="setup-root" class="scene" data-composition-id="setup" data-width="1920" data-height="1080">
+    <style>
+      #setup-root { position: absolute; inset: 0; }
+      #setup-root .slide { position: absolute; inset: 0; }
+      .su-card { position: absolute; border-radius: 22px; background: var(--paper); overflow: hidden;
+                 box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); font-family: var(--font-ui); }
+      .su-card img { display: block; width: 100%; }
+      .su-hl { position: absolute; border: 5px solid var(--clay); border-radius: 18px; background: rgba(201, 100, 66, 0.07); }
+      .su-point { position: absolute; display: flex; align-items: center; gap: 22px; font-family: var(--font-display); font-size: 52px; }
+      .su-point .ic { width: 84px; height: 84px; border-radius: 22px; background: var(--paper); display: flex; align-items: center; justify-content: center;
+                      box-shadow: 0 12px 28px rgba(40,35,70,0.16); flex: none; }
+      .su-point svg { width: 52px; height: 52px; }
+
+      #su-title { top: 400px; font-size: 140px; }
+
+      /* 1: install */
+      #su-term { left: 270px; top: 220px; width: 760px; height: 400px; background: #1f1e24; }
+      #su-term .bar { height: 54px; background: #2b2a31; display: flex; align-items: center; gap: 12px; padding-left: 24px; }
+      #su-term .bar i { width: 16px; height: 16px; border-radius: 50%; background: #55535c; display: inline-block; }
+      #su-term .body { padding: 44px 50px; font-family: "JetBrains Mono", monospace; font-size: 40px; line-height: 2; color: #ece9f2; }
+      #su-term .p { color: #e0866a; }
+      .su-cmd { white-space: nowrap; }
+      #su-browser { left: 1100px; top: 260px; width: 560px; height: 330px; }
+      #su-browser .bar { height: 64px; background: #e9e6ef; display: flex; align-items: center; gap: 10px; padding: 0 20px; }
+      #su-browser .bar i { width: 14px; height: 14px; border-radius: 50%; background: #b9b5c6; }
+      #su-browser .url { margin-left: 12px; flex: 1; height: 38px; border-radius: 19px; background: #fff; font-size: 24px;
+                         display: flex; align-items: center; padding-left: 20px; color: rgba(27,26,31,0.75); }
+      #su-browser .pg { position: absolute; left: 0; right: 0; top: 64px; bottom: 0; display: flex; align-items: center; justify-content: center;
+                        font-family: var(--font-display); font-size: 80px; }
+
+      /* 2-3: the folder */
+      #su-pick { left: 460px; top: 200px; width: 1000px; height: 420px; padding: 50px 56px; }
+      #su-pick h3 { font-family: var(--font-display); font-weight: 400; font-size: 58px; margin-bottom: 40px; }
+      #su-pick .row { display: flex; gap: 20px; }
+      #su-pick .field { flex: 1; height: 78px; border-radius: 16px; border: 2px solid rgba(27,26,31,0.18); font-family: "JetBrains Mono", monospace;
+                        font-size: 32px; display: flex; align-items: center; padding-left: 26px; color: var(--ink); overflow: hidden; white-space: nowrap; }
+      #su-pick .btn { width: 210px; height: 78px; border-radius: 16px; background: var(--ink); color: #fff; font-size: 30px; font-weight: 700;
+                      display: flex; align-items: center; justify-content: center; }
+      #su-path { display: inline-block; overflow: hidden; vertical-align: bottom; }
+      #su-sync { left: 810px; top: 190px; width: 300px; height: 300px; }
+      #su-sync-label { top: 520px; }
+
+      /* 4-6: where the AI runs */
+      #su-choose { left: 680px; top: 120px; width: 560px; height: 642px; }
+      .su-side { position: absolute; left: 1160px; }
+
+      /* 7: local model or Ollama */
+      #su-local { left: 110px; top: 200px; width: 800px; height: 416px; }
+      #su-ollama { left: 1010px; top: 180px; width: 800px; height: 473px; }
+      .su-tag { position: absolute; top: 110px; }
+      #su-tag-l { left: 110px; } #su-tag-o { left: 1010px; }
+
+      /* 8: a provider key */
+      #su-cloud { left: 510px; top: 130px; width: 900px; height: 562px; }
+      #su-ok { left: 548px; top: 700px; }
+      #su-ok .chip { background: #2f7d4f; color: #fff; }
+
+      /* 9: the test */
+      #su-test { left: 560px; top: 200px; width: 800px; height: 420px; padding: 50px 56px; }
+      #su-test h3 { font-family: var(--font-display); font-weight: 400; font-size: 58px; }
+      #su-spin { left: 600px; top: 340px; width: 70px; height: 70px; }
+      #su-testing { left: 700px; top: 345px; font-size: 34px; color: rgba(27,26,31,0.6); }
+      #su-check { left: 600px; top: 330px; width: 84px; height: 84px; }
+      #su-works { left: 710px; top: 345px; font-size: 36px; font-weight: 700; color: #2f7d4f; }
+      #su-finish { left: 1080px; top: 500px; width: 220px; height: 80px; border-radius: 16px; background: var(--ink); color: #fff;
+                   font-family: var(--font-ui); font-size: 32px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+      /* 10: Settings */
+      #su-settings { left: 560px; top: 220px; width: 800px; height: 380px; padding: 46px 56px; }
+      #su-settings .k { font-size: 26px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(27,26,31,0.45); }
+      #su-settings .v { font-family: var(--font-display); font-size: 54px; margin: 16px 0 40px; }
+      #su-change { display: inline-flex; height: 76px; padding: 0 34px; border-radius: 16px; border: 2px solid rgba(27,26,31,0.2);
+                   align-items: center; font-size: 30px; font-weight: 700; }
+    </style>
+
+    <!-- 0 -->
+    <div id="su-title" class="abs center serif">Setting up <span class="accent">DocAI</span></div>
+
+    <!-- 1: install, then the browser -->
+    <div id="su-1" class="slide">
+      <div id="su-term" class="su-card">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="body">
+          <div id="su-c1" class="su-cmd"><span class="p">$</span> npm install</div>
+          <div id="su-c2" class="su-cmd"><span class="p">$</span> npm start</div>
+        </div>
+      </div>
+      <div id="su-browser" class="su-card">
+        <div class="bar"><i></i><i></i><i></i><div class="url">localhost:4310</div></div>
+        <div class="pg">DocAI</div>
+      </div>
+    </div>
+
+    <!-- 2: choose the folder -->
+    <div id="su-2" class="slide">
+      <div id="su-pick" class="su-card">
+        <h3>Choose the folder with your documents</h3>
+        <div class="row"><div class="field"><span id="su-path">~/Google Drive/Finance</span></div><div class="btn">Choose…</div></div>
+      </div>
+    </div>
+
+    <!-- 3: a synced Google Drive folder -->
+    <div id="su-3" class="slide">
+      <svg id="su-sync" class="abs" viewBox="0 0 300 300">
+        <g id="su-arrows">
+          <path d="M150 18 A132 132 0 0 1 282 150" fill="none" stroke="#1b1a1f" stroke-width="12" stroke-linecap="round" />
+          <path d="M262 132 L282 156 L300 128" fill="none" stroke="#1b1a1f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M150 282 A132 132 0 0 1 18 150" fill="none" stroke="#1b1a1f" stroke-width="12" stroke-linecap="round" />
+          <path d="M38 168 L18 144 L0 172" fill="none" stroke="#1b1a1f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+        <path d="M76 104 Q76 90 90 90 L132 90 L144 104 L212 104 Q226 104 226 118 L226 200 Q226 212 214 212 L88 212 Q76 212 76 200 Z" fill="#c96442" />
+      </svg>
+      <div id="su-sync-label" class="abs center"><span class="chip">Google Drive · synced to your computer</span></div>
+    </div>
+
+    <!-- 4-6: where the AI runs -->
+    <div id="su-4" class="slide">
+      <div id="su-choose" class="su-card">
+        <img src="assets/screens/wizard-choose.png" alt="" />
+        <div id="su-hl-local" class="su-hl" style="left:8px; top:96px; width:544px; height:156px"></div>
+        <div id="su-hl-cloud" class="su-hl" style="left:8px; top:254px; width:544px; height:318px"></div>
+      </div>
+      <div id="su-p1" class="su-point su-side" style="top:200px"><div class="ic"><svg viewBox="0 0 52 52"><path d="M16 24 L16 16 Q16 6 26 6 Q36 6 36 16 L36 24" fill="none" stroke="#1b1a1f" stroke-width="5" stroke-linecap="round" /><rect x="8" y="22" width="36" height="26" rx="6" fill="#c96442" /></svg></div>Nothing leaves your machine</div>
+      <div id="su-p2" class="su-point su-side" style="top:330px"><div class="ic"><svg viewBox="0 0 52 52"><circle cx="26" cy="28" r="18" fill="none" stroke="#1b1a1f" stroke-width="5" /><path d="M26 28 L26 18" stroke="#c96442" stroke-width="5" stroke-linecap="round" /><path d="M20 6 L32 6" stroke="#1b1a1f" stroke-width="5" stroke-linecap="round" /></svg></div>Slower</div>
+      <div id="su-p3" class="su-point su-side" style="top:460px"><div class="ic"><svg viewBox="0 0 52 52"><rect x="10" y="10" width="32" height="32" rx="6" fill="#1b1a1f" /><rect x="18" y="18" width="16" height="16" rx="3" fill="#c96442" /><path d="M16 4 L16 10 M26 4 L26 10 M36 4 L36 10 M16 42 L16 48 M26 42 L26 48 M36 42 L36 48" stroke="#1b1a1f" stroke-width="4" /></svg></div>Needs a strong computer</div>
+      <div id="su-p4" class="su-point su-side" style="top:280px"><div class="ic"><svg viewBox="0 0 52 52"><path d="M30 4 L10 30 L24 30 L20 48 L42 20 L28 20 Z" fill="#c96442" /></svg></div>Fast</div>
+      <div id="su-p5" class="su-point su-side" style="top:410px"><div class="ic"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="20" fill="none" stroke="#1b1a1f" stroke-width="5" /><circle cx="26" cy="26" r="10" fill="none" stroke="#1b1a1f" stroke-width="5" /><circle cx="26" cy="26" r="4" fill="#c96442" /></svg></div>Accurate</div>
+      <div id="su-p6" class="su-point su-side" style="top:540px"><div class="ic"><svg viewBox="0 0 52 52"><circle cx="16" cy="26" r="10" fill="none" stroke="#1b1a1f" stroke-width="5" /><path d="M26 26 L46 26 M38 26 L38 34 M44 26 L44 32" stroke="#c96442" stroke-width="5" stroke-linecap="round" /></svg></div>Your own key</div>
+    </div>
+
+    <!-- 7: a local model, or Ollama -->
+    <div id="su-7" class="slide">
+      <div id="su-tag-l" class="su-tag"><span class="chip">DocAI runs it for you</span></div>
+      <div id="su-tag-o" class="su-tag"><span class="chip">Or use your Ollama</span></div>
+      <div id="su-local" class="su-card"><img src="assets/screens/wizard-local.png" alt="" /></div>
+      <div id="su-ollama" class="su-card"><img src="assets/screens/wizard-ollama.png" alt="" /></div>
+    </div>
+
+    <!-- 8: paste your key -->
+    <div id="su-8" class="slide">
+      <div id="su-cloud" class="su-card">
+        <img src="assets/screens/wizard-cloud.png" alt="" />
+        <div id="su-hl-key" class="su-hl" style="left:30px; top:142px; width:670px; height:66px"></div>
+        <div id="su-hl-models" class="su-hl" style="left:30px; top:372px; width:840px; height:66px"></div>
+      </div>
+      <div id="su-ok" class="abs"><span class="chip">✓ Key works · models loaded</span></div>
+    </div>
+
+    <!-- 9: the test -->
+    <div id="su-9" class="slide">
+      <div id="su-test" class="su-card"><h3>Test the setup</h3></div>
+      <svg id="su-spin" class="abs" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" fill="none" stroke="rgba(27,26,31,0.15)" stroke-width="8" />
+        <path d="M35 7 A28 28 0 0 1 63 35" fill="none" stroke="#1b1a1f" stroke-width="8" stroke-linecap="round" /></svg>
+      <div id="su-testing" class="abs sans">Sending a test request…</div>
+      <svg id="su-check" class="abs" viewBox="0 0 84 84"><circle cx="42" cy="42" r="40" fill="#2f7d4f" />
+        <path d="M24 43 L37 56 L61 30" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <div id="su-works" class="abs sans">It works</div>
+      <div id="su-finish" class="abs">Finish</div>
+    </div>
+
+    <!-- 10: Settings -->
+    <div id="su-10" class="slide">
+      <div id="su-settings" class="su-card">
+        <div class="k">Settings · AI model</div>
+        <div class="v">Documents are read by: Claude</div>
+        <div id="su-change">Change AI provider</div>
+      </div>
+    </div>
+
+    <div id="su-caps" class="caps"></div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "setup", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      const when = (i, w) => D.when(id, i, w);
+      const fadeIn = (el, t, o) => D.blurIn(tl, typeof el === "string" ? $(el) : el, t, o);
+      const fadeOut = (el, t, o) => D.blurOut(tl, typeof el === "string" ? $(el) : el, t, o);
+      const pop = (sel, t, o = {}) => tl.fromTo(sel, { opacity: 0, scale: o.from ?? 1.08 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, t);
+
+      D.captions(tl, $("#su-caps"), id, 1);
+
+      // ---- 0: "Setting up DocAI takes a minute." ----
+      fadeIn("#su-title", at(0) - 0.2, { blur: 14, duration: 0.7 });
+      D.speak(tl, $("#su-title"), id, 0);
+      fadeOut("#su-title", at(1) - 0.3, { scale: 1.06 });
+
+      // ---- 1: "Install it with two commands, and open it in your browser." ----
+      fadeIn("#su-term", at(1) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      [1, 2].forEach((k) => tl.fromTo("#su-c" + k, { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+        { opacity: 1, clipPath: "inset(0 0% 0 0)", duration: 0.5, ease: "steps(14)" }, when(1, "two") - 0.3 + (k - 1) * 0.7));
+      fadeIn("#su-browser", when(1, "browser") - 0.3, { x: 60, duration: 0.6, blur: 6 });
+      fadeOut("#su-1", at(2) - 0.3, { y: -30 });
+
+      // ---- 2: "First, choose the folder with your documents." ----
+      fadeIn("#su-pick", at(2) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      tl.fromTo("#su-path", { maxWidth: 0 }, { maxWidth: 720, duration: 1.0, ease: "steps(22)" }, when(2, "folder"));
+      fadeOut("#su-2", at(3) - 0.3, { y: -30 });
+
+      // ---- 3: "A Google Drive folder synced to your computer works too." ----
+      fadeIn("#su-sync", at(3) - 0.1, { scale: 0.8, duration: 0.6 });
+      tl.fromTo("#su-arrows", { rotation: 0, svgOrigin: "150 150" }, { rotation: 180, svgOrigin: "150 150", duration: to(3) - at(3) + 0.3, ease: "power1.inOut" }, at(3));
+      fadeIn("#su-sync-label", when(3, "synced") - 0.1, { y: 20, duration: 0.45 });
+      fadeOut("#su-3", at(4) - 0.3, { y: -30 });
+
+      // ---- 4: "Then choose where the AI runs." The real choice screen ----
+      fadeIn("#su-choose", at(4) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      // ---- 5: "On your own computer, nothing leaves your machine, but it's slower and needs a strong computer." ----
+      tl.fromTo("#su-choose", { x: 0 }, { x: -420, duration: 0.7, ease: "power3.inOut", immediateRender: false }, at(5) - 0.3);
+      pop("#su-hl-local", at(5) + 0.1);
+      [["nothing", 1], ["slower", 2], ["strong", 3]].forEach(([w, k]) => fadeIn("#su-p" + k, when(5, w) - 0.15, { x: 30, duration: 0.45 }));
+      [1, 2, 3].forEach((k) => fadeOut("#su-p" + k, at(6) - 0.3 + k * 0.03));
+      tl.to("#su-hl-local", { opacity: 0, duration: 0.2 }, at(6) - 0.3);
+      // ---- 6: "With an AI provider you trust, it's fast and accurate, using your own key." ----
+      pop("#su-hl-cloud", at(6) + 0.1);
+      [["fast", 4], ["accurate", 5], ["own", 6]].forEach(([w, k]) => fadeIn("#su-p" + k, when(6, w) - 0.15, { x: 30, duration: 0.45 }));
+      fadeOut("#su-4", at(7) - 0.3, { y: -30 });
+
+      // ---- 7: "For a local model, DocAI downloads one and runs it for you, or uses Ollama if you already have it." ----
+      fadeIn("#su-local", when(7, "downloads") - 0.3, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#su-tag-l", when(7, "runs") - 0.1, { y: 16, duration: 0.45 });
+      fadeIn("#su-ollama", when(7, "ollama") - 0.3, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#su-tag-o", when(7, "ollama"), { y: 16, duration: 0.45 });
+      fadeOut("#su-7", at(8) - 0.3, { y: -30 });
+
+      // ---- 8: "For a provider, paste your key, and DocAI checks it and loads its models." ----
+      fadeIn("#su-cloud", at(8) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      pop("#su-hl-key", when(8, "paste") - 0.1);
+      fadeIn("#su-ok", when(8, "checks") - 0.1, { scale: 0.8, duration: 0.45, ease: "back.out(1.8)" });
+      tl.to("#su-hl-key", { opacity: 0, duration: 0.2 }, when(8, "loads") - 0.2);
+      pop("#su-hl-models", when(8, "models") - 0.15);
+      fadeOut("#su-8", at(9) - 0.3, { y: -30 });
+
+      // ---- 9: "A quick test makes sure it all works, and you're done." ----
+      fadeIn("#su-test", at(9) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      fadeIn("#su-spin", at(9) + 0.3, { duration: 0.3 });
+      fadeIn("#su-testing", at(9) + 0.3, { duration: 0.3 });
+      tl.fromTo("#su-spin", { rotation: 0, transformOrigin: "50% 50%" }, { rotation: 720, duration: 1.4, ease: "none", immediateRender: false }, at(9) + 0.3);
+      const works = when(9, "works");
+      tl.to(["#su-spin", "#su-testing"], { opacity: 0, duration: 0.15 }, works - 0.25);
+      tl.fromTo("#su-check", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, works - 0.15);
+      fadeIn("#su-works", works - 0.1, { x: -16, duration: 0.4 });
+      fadeIn("#su-finish", when(9, "done") - 0.35, { y: 20, duration: 0.4 });
+      tl.fromTo("#su-finish", { scale: 1 }, { scale: 0.92, duration: 0.1, yoyo: true, repeat: 1, ease: "power1.inOut", immediateRender: false }, when(9, "done"));
+      fadeOut("#su-9", at(10) - 0.3, { y: -30 });
+
+      // ---- 10: "You can switch any time in Settings." ----
+      fadeIn("#su-settings", at(10) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      tl.fromTo("#su-change", { borderColor: "rgba(27,26,31,0.2)", color: "#1b1a1f" },
+        { borderColor: "#c96442", color: "#9b3d20", duration: 0.3 }, when(10, "switch"));
+      fadeOut("#su-10", end - 0.45, { y: -30 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>

@@ -4,6 +4,7 @@
 //   DOCAI_URL   the DocAI with real data (default http://localhost:4310)
 //   SAMPLE_URL  a DocAI holding the sample invoice from docs/samples (default http://localhost:4320)
 //   SAMPLE_DOC  that invoice's document id
+//   WIZARD_URL  a DocAI build with the AI setup wizard (default http://localhost:4321)
 //
 // Usage: node scripts/capture.mjs [name ...]   (no names: capture all)
 import { execSync } from "child_process";
@@ -34,7 +35,32 @@ async function clickInApp(page, text) {
   throw new Error(`No "${text}" button in the app`);
 }
 
+/**
+ * The AI setup wizard, opened from Settings → Processing → Change AI provider
+ * (WIZARD_URL: a DocAI build that has it). Captures only the dialog. Nothing
+ * is saved: the dialog is closed without finishing.
+ */
+const WIZARD = process.env.WIZARD_URL || "http://localhost:4321";
+async function wizard(page, provider) {
+  await page.locator("::-p-text(Processing)").click();
+  await page.locator('[data-testid="ai-setup-open-btn"]').click();
+  await wait(1200);
+  await page.locator(`[data-testid="ai-setup-choice-${provider}"]`).click();
+  await page.mouse.move(4, 4);
+  await wait(500);
+}
+async function wizardStep(page, provider) {
+  await wizard(page, provider);
+  await page.locator('[data-testid="ai-setup-next"]').click();
+  await page.mouse.move(4, 4);
+  await wait(2500); // the Ollama check, the local model status
+}
+
 const SHOTS = {
+  "wizard-choose": { url: `${WIZARD}/settings`, then: (page) => wizard(page, "local"), element: '[data-testid="ai-setup-wizard"]' },
+  "wizard-local": { url: `${WIZARD}/settings`, then: (page) => wizardStep(page, "local"), element: '[data-testid="ai-setup-wizard"]' },
+  "wizard-ollama": { url: `${WIZARD}/settings`, then: (page) => wizardStep(page, "ollama"), element: '[data-testid="ai-setup-wizard"]' },
+  "wizard-cloud": { url: `${WIZARD}/settings`, then: (page) => wizardStep(page, "anthropic"), element: '[data-testid="ai-setup-wizard"]' },
   // Files & Folders, the Lunch folder of the real drive
   drive: { url: `${DOCAI}/folder/27v48w3c8e78dgao5et6d` },
   apps: { url: `${DOCAI}/apps` },
@@ -72,7 +98,8 @@ try {
     await wait(shot.settle ?? 3000);
     if (shot.then) await shot.then(page);
     const file = path.join(OUT, `${name}.png`);
-    await page.screenshot({ path: file });
+    if (shot.element) await (await page.$(shot.element)).screenshot({ path: file });
+    else await page.screenshot({ path: file });
     console.log(`[capture] ${name} -> ${path.relative(ROOT, file)}`);
     await page.close();
   }

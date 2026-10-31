@@ -1,5 +1,5 @@
 {
-  "_comment": "Narration for the README walkthrough, one sentence per entry (Pocket TTS reads single sentences best). 'say' is what the voice reads when it differs from the on-screen text. Scenes follow README.md up to the Mini apps section; the outro (closing line) always stays last.",
+  "_comment": "Narration for the README walkthrough, one sentence per entry (Pocket TTS reads single sentences best). 'say' is what the voice reads when it differs from the on-screen text. Scenes follow README.md up to the Mini apps section, then docs/setup-wizard.md; the outro (closing line) always stays last.",
   "pauseAfterSentence": 0.35,
   "pauseAfterScene": 0.8,
   "scenes": [
@@ -76,6 +76,34 @@
         { "text": "After that, it runs on its own, without calling an AI model." },
         { "text": "That makes it faster, deterministic, cheaper, and private." },
         { "text": "You can even build a mini app on a few sample documents, then run it on your real ones completely offline." }
+      ]
+    },
+    {
+      "id": "setup",
+      "title": "Setting up DocAI",
+      "sentences": [
+        { "text": "Setting up DocAI takes a minute." },
+        { "text": "Install it with two commands, and open it in your browser." },
+        { "text": "First, choose the folder with your documents." },
+        { "text": "A Google Drive folder synced to your computer works too." },
+        { "text": "Then choose where the AI runs." },
+        { "text": "On your own computer, nothing leaves your machine, but it's slower and needs a strong computer." },
+        { "text": "With an AI provider you trust, it's fast and accurate, using your own key." },
+        { "text": "For a local model, DocAI downloads one and runs it for you, or uses Ollama if you already have it." },
+        { "text": "For a provider, paste your key, and DocAI checks it and loads its models." },
+        { "text": "A quick test makes sure it all works, and you're done." },
+        { "text": "You can switch any time in Settings." }
+      ]
+    },
+    {
+      "id": "firstdoc",
+      "title": "Your first document",
+      "sentences": [
+        { "text": "Now add your first document." },
+        { "text": "Upload it, or just drop it in your folder." },
+        { "text": "It shows up right away, and in a few seconds the AI has read it." },
+        { "text": "Open it to see everything DocAI extracted, next to the original." },
+        { "text": "Every line item is there too, and you can correct anything." }
       ]
     },
     {

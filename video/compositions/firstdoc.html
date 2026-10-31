@@ -1,0 +1,157 @@
+<template>
+  <!--
+    "Your first document" (the example at the end of docs/setup-wizard.md):
+    the sample invoice from docs/samples is added, read and opened. One
+    picture per sentence, the narration as a caption underneath.
+  -->
+  <div id="firstdoc-root" class="scene" data-composition-id="firstdoc" data-width="1920" data-height="1080">
+    <style>
+      #firstdoc-root { position: absolute; inset: 0; }
+      #firstdoc-root .slide { position: absolute; inset: 0; }
+      .fd-card { position: absolute; border-radius: 22px; background: var(--paper); overflow: hidden;
+                 box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); font-family: var(--font-ui); }
+      .fd-card img { display: block; width: 100%; }
+
+      #fd-inv { left: 760px; top: 120px; width: 400px; height: 517px; }
+
+      /* 1: upload, or drop in the folder */
+      #fd-upload { left: 300px; top: 220px; width: 600px; height: 400px; padding: 34px 40px; }
+      #fd-upload h4 { font-size: 32px; font-weight: 700; margin-bottom: 26px; }
+      #fd-upload .zone { height: 250px; border: 4px dashed rgba(27,26,31,0.25); border-radius: 20px; display: flex; align-items: center;
+                         justify-content: center; font-size: 30px; font-weight: 600; color: rgba(27,26,31,0.55); }
+      #fd-folder { left: 1160px; top: 260px; width: 380px; height: 314px; }
+      #fd-or { position: absolute; left: 0; right: 0; top: 380px; text-align: center; font-family: var(--font-display); font-size: 56px; color: rgba(27,26,31,0.5); }
+      .fd-fly { position: absolute; width: 120px; height: 155px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 24px rgba(40,35,70,0.2); }
+      .fd-fly img { width: 100%; display: block; }
+
+      /* 2: the row as it is read */
+      #fd-list { left: 210px; top: 260px; width: 1500px; height: 300px; }
+      #fd-list .hd, #fd-list .row { display: grid; grid-template-columns: 2.6fr 1fr 1fr 1fr 0.9fr; align-items: center; padding: 0 40px; }
+      #fd-list .hd { height: 74px; background: #eeebf3; font-size: 24px; font-weight: 700; color: rgba(27,26,31,0.5); }
+      #fd-list .row { height: 110px; font-size: 32px; border-bottom: 1px solid rgba(27,26,31,0.08); }
+      #fd-list .r { text-align: right; }
+      .fd-cell { position: relative; height: 44px; }
+      .fd-cell span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+      .fd-cell.r span { left: auto; right: 0; }
+      .fd-st { padding: 6px 18px; border-radius: 999px; font-size: 26px; font-weight: 700; }
+      #fd-s1 { background: #e7e4ec; color: rgba(27,26,31,0.6); }
+      #fd-s2 { background: #f6e3c8; color: #8a5a12; }
+      #fd-s3 { background: #d6eedd; color: #2f7d4f; }
+      #fd-n2, #fd-d2, #fd-t2, #fd-s2, #fd-s3, #fd-a2 { opacity: 0; }
+
+      /* 3: everything it read, next to the original */
+      #fd-orig { left: 250px; top: 150px; width: 520px; height: 672px; }
+      #fd-fields { left: 900px; top: 150px; width: 760px; height: 640px; }
+      #fd-fields .crop { position: absolute; left: 0; top: -120px; width: 1550px; }
+
+      /* 4: the line items */
+      #fd-items { left: 360px; top: 160px; width: 1200px; height: 470px; }
+      #fd-items .crop { position: absolute; left: 0; top: -420px; width: 2470px; }
+      #fd-edit { left: 1160px; top: 311px; width: 150px; height: 66px; border: 4px solid var(--clay); border-radius: 12px; background: #fff;
+                 font-family: var(--font-ui); font-size: 32px; display: flex; align-items: center; justify-content: flex-end; padding-right: 14px; }
+      #fd-caret { width: 3px; height: 36px; background: var(--ink); margin-left: 4px; }
+    </style>
+
+    <!-- 0 -->
+    <div id="fd-inv" class="fd-card"><img src="assets/images/sample-invoice.png" alt="" /></div>
+
+    <!-- 1 -->
+    <div id="fd-1" class="slide">
+      <div id="fd-upload" class="fd-card"><h4>Upload Document</h4><div class="zone">Drop your document here</div></div>
+      <div id="fd-or">or</div>
+      <svg id="fd-folder" class="abs" viewBox="0 0 400 330">
+        <path d="M18 60 Q18 34 44 34 L150 34 Q164 34 172 46 L188 66 L356 66 Q382 66 382 92 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#b5532f" />
+        <path d="M18 110 Q18 92 40 92 L360 92 Q382 92 382 114 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#c96442" />
+        <text x="200" y="230" text-anchor="middle" font-family="EB Garamond, serif" font-size="58" fill="#fff">Your folder</text>
+      </svg>
+      <div id="fd-fly-a" class="fd-fly"><img src="assets/images/sample-invoice.png" alt="" /></div>
+      <div id="fd-fly-b" class="fd-fly"><img src="assets/images/sample-invoice.png" alt="" /></div>
+    </div>
+
+    <!-- 2 -->
+    <div id="fd-2" class="slide">
+      <div id="fd-list" class="fd-card">
+        <div class="hd"><span>Name</span><span>Date</span><span>Type</span><span>Status</span><span class="r">Amount</span></div>
+        <div class="row">
+          <div class="fd-cell"><span id="fd-n1">brightline-invoice.pdf</span><span id="fd-n2"><b>Brightline Office Supply Invoice</b></span></div>
+          <div class="fd-cell"><span id="fd-d1">2026-10-31</span><span id="fd-d2">2026-10-14</span></div>
+          <div class="fd-cell"><span id="fd-t1">Unknown</span><span id="fd-t2"><b>INVOICE</b></span></div>
+          <div class="fd-cell"><span id="fd-s1" class="fd-st">Pending</span><span id="fd-s2" class="fd-st">Partial</span><span id="fd-s3" class="fd-st">Indexed</span></div>
+          <div class="fd-cell r"><span id="fd-a1">—</span><span id="fd-a2"><b>$645.03</b></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div id="fd-3" class="slide">
+      <div id="fd-orig" class="fd-card"><img src="assets/images/sample-invoice.png" alt="" /></div>
+      <div id="fd-fields" class="fd-card"><img class="crop" src="assets/screens/sample-fields.png" alt="" /></div>
+    </div>
+
+    <!-- 4 -->
+    <div id="fd-4" class="slide">
+      <div id="fd-items" class="fd-card"><img class="crop" src="assets/screens/sample-items.png" alt="" /></div>
+      <div id="fd-edit" class="abs">89.00<i id="fd-caret"></i></div>
+    </div>
+
+    <div id="fd-caps" class="caps"></div>
+  </div>
+  <script>
+    (function () {
+      const D = window.DOC, id = "firstdoc", end = window.VO.scenes[id].duration;
+      const $ = (s) => document.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      const when = (i, w) => D.when(id, i, w);
+      const fadeIn = (el, t, o) => D.blurIn(tl, typeof el === "string" ? $(el) : el, t, o);
+      const fadeOut = (el, t, o) => D.blurOut(tl, typeof el === "string" ? $(el) : el, t, o);
+      /** Swap one cell's text for another */
+      const swap = (a, b, t) => {
+        tl.to(a, { opacity: 0, filter: "blur(6px)", duration: 0.15 }, t);
+        tl.fromTo(b, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, immediateRender: false }, t + 0.1);
+      };
+
+      D.captions(tl, $("#fd-caps"), id, 0);
+
+      // ---- 0: "Now add your first document." ----
+      fadeIn("#fd-inv", at(0) - 0.1, { y: 80, duration: 0.8, blur: 6 });
+
+      // ---- 1: "Upload it, or just drop it in your folder." ----
+      fadeOut("#fd-inv", at(1) - 0.3, { scale: 0.8, duration: 0.3 });
+      fadeIn("#fd-upload", at(1) - 0.2, { x: -40, duration: 0.6, blur: 6 });
+      fadeIn("#fd-or", when(1, "or") - 0.1, { duration: 0.35 });
+      fadeIn("#fd-folder", when(1, "drop") - 0.2, { x: 40, duration: 0.6, blur: 6 });
+      // A copy of the invoice drops into each
+      tl.fromTo("#fd-fly-a", { opacity: 0, x: 540, y: 60, rotation: -8 }, { opacity: 1, x: 540, y: 330, rotation: 0, duration: 0.6, ease: "power3.in" }, when(1, "upload"));
+      tl.to("#fd-fly-a", { opacity: 0, duration: 0.15 }, when(1, "upload") + 0.6);
+      tl.fromTo("#fd-fly-b", { opacity: 0, x: 1290, y: 40, rotation: 8 }, { opacity: 1, x: 1290, y: 330, rotation: 0, duration: 0.6, ease: "power3.in" }, when(1, "folder") - 0.1);
+      tl.to("#fd-fly-b", { opacity: 0, duration: 0.15 }, when(1, "folder") + 0.5);
+      fadeOut("#fd-1", at(2) - 0.3, { y: -30 });
+
+      // ---- 2: "It shows up right away, and in a few seconds the AI has read it." ----
+      fadeIn("#fd-list", at(2) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      const partial = when(2, "few"), read = when(2, "read");
+      swap("#fd-s1", "#fd-s2", partial - 0.2);
+      swap("#fd-t1", "#fd-t2", partial - 0.1);
+      swap("#fd-d1", "#fd-d2", partial);
+      swap("#fd-a1", "#fd-a2", partial + 0.1);
+      swap("#fd-n1", "#fd-n2", read - 0.3);
+      swap("#fd-s2", "#fd-s3", read - 0.1);
+      fadeOut("#fd-2", at(3) - 0.3, { y: -30 });
+
+      // ---- 3: "Open it to see everything DocAI extracted, next to the original." ----
+      fadeIn("#fd-fields", at(3) - 0.1, { x: 60, duration: 0.7, blur: 6 });
+      fadeIn("#fd-orig", when(3, "original") - 0.3, { x: -60, duration: 0.7, blur: 6 });
+      fadeOut("#fd-3", at(4) - 0.3, { y: -30 });
+
+      // ---- 4: "Every line item is there too, and you can correct anything." ----
+      fadeIn("#fd-items", at(4) - 0.1, { y: 60, duration: 0.7, blur: 6 });
+      tl.fromTo("#fd-edit", { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, when(4, "correct") - 0.15);
+      tl.fromTo("#fd-caret", { opacity: 1 }, { opacity: 0, duration: 0.01, repeat: 5, yoyo: true, repeatDelay: 0.25, immediateRender: false }, when(4, "correct") + 0.2);
+      fadeOut("#fd-4", end - 0.45, { y: -30 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+    })();
+  </script>
+</template>
