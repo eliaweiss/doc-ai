@@ -4,7 +4,7 @@ Think of DocAI as a free, local, open-source Google Drive optimized for financia
 
 DocAI uses local AI to extract the data from your documents, organize it in a unified database, and connect the data points into a complete graph of your money flow. 
 
-You can also connect your AI coding assistant over MCP to build custom mini apps and manage your data however your workflow requires.
+You can also connect your AI assistant over MCP to build custom mini apps and manage your data however your workflow requires.
 
 ## Why DocAI?
 
@@ -43,9 +43,9 @@ Since I started using it, I no longer spend days at the end of every month figur
 
 ## How I use it
 
-I sync a Google Drive folder to a folder on my computer. Whenever I buy something and get a receipt, I take a photo or screenshot and save it to Google Drive; when I get a document, I upload it there too. Google Drive syncs it to my computer, and DocAI extracts the data with AI. (You can use a local model; I prefer OpenRouter.)
+Here's what this looks like in my day-to-day. My DocAI folder is a Google Drive folder synced to my computer. Whenever I buy something and get a receipt, I take a photo or screenshot and save it to Google Drive; any other document goes there too. Once it syncs, DocAI picks it up and extracts the data (I use OpenRouter for the AI).
 
-Then I connect DocAI to Claude Code over MCP and use it to:
+Then I connect Claude Code to DocAI and use it to:
 
 - Organize my data and move documents between folders
 - Create reports
