@@ -56,6 +56,17 @@
       .intro-row.h { font-weight: 700; color: rgba(27,26,31,0.45); font-size: 21px; }
       .intro-row .r { text-align: right; }
       #intro-row-new { background: rgba(201, 100, 66, 0.12); color: var(--ink); font-weight: 700; }
+
+      /* 4, after "connects": the invoice linked to the payment that paid it */
+      #intro-flow { left: 0; right: 0; top: 330px; display: flex; justify-content: center; align-items: center; gap: 0; }
+      .intro-node { width: 380px; padding: 30px 34px; border-radius: 24px; background: var(--paper); font-family: var(--font-ui);
+                    box-shadow: 0 24px 56px rgba(40, 35, 70, 0.24); }
+      .intro-node .k { font-size: 24px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(27,26,31,0.5); }
+      .intro-node .v { font-size: 34px; font-weight: 700; margin-top: 10px; white-space: nowrap; }
+      .intro-node .a { font-family: var(--font-display); font-size: 64px; margin-top: 8px; }
+      .intro-link { width: 150px; height: 40px; overflow: visible; }
+      #intro-ok { padding: 22px 34px; border-radius: 999px; background: #2f7d4f; color: #fff; font-family: var(--font-ui);
+                  font-size: 34px; font-weight: 700; white-space: nowrap; box-shadow: 0 16px 36px rgba(40, 35, 70, 0.24); }
     </style>
 
     <!-- 1-2: the Drive window (3 puts it inside the laptop) -->
@@ -106,6 +117,14 @@
       <div id="intro-row-new" class="intro-row"><span>Brightline Office</span><span>Oct 14</span><span class="r">$645.03</span></div>
       <div class="intro-row"><span>Smart Home</span><span>Oct 24</span><span class="r">R$ 16.00</span></div>
       <div class="intro-row"><span>Bank statement</span><span>Oct 31</span><span class="r">—</span></div>
+    </div>
+
+    <div id="intro-flow" class="abs">
+      <div id="intro-n1" class="intro-node"><div class="k">Invoice</div><div class="v">Brightline Office</div><div class="a">$645.03</div></div>
+      <svg id="intro-l1" class="intro-link" viewBox="0 0 150 40"><path d="M10 20 L140 20" stroke="#c96442" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 14" /></svg>
+      <div id="intro-ok">✓ Reconciled</div>
+      <svg id="intro-l2" class="intro-link" viewBox="0 0 150 40"><path d="M10 20 L140 20" stroke="#c96442" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 14" /></svg>
+      <div id="intro-n2" class="intro-node"><div class="k">Bank payment</div><div class="v">PAY BRIGHTLINE</div><div class="a">− $645.03</div></div>
     </div>
 
     <div id="intro-caps" class="caps"></div>
@@ -194,6 +213,13 @@
       // "...and connects it": the pieces step back for the graph (world.html)
       const cn = when(4, "connects");
       ["#intro-src", "#intro-ai", "#intro-db"].forEach((s, k) => fadeOut(s, cn + 0.25 + k * 0.05, { scale: 0.92, blur: 14, duration: 0.45 }));
+      // "...into a complete picture of your money flow": the invoice and the payment that paid it, linked
+      fadeIn("#intro-n1", cn + 0.6, { x: -60, duration: 0.6, blur: 8 });
+      fadeIn("#intro-n2", cn + 0.85, { x: 60, duration: 0.6, blur: 8 });
+      [1, 2].forEach((k) => tl.fromTo("#intro-l" + k, { opacity: 0, scaleX: 0, transformOrigin: k === 1 ? "0% 50%" : "100% 50%" },
+        { opacity: 1, scaleX: 1, duration: 0.45, ease: "power2.inOut" }, when(4, "picture") - 0.1));
+      tl.fromTo("#intro-ok", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, when(4, "money") - 0.1);
+      fadeOut("#intro-flow", end - 0.45, { scale: 1.06, blur: 14 });
 
       window.__timelines = window.__timelines || {};
       window.__timelines[id] = tl;
