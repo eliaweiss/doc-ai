@@ -73,6 +73,7 @@
       chaosOut: at("why", 8),
       gatherIn: at("why", 8) + 1.2,       // "one place to drop all your documents"
       gatherOut: S.how.start + 0.2,
+      dimWhyIn: at("why", 1) - 0.4, dimWhyOut: S.how.start - 0.2,
       dimHowIn: S.how.start + 0.8, dimHowOut: S.use.start,
       dimAppsIn: S.miniapps.start + 0.8, dimAppsOut: at("miniapps", 6) - 0.6,
       finale: at("miniapps", 6) - 0.4,    // "Your money, finally in one place."
@@ -189,7 +190,8 @@
       const graph = Math.max(window_(t, T.graphIn, T.graphOut, 1.6), rise(t, T.finale, 2.2));
       const chaos = window_(t, T.chaosIn, T.chaosOut, 2.0);
       const gather = window_(t, T.gatherIn, T.gatherOut, 1.8);
-      const dim = 1 - 0.55 * Math.max(window_(t, T.dimHowIn, T.dimHowOut, 1.0), window_(t, T.dimAppsIn, T.dimAppsOut, 1.0));
+      const dim = (1 - 0.55 * Math.max(window_(t, T.dimHowIn, T.dimHowOut, 1.0), window_(t, T.dimAppsIn, T.dimAppsOut, 1.0)))
+        * (1 - 0.8 * window_(t, T.dimWhyIn, T.dimWhyOut, 0.8)); // the Why slides carry their own pictures
       // Fade the world in at the very start
       const intro = rise(t, 0.0, 1.6);
 

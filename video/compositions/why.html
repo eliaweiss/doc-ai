@@ -1,87 +1,388 @@
 <template>
-  <div data-hf-id="hf-i0ih" id="why-root" class="scene" data-composition-id="why" data-width="1920" data-height="1080">
+  <!--
+    "Why DocAI?" as an illustrated slideshow: one picture per sentence in the
+    upper part of the frame, the narration as a caption underneath (its words
+    darken as they're spoken). Slides 1-2 are one picture that grows.
+  -->
+  <div id="why-root" class="scene" data-composition-id="why" data-width="1920" data-height="1080">
     <style>
       #why-root { position: absolute; inset: 0; }
-      #why-title { top: 440px; }
-      #why-there { top: 470px; }
-      #why-diff { top: 300px; }
-      #why-diff div { margin: 6px 0; }
-      #why-excel { top: 460px; }
-      #why-answers { top: 470px; }
-      .why-q { top: 455px; font-style: italic; }
-      #why-place { top: 410px; }
-      #why-place-sub { top: 560px; }
-      #why-docai { top: 400px; }
+      #why-root .slide { position: absolute; inset: 0; }
+
+      /* Captions: the narration, underneath the picture */
+      #why-caps { position: absolute; left: 260px; right: 260px; top: 850px; }
+      .why-cap { position: absolute; left: 0; right: 0; top: 0; text-align: center;
+                 font-family: var(--font-display); font-size: 50px; line-height: 1.15; letter-spacing: -0.01em; }
+
+      /* Paper documents */
+      .why-doc { position: absolute; width: 230px; height: 300px; border-radius: 16px; background: var(--paper);
+                 box-shadow: 0 22px 50px rgba(40, 35, 70, 0.22), 0 0 0 1px rgba(27, 26, 31, 0.06); overflow: hidden; }
+      .why-doc .hd { height: 46px; }
+      .why-doc .ln { position: absolute; left: 24px; right: 24px; top: 70px; bottom: 60px;
+                     background: repeating-linear-gradient(to bottom, rgba(27,26,31,0.14) 0 9px, transparent 9px 26px); }
+      .why-doc .tot { position: absolute; right: 24px; bottom: 24px; width: 80px; height: 14px; border-radius: 4px; background: rgba(27,26,31,0.4); }
+      .why-doc.receipt { width: 170px; height: 330px; border-radius: 6px; }
+      .why-doc.receipt .ln { top: 34px; }
+      .why-label { position: absolute; width: 300px; text-align: center; font-family: var(--font-ui); font-size: 30px; font-weight: 600; }
+      .why-src { position: absolute; width: 300px; text-align: center; font-family: var(--font-ui); font-size: 28px; color: rgba(27,26,31,0.6); }
+      .why-badge { position: absolute; padding: 8px 18px; border-radius: 999px; font-family: var(--font-ui); font-size: 26px;
+                   font-weight: 700; color: #fff; background: var(--ink); box-shadow: 0 8px 20px rgba(40,35,70,0.2); }
+      .why-day { position: absolute; padding: 10px 20px; border-radius: 12px; background: var(--paper); font-family: var(--font-ui);
+                 font-size: 28px; font-weight: 600; color: var(--clay-text); box-shadow: 0 8px 20px rgba(40,35,70,0.16); }
+
+      /* Generic card */
+      .why-card { position: absolute; border-radius: 22px; background: var(--paper); overflow: hidden;
+                  box-shadow: 0 30px 70px rgba(40, 35, 70, 0.25), 0 0 0 1px rgba(27, 26, 31, 0.06); font-family: var(--font-ui); }
+
+      /* Spreadsheet */
+      #why-sheet { left: 400px; top: 150px; width: 1120px; height: 600px; }
+      #why-sheet .bar { height: 56px; background: #e9e6ef; display: flex; align-items: center; padding-left: 26px; gap: 10px; }
+      #why-sheet .bar i { width: 14px; height: 14px; border-radius: 50%; background: #b9b5c6; }
+      #why-grid { position: absolute; left: 0; right: 0; top: 56px; bottom: 0; display: grid;
+                  grid-template-columns: 70px repeat(7, 1fr); grid-auto-rows: 54px; }
+      #why-grid div { border-right: 1px solid rgba(27,26,31,0.08); border-bottom: 1px solid rgba(27,26,31,0.08); position: relative; }
+      #why-grid .hdr { background: #f1eff5; font-size: 22px; color: rgba(27,26,31,0.5); display: flex; align-items: center; justify-content: center; }
+      #why-grid .cell i { position: absolute; left: 14px; top: 20px; height: 14px; border-radius: 4px; background: rgba(27,26,31,0.3); }
+      #why-clock { left: 1430px; top: 90px; width: 190px; height: 190px; }
+
+      /* Inbox */
+      #why-inbox { left: 430px; top: 140px; width: 1060px; height: 620px; }
+      .why-mail { height: 92px; border-bottom: 1px solid rgba(27,26,31,0.08); display: flex; align-items: center; padding: 0 34px; gap: 26px; font-size: 30px; }
+      .why-mail b { width: 210px; font-weight: 700; }
+      .why-mail span { color: rgba(27,26,31,0.6); }
+      #why-inbox .top { height: 70px; background: #eeebf3; display: flex; align-items: center; padding: 0 34px; font-size: 26px; font-weight: 700; color: rgba(27,26,31,0.55); }
+      #why-lens { left: 1240px; top: 230px; width: 170px; height: 170px; }
+      #why-days { left: 200px; top: 150px; width: 210px; height: 90px; }
+      #why-days div { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                      border-radius: 18px; background: var(--ink); color: #fff; font-family: var(--font-ui); font-size: 34px; font-weight: 700; }
+
+      /* Calendar */
+      #why-cal { left: 630px; top: 130px; width: 660px; height: 640px; }
+      #why-cal .mh { height: 92px; background: var(--clay); color: #fff; font-size: 40px; font-weight: 700; display: flex; align-items: center; padding-left: 40px; }
+      #why-cal .gd { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 26px 30px; }
+      #why-cal .gd div { height: 78px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: rgba(27,26,31,0.7); }
+      #why-cal .gd .wd { height: 40px; font-size: 22px; font-weight: 700; color: rgba(27,26,31,0.4); }
+      #why-ring { left: 0; top: 0; width: 86px; height: 86px; border-radius: 50%; border: 6px solid var(--clay); }
+      #why-due { left: 1330px; top: 470px; }
+      #why-stamp { left: 760px; top: 360px; padding: 18px 46px; border: 8px solid #b0381c; border-radius: 16px; color: #b0381c;
+                   font-family: var(--font-ui); font-size: 70px; font-weight: 900; letter-spacing: 0.08em; transform: rotate(-12deg); background: rgba(251,249,245,0.85); }
+
+      /* Invoice vs deposits */
+      #why-inv { left: 330px; top: 160px; width: 470px; height: 590px; }
+      #why-inv .hd { height: 86px; background: var(--ink); color: #fff; font-size: 34px; font-weight: 700; display: flex; align-items: center; padding-left: 34px; }
+      #why-inv .row { padding: 22px 34px 0; font-size: 28px; color: rgba(27,26,31,0.6); }
+      #why-inv .row b { display: block; color: var(--ink); font-size: 34px; margin-top: 4px; }
+      #why-dep { left: 960px; top: 200px; width: 640px; height: 520px; }
+      .why-dep { height: 96px; border-bottom: 1px solid rgba(27,26,31,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 34px; font-size: 30px; }
+      .why-dep .in { color: #2f7d4f; font-weight: 700; }
+      #why-dep .top { height: 74px; background: #eeebf3; display: flex; align-items: center; padding: 0 34px; font-size: 26px; font-weight: 700; color: rgba(27,26,31,0.55); }
+      #why-slot { margin: 22px 30px; height: 96px; border: 4px dashed var(--clay); border-radius: 16px; display: flex; align-items: center;
+                  justify-content: center; font-size: 56px; font-weight: 900; color: var(--clay-text); }
+
+      /* Statement with one unknown line */
+      #why-stm { left: 420px; top: 170px; width: 1080px; height: 560px; }
+      #why-stm .top { height: 80px; background: #2e2d3d; color: #fff; display: flex; align-items: center; padding: 0 40px; font-size: 30px; font-weight: 700; }
+      .why-tx { position: relative; height: 96px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+                border-bottom: 1px solid rgba(27,26,31,0.08); font-size: 32px; }
+      .why-tx .out { color: #b0381c; font-weight: 700; }
+      #why-tx-hl { position: absolute; left: 16px; right: 16px; top: 268px; height: 100px; border: 5px solid var(--clay); border-radius: 16px; }
+      #why-q { left: 1530px; top: 428px; width: 120px; height: 120px; border-radius: 50%; background: var(--clay); color: #fff;
+               display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 92px; }
+
+      /* One place */
+      #why-folder { left: 760px; top: 180px; width: 400px; height: 330px; }
+      #why-ai { left: 1080px; top: 160px; width: 104px; height: 104px; border-radius: 50%; background: var(--ink); color: #fff;
+                display: flex; align-items: center; justify-content: center; font-family: var(--font-ui); font-size: 36px; font-weight: 800; }
+      #why-tools { left: 0; right: 0; top: 590px; display: flex; justify-content: center; gap: 26px; }
+      #why-name { left: 760px; width: 400px; top: 330px; text-align: center; font-family: var(--font-display); font-size: 92px; color: #fff; }
+      .why-mini { position: absolute; width: 120px; height: 156px; border-radius: 10px; background: var(--paper);
+                  box-shadow: 0 12px 30px rgba(40,35,70,0.2); overflow: hidden; }
+      .why-mini .hd { height: 22px; }
+      .why-mini .ln { position: absolute; left: 14px; right: 14px; top: 36px; bottom: 26px;
+                      background: repeating-linear-gradient(to bottom, rgba(27,26,31,0.14) 0 6px, transparent 6px 16px); }
     </style>
-    <div data-hf-id="hf-wp5u" id="why-title" class="abs center serif huge" style="font-size:150px; top:400px">Why <span data-hf-id="hf-3j5p" class="accent">DocAI</span>?</div>
-    <div data-hf-id="hf-tizq" id="why-there" class="abs center serif h1">The data is all there.</div>
-    <div data-hf-id="hf-zfbt" id="why-diff" class="abs center serif h1">
-      <div data-hf-id="hf-i0l0" id="why-diff-1">Different formats.</div>
-      <div data-hf-id="hf-bar5" id="why-diff-2">Different sources.</div>
-      <div data-hf-id="hf-9dtd" id="why-diff-3">Different days of the month.</div>
+
+    <!-- 0: chapter card -->
+    <div id="why-title" class="abs center serif" style="top:400px; font-size:150px">Why <span class="accent">DocAI</span>?</div>
+
+    <!-- 1-2: the documents, then their formats, sources and days -->
+    <div id="why-docs" class="slide">
+      <div id="why-d1" class="why-doc" style="left:250px; top:190px"><div class="hd" style="background:#c96442"></div><div class="ln"></div><div class="tot"></div></div>
+      <div id="why-d2" class="why-doc receipt" style="left:590px; top:175px"><div class="ln"></div><div class="tot"></div></div>
+      <div id="why-d3" class="why-doc" style="left:845px; top:190px"><div class="hd" style="background:#2e2d3d"></div><div class="ln"></div><div class="tot"></div></div>
+      <div id="why-d4" class="why-doc" style="left:1145px; top:190px"><div class="hd" style="background:#3f8a63"></div><div class="ln"></div><div class="tot"></div></div>
+      <div id="why-d5" class="why-doc" style="left:1445px; top:190px"><div class="hd" style="background:#8c87a3"></div><div class="ln"></div><div class="tot"></div></div>
+
+      <div id="why-l1" class="why-label" style="left:215px; top:520px">Invoice</div>
+      <div id="why-l2" class="why-label" style="left:525px; top:520px">Receipt</div>
+      <div id="why-l3" class="why-label" style="left:810px; top:520px">Bank statement</div>
+      <div id="why-l4" class="why-label" style="left:1110px; top:520px">Transfer</div>
+      <div id="why-l5" class="why-label" style="left:1410px; top:520px">Payslip</div>
+
+      <div id="why-f1" class="why-badge" style="left:400px; top:160px">PDF</div>
+      <div id="why-f2" class="why-badge" style="left:690px; top:150px">Photo</div>
+      <div id="why-f3" class="why-badge" style="left:1005px; top:160px">CSV</div>
+      <div id="why-f4" class="why-badge" style="left:1260px; top:160px">Screenshot</div>
+      <div id="why-f5" class="why-badge" style="left:1590px; top:160px">Email</div>
+
+      <div id="why-s1" class="why-src" style="left:215px; top:566px">from a supplier</div>
+      <div id="why-s2" class="why-src" style="left:525px; top:566px">from a store</div>
+      <div id="why-s3" class="why-src" style="left:810px; top:566px">from the bank</div>
+      <div id="why-s4" class="why-src" style="left:1110px; top:566px">from an app</div>
+      <div id="why-s5" class="why-src" style="left:1410px; top:566px">from your employer</div>
+
+      <div id="why-t1" class="why-day" style="left:310px; top:640px">Day 3</div>
+      <div id="why-t2" class="why-day" style="left:615px; top:640px">Day 9</div>
+      <div id="why-t3" class="why-day" style="left:900px; top:640px">Day 15</div>
+      <div id="why-t4" class="why-day" style="left:1195px; top:640px">Day 22</div>
+      <div id="why-t5" class="why-day" style="left:1505px; top:640px">Day 30</div>
     </div>
-    <div data-hf-id="hf-mazb" id="why-excel" class="abs center serif h1">In Excel, it's a <span data-hf-id="hf-0u3r" class="accent">full-time job</span>.</div>
-    <div data-hf-id="hf-tous" id="why-answers" class="abs center serif h1">Then one day, you need answers.</div>
-    <div data-hf-id="hf-ixtv" id="why-q1" class="abs center serif h1 why-q">How did I miss a tax payment?</div>
-    <div data-hf-id="hf-aet6" id="why-q2" class="abs center serif h1 why-q">Did I get paid for this job?</div>
-    <div data-hf-id="hf-pxqr" id="why-q3" class="abs center serif h1 why-q">What is this expense?</div>
-    <div data-hf-id="hf-8cth" id="why-place" class="abs center serif h1">One place for <span data-hf-id="hf-gmfk" class="accent">all of it</span>.</div>
-    <div data-hf-id="hf-dq16" id="why-place-sub" class="abs center kicker">Drop it in · AI does the first pass · Simple tools</div>
-    <div data-hf-id="hf-tko9" id="why-docai" class="abs center serif huge">That's <span data-hf-id="hf-7zdd" class="accent">DocAI</span>.</div>
+
+    <!-- 3: the spreadsheet that never gets finished -->
+    <div id="why-xl" class="slide">
+      <div id="why-sheet" class="why-card">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div id="why-grid"></div>
+      </div>
+      <svg id="why-clock" class="abs" viewBox="0 0 190 190">
+        <circle cx="95" cy="95" r="86" fill="#fbf9f5" stroke="#1b1a1f" stroke-width="7" />
+        <g id="why-hand-h"><line x1="95" y1="95" x2="95" y2="52" stroke="#1b1a1f" stroke-width="9" stroke-linecap="round" /></g>
+        <g id="why-hand-m"><line x1="95" y1="95" x2="95" y2="30" stroke="#c96442" stroke-width="6" stroke-linecap="round" /></g>
+        <circle cx="95" cy="95" r="8" fill="#1b1a1f" />
+      </svg>
+    </div>
+
+    <!-- 4: digging through emails -->
+    <div id="why-dig" class="slide">
+      <div id="why-inbox" class="why-card">
+        <div class="top">Inbox · 2,184 messages</div>
+        <div class="why-mail"><b>Bank</b><span>Your statement is ready</span></div>
+        <div class="why-mail"><b>Store</b><span>Thanks for your purchase</span></div>
+        <div class="why-mail"><b>Supplier</b><span>Invoice #0412 attached</span></div>
+        <div class="why-mail"><b>Accountant</b><span>Re: missing documents</span></div>
+        <div class="why-mail"><b>Bank</b><span>Transfer confirmation</span></div>
+        <div class="why-mail"><b>Employer</b><span>Your payslip for October</span></div>
+      </div>
+      <svg id="why-lens" class="abs" viewBox="0 0 170 170">
+        <circle cx="70" cy="70" r="52" fill="rgba(251,249,245,0.35)" stroke="#1b1a1f" stroke-width="12" />
+        <line x1="108" y1="108" x2="158" y2="158" stroke="#1b1a1f" stroke-width="18" stroke-linecap="round" />
+      </svg>
+      <div id="why-days" class="abs">
+        <div id="why-day1">Day 1</div><div id="why-day2">Day 2</div><div id="why-day3">Day 3</div>
+      </div>
+    </div>
+
+    <!-- 5: the missed tax payment -->
+    <div id="why-tax" class="slide">
+      <div id="why-cal" class="why-card">
+        <div class="mh">October</div>
+        <div id="why-cal-grid" class="gd"></div>
+      </div>
+      <div id="why-ring" class="abs"></div>
+      <div id="why-due" class="abs chip">Tax due</div>
+      <div id="why-stamp" class="abs">MISSED</div>
+    </div>
+
+    <!-- 6: was this invoice paid? -->
+    <div id="why-paid" class="slide">
+      <div id="why-inv" class="why-card">
+        <div class="hd">Invoice #0418</div>
+        <div class="row">Client<b>Design studio</b></div>
+        <div class="row">Sent<b>September 2</b></div>
+        <div class="row">Amount<b>R$ 4,000.00</b></div>
+      </div>
+      <div id="why-dep" class="why-card">
+        <div class="top">Deposits · September</div>
+        <div class="why-dep"><span>Transfer from Acme</span><span class="in">+ R$ 1,250.00</span></div>
+        <div class="why-dep"><span>Pix · J. Souza</span><span class="in">+ R$ 380.00</span></div>
+        <div class="why-dep"><span>Interest</span><span class="in">+ R$ 3.95</span></div>
+        <div id="why-slot">?</div>
+      </div>
+    </div>
+
+    <!-- 7: the expense nobody remembers -->
+    <div id="why-what" class="slide">
+      <div id="why-stm" class="why-card">
+        <div class="top">Bank statement · September</div>
+        <div class="why-tx"><span>PAY Delic 21/09</span><span class="out">− R$ 29.00</span></div>
+        <div class="why-tx"><span>PIX Marketplace</span><span class="out">− R$ 110.80</span></div>
+        <div class="why-tx"><span>PAY XQ*7731 MP 22/09</span><span class="out">− R$ 89.90</span></div>
+        <div class="why-tx"><span>PAY Delta 23/09</span><span class="out">− R$ 20.00</span></div>
+        <div id="why-tx-hl"></div>
+      </div>
+      <div id="why-q" class="abs">?</div>
+    </div>
+
+    <!-- 8-9: one place -->
+    <div id="why-one" class="slide">
+      <div id="why-m1" class="why-mini" style="left:180px; top:150px"><div class="hd" style="background:#c96442"></div><div class="ln"></div></div>
+      <div id="why-m2" class="why-mini" style="left:330px; top:420px"><div class="ln"></div></div>
+      <div id="why-m3" class="why-mini" style="left:1620px; top:170px"><div class="hd" style="background:#2e2d3d"></div><div class="ln"></div></div>
+      <div id="why-m4" class="why-mini" style="left:1460px; top:430px"><div class="hd" style="background:#3f8a63"></div><div class="ln"></div></div>
+      <div id="why-m5" class="why-mini" style="left:520px; top:120px"><div class="hd" style="background:#8c87a3"></div><div class="ln"></div></div>
+      <div id="why-m6" class="why-mini" style="left:1250px; top:110px"><div class="hd" style="background:#c96442"></div><div class="ln"></div></div>
+      <svg id="why-folder" class="abs" viewBox="0 0 400 330">
+        <path d="M18 60 Q18 34 44 34 L150 34 Q164 34 172 46 L188 66 L356 66 Q382 66 382 92 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#b5532f" />
+        <path id="why-folder-front" d="M18 110 Q18 92 40 92 L360 92 Q382 92 382 114 L382 296 Q382 318 356 318 L44 318 Q18 318 18 296 Z" fill="#c96442" />
+      </svg>
+      <div id="why-ai" class="abs">AI</div>
+      <div id="why-name" class="abs">DocAI</div>
+      <div id="why-tools" class="abs">
+        <span id="why-k1" class="chip">Browse</span><span id="why-k2" class="chip">Search</span><span id="why-k3" class="chip">Reconcile</span>
+      </div>
+    </div>
+
+    <div id="why-caps"></div>
   </div>
   <script>
     (function () {
       const D = window.DOC, id = "why", end = window.VO.scenes[id].duration;
+      const sentences = window.VO.scenes[id].sentences;
       const $ = (s) => document.querySelector(s);
       const tl = gsap.timeline({ paused: true });
       const at = (i) => D.at(id, i), to = (i) => D.end(id, i);
+      /** When word w (its first letters) is spoken in sentence i */
+      const when = (i, w) => {
+        const words = sentences[i].text.split(/\s+/);
+        const times = D.wordTimes(id, i, words);
+        const k = words.findIndex((x) => x.toLowerCase().startsWith(w));
+        return times[Math.max(0, k)];
+      };
+      const fadeIn = (el, t, o) => D.blurIn(tl, typeof el === "string" ? $(el) : el, t, o);
+      const fadeOut = (el, t, o) => D.blurOut(tl, typeof el === "string" ? $(el) : el, t, o);
 
-      // "Why DocAI?"
-      D.blurIn(tl, $("#why-title"), at(0) - 0.2, { blur: 14, duration: 0.7 });
+      // ---- Captions: each sentence (after the title) under its picture ----
+      const caps = $("#why-caps");
+      for (let i = 1; i < sentences.length; i++) {
+        const cap = document.createElement("div");
+        cap.className = "why-cap";
+        cap.id = "why-cap-" + i;
+        cap.textContent = sentences[i].text;
+        caps.appendChild(cap);
+        fadeIn(cap, at(i) - 0.15, { duration: 0.35, blur: 6 });
+        D.speak(tl, cap, id, i);
+        if (i < sentences.length - 1) fadeOut(cap, at(i + 1) - 0.2, { duration: 0.18 });
+      }
+      fadeOut("#why-cap-" + (sentences.length - 1), end - 0.45);
+
+      // ---- 0: "Why DocAI?" ----
+      fadeIn("#why-title", at(0) - 0.2, { blur: 14, duration: 0.7 });
       D.speak(tl, $("#why-title"), id, 0);
-      D.blurOut(tl, $("#why-title"), at(1) - 0.3, { scale: 1.06 });
+      fadeOut("#why-title", at(1) - 0.3, { scale: 1.06 });
 
-      // "The data about your money is all there."
-      D.blurIn(tl, $("#why-there"), at(1) - 0.05, { duration: 0.5 });
-      D.words(tl, $("#why-there"), at(1), to(1) - 0.2);
-      D.blurOut(tl, $("#why-there"), at(2) - 0.25);
+      // ---- 1: "The data about your money is all there." The documents arrive. ----
+      [1, 2, 3, 4, 5].forEach((k) => {
+        fadeIn("#why-d" + k, at(1) - 0.2 + k * 0.12, { y: 70, duration: 0.8, blur: 6 });
+        fadeIn("#why-l" + k, at(1) + 0.2 + k * 0.12, { y: 16, duration: 0.5 });
+      });
+      // ---- 2: format, source, time of the month: the same picture grows ----
+      const tf = when(2, "format"), ts = when(2, "source"), tm = when(2, "time");
+      [1, 2, 3, 4, 5].forEach((k) => {
+        fadeIn("#why-f" + k, tf - 0.25 + k * 0.07, { scale: 0.6, duration: 0.45, ease: "back.out(1.6)" });
+        fadeIn("#why-s" + k, ts - 0.2 + k * 0.07, { y: 12, duration: 0.45 });
+        fadeIn("#why-t" + k, tm - 0.2 + k * 0.07, { y: 24, duration: 0.5 });
+      });
+      // Out of order in time: the documents drift to different heights
+      const drift = [-36, 30, -14, 44, -26];
+      [1, 2, 3, 4, 5].forEach((k) => {
+        tl.fromTo(["#why-d" + k, "#why-f" + k], { y: 0 }, { y: drift[k - 1], duration: 1.2, ease: "power2.inOut", immediateRender: false }, tm);
+      });
+      fadeOut("#why-docs", at(3) - 0.3, { y: -30 });
 
-      // "...a different format, from a different source, at a different time of the month."
-      const s2 = at(2), e2 = to(2), span2 = e2 - s2;
+      // ---- 3: "Organizing it in Excel is a full-time job, so most of us just give up." ----
+      const grid = $("#why-grid");
+      const cols = "ABCDEFG";
+      grid.appendChild(Object.assign(document.createElement("div"), { className: "hdr" }));
+      for (const c of cols) grid.appendChild(Object.assign(document.createElement("div"), { className: "hdr", textContent: c }));
+      const cells = [];
+      for (let r = 1; r <= 9; r++) {
+        grid.appendChild(Object.assign(document.createElement("div"), { className: "hdr", textContent: String(r) }));
+        for (let c = 0; c < 7; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const bar = document.createElement("i");
+          bar.style.width = 40 + ((r * 7 + c * 13) % 5) * 14 + "px";
+          cell.appendChild(bar);
+          grid.appendChild(cell);
+          cells.push(bar);
+        }
+      }
+      fadeIn("#why-sheet", at(3) - 0.15, { y: 80, duration: 0.8, blur: 6 });
+      fadeIn("#why-clock", at(3) + 0.3, { scale: 0.7, duration: 0.5, ease: "back.out(1.6)" });
+      const giveUp = when(3, "give");
+      const filled = 24; // the work stops about a third of the way
+      cells.forEach((bar, k) => {
+        if (k < filled) tl.fromTo(bar, { opacity: 0 }, { opacity: 1, duration: 0.08 }, at(3) + 0.3 + (k * (giveUp - at(3) - 0.5)) / filled);
+        else tl.set(bar, { opacity: 0 }, 0);
+      });
+      // The clock races through the hours while the cells fill
+      tl.fromTo("#why-hand-m", { rotation: 0, svgOrigin: "95 95" }, { rotation: 360 * 6, svgOrigin: "95 95", duration: giveUp - at(3), ease: "power1.inOut" }, at(3));
+      tl.fromTo("#why-hand-h", { rotation: 0, svgOrigin: "95 95" }, { rotation: 180, svgOrigin: "95 95", duration: giveUp - at(3), ease: "power1.inOut" }, at(3));
+      // "...give up": the half-done sheet fades back
+      tl.fromTo("#why-sheet", { opacity: 1 }, { opacity: 0.45, duration: 0.5, ease: "power2.out", immediateRender: false }, giveUp);
+      fadeOut("#why-xl", at(4) - 0.3, { y: -30 });
+
+      // ---- 4: "...you waste days digging through emails and accounts." ----
+      fadeIn("#why-inbox", at(4) - 0.15, { y: 80, duration: 0.8, blur: 6 });
+      fadeIn("#why-lens", at(4) + 0.5, { scale: 0.7, duration: 0.5 });
+      tl.fromTo("#why-lens", { y: 0, x: 0 }, { y: 420, x: -60, duration: to(4) - at(4) - 0.6, ease: "sine.inOut", immediateRender: false }, at(4) + 0.6);
+      const dw = when(4, "waste");
+      fadeIn("#why-days", dw - 0.2, { scale: 0.8, duration: 0.4 });
       [1, 2, 3].forEach((k) => {
-        D.blurIn(tl, $("#why-diff-" + k), s2 + span2 * (0.22 + (k - 1) * 0.26), { y: 24, duration: 0.55 });
+        const t = dw + (k - 1) * 0.9;
+        tl.fromTo("#why-day" + k, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.25, ease: "power3.out" }, t);
+        if (k < 3) tl.to("#why-day" + k, { opacity: 0, y: -20, duration: 0.2, ease: "power3.in" }, t + 0.85);
       });
-      D.blurOut(tl, $("#why-diff"), at(3) - 0.25);
+      fadeOut("#why-dig", at(5) - 0.25, { y: -30 });
 
-      // "Organizing it in Excel is a full-time job, so most of us just give up."
-      D.blurIn(tl, $("#why-excel"), at(3) - 0.05, { duration: 0.5 });
-      D.words(tl, $("#why-excel"), at(3), at(3) + (to(3) - at(3)) * 0.55);
-      D.blurOut(tl, $("#why-excel"), at(4) - 0.25);
+      // ---- 5: "How did I miss a tax payment?" ----
+      const cal = $("#why-cal-grid");
+      ["M", "T", "W", "T", "F", "S", "S"].forEach((d) => cal.appendChild(Object.assign(document.createElement("div"), { className: "wd", textContent: d })));
+      for (let d = 1; d <= 28; d++) cal.appendChild(Object.assign(document.createElement("div"), { textContent: String(d) }));
+      // Day 20 sits in row 3, column 6 of the grid
+      const ring = $("#why-ring");
+      ring.style.left = 630 + 30 + 5 * ((660 - 60 - 36) / 7 + 6) + ((660 - 60 - 36) / 7 - 86) / 2 + "px";
+      ring.style.top = 130 + 92 + 26 + 40 + 6 + 2 * (78 + 6) - 4 + "px";
+      fadeIn("#why-cal", at(5) - 0.15, { y: 70, duration: 0.6, blur: 6 });
+      tl.fromTo("#why-ring", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, at(5) + 0.35);
+      fadeIn("#why-due", at(5) + 0.45, { y: 14, duration: 0.4 });
+      tl.fromTo("#why-stamp", { opacity: 0, scale: 1.8, rotation: -12 }, { opacity: 1, scale: 1, rotation: -12, duration: 0.3, ease: "power4.in" }, to(5) - 0.45);
+      fadeOut("#why-tax", at(6) - 0.2, { duration: 0.18 });
 
-      // "Then one day you need answers, and you waste days digging..."
-      D.blurIn(tl, $("#why-answers"), at(4) - 0.05, { duration: 0.5 });
-      D.words(tl, $("#why-answers"), at(4), at(4) + (to(4) - at(4)) * 0.45);
-      D.blurOut(tl, $("#why-answers"), at(5) - 0.25);
+      // ---- 6: "Did I get paid for this job?" ----
+      fadeIn("#why-inv", at(6) - 0.15, { x: -60, duration: 0.6, blur: 6 });
+      fadeIn("#why-dep", at(6) + 0.05, { x: 60, duration: 0.6, blur: 6 });
+      tl.fromTo("#why-slot", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, at(6) + 0.6);
+      fadeOut("#why-paid", at(7) - 0.2, { duration: 0.18 });
 
-      // The three questions, one at a time
-      [5, 6, 7].forEach((i, k) => {
-        const el = $("#why-q" + (k + 1));
-        D.blurIn(tl, el, at(i) - 0.1, { duration: 0.45, blur: 8 });
-        D.speak(tl, el, id, i);
-        D.blurOut(tl, el, at(i + 1) - 0.22);
+      // ---- 7: "What is this expense I don't remember making?" ----
+      fadeIn("#why-stm", at(7) - 0.15, { y: 70, duration: 0.6, blur: 6 });
+      tl.fromTo("#why-tx-hl", { opacity: 0, scale: 1.04 }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, when(7, "expense") - 0.1);
+      tl.fromTo("#why-q", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, when(7, "expense") + 0.2);
+      fadeOut("#why-what", at(8) - 0.25, { y: -30 });
+
+      // ---- 8: "...one place to drop all your documents, let AI do the first pass, and manage it with simple tools." ----
+      fadeIn("#why-folder", at(8) - 0.1, { y: 50, duration: 0.7, blur: 6 });
+      const drop = when(8, "drop");
+      [1, 2, 3, 4, 5, 6].forEach((k) => {
+        const el = $("#why-m" + k);
+        const dx = 960 - (parseFloat(el.style.left) + 60), dy = 300 - (parseFloat(el.style.top) + 78);
+        fadeIn(el, at(8) + 0.1 + k * 0.08, { scale: 0.8, duration: 0.4 });
+        tl.fromTo(el, { x: 0, y: 0, scale: 1, rotation: (k % 2 ? -1 : 1) * 8 },
+          { x: dx, y: dy, scale: 0.4, rotation: 0, duration: 0.75, ease: "power3.in", immediateRender: false }, drop + k * 0.12);
+        tl.to(el, { opacity: 0, duration: 0.1 }, drop + k * 0.12 + 0.7);
       });
+      tl.fromTo("#why-folder", { scale: 1 }, { scale: 1.05, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.inOut", immediateRender: false }, drop + 0.85);
+      tl.fromTo("#why-ai", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, when(8, "ai") - 0.1);
+      const tools = when(8, "simple");
+      [1, 2, 3].forEach((k) => fadeIn("#why-k" + k, tools - 0.2 + (k - 1) * 0.18, { y: 24, duration: 0.5 }));
 
-      // "You need one place to drop all your documents, let AI do the first pass..."
-      D.blurIn(tl, $("#why-place"), at(8) - 0.05, { duration: 0.5 });
-      D.words(tl, $("#why-place"), at(8), at(8) + (to(8) - at(8)) * 0.4);
-      D.blurIn(tl, $("#why-place-sub"), at(8) + (to(8) - at(8)) * 0.45, { duration: 0.5 });
-      D.blurOut(tl, $("#why-place"), at(9) - 0.25);
-      D.blurOut(tl, $("#why-place-sub"), at(9) - 0.25);
-
-      // "That's DocAI."
-      D.blurIn(tl, $("#why-docai"), at(9) - 0.1, { blur: 14, duration: 0.6, scale: 0.96 });
-      D.speak(tl, $("#why-docai"), id, 9);
-      D.blurOut(tl, $("#why-docai"), end - 0.45, { scale: 1.1 });
+      // ---- 9: "That's DocAI." The folder gets its name. ----
+      [1, 2, 3].forEach((k) => fadeOut("#why-k" + k, at(9) - 0.3 + k * 0.03));
+      fadeOut("#why-ai", at(9) - 0.25);
+      tl.fromTo("#why-folder", { y: 0 }, { y: 70, duration: 0.6, ease: "power3.inOut", immediateRender: false }, at(9) - 0.3);
+      tl.fromTo("#why-name", { opacity: 0, y: 70, filter: "blur(10px)" }, { opacity: 1, y: 70, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, at(9) + 0.05);
+      fadeOut("#why-one", end - 0.45, { scale: 1.06 });
 
       window.__timelines = window.__timelines || {};
       window.__timelines[id] = tl;
